@@ -61,231 +61,7 @@
     </div>
 </div>
 
-<!-- Appointment Statistics -->
-<div class="row g-3 mt-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title">Appointment Statistics</h5>
-            </div>
-            <div class="card-body">
-                <div class="row g-3">
-                    <!-- Weekly Statistics -->
-                    <div class="col-md-4">
-                        <div class="border rounded p-3">
-                            <h6 class="text-primary mb-3">Weekly (Last 7 Days)</h6>
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-primary mb-1">{{ $appointmentStats['weekly']['total'] }}</div>
-                                        <div class="small text-muted">Total</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-success mb-1">{{ $appointmentStats['weekly']['approved'] }}</div>
-                                        <div class="small text-muted">Approved</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-warning mb-1">{{ $appointmentStats['weekly']['pending'] }}</div>
-                                        <div class="small text-muted">Pending</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-danger mb-1">{{ $appointmentStats['weekly']['cancelled'] }}</div>
-                                        <div class="small text-muted">Cancelled</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Monthly Statistics -->
-                    <div class="col-md-4">
-                        <div class="border rounded p-3">
-                            <h6 class="text-primary mb-3">Monthly (Last 30 Days)</h6>
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-primary mb-1">{{ $appointmentStats['monthly']['total'] }}</div>
-                                        <div class="small text-muted">Total</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-success mb-1">{{ $appointmentStats['monthly']['approved'] }}</div>
-                                        <div class="small text-muted">Approved</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-warning mb-1">{{ $appointmentStats['monthly']['pending'] }}</div>
-                                        <div class="small text-muted">Pending</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-danger mb-1">{{ $appointmentStats['monthly']['cancelled'] }}</div>
-                                        <div class="small text-muted">Cancelled</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Yearly Statistics -->
-                    <div class="col-md-4">
-                        <div class="border rounded p-3">
-                            <h6 class="text-primary mb-3">Yearly (Last 365 Days)</h6>
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-primary mb-1">{{ $appointmentStats['yearly']['total'] }}</div>
-                                        <div class="small text-muted">Total</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-success mb-1">{{ $appointmentStats['yearly']['approved'] }}</div>
-                                        <div class="small text-muted">Approved</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-warning mb-1">{{ $appointmentStats['yearly']['pending'] }}</div>
-                                        <div class="small text-muted">Pending</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-danger mb-1">{{ $appointmentStats['yearly']['cancelled'] }}</div>
-                                        <div class="small text-muted">Cancelled</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Pre-Employment Statistics -->
-<div class="row g-3 mt-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title">Pre-Employment Statistics</h5>
-            </div>
-            <div class="card-body">
-                <div class="row g-3">
-                    <!-- Weekly Statistics -->
-                    <div class="col-md-4">
-                        <div class="border rounded p-3">
-                            <h6 class="text-info mb-3">Weekly (Last 7 Days)</h6>
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-info mb-1">{{ $preEmploymentStats['weekly']['total'] }}</div>
-                                        <div class="small text-muted">Total</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-success mb-1">{{ $preEmploymentStats['weekly']['passed'] }}</div>
-                                        <div class="small text-muted">Passed</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-warning mb-1">{{ $preEmploymentStats['weekly']['pending'] }}</div>
-                                        <div class="small text-muted">Pending</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-danger mb-1">{{ $preEmploymentStats['weekly']['failed'] }}</div>
-                                        <div class="small text-muted">Failed</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Monthly Statistics -->
-                    <div class="col-md-4">
-                        <div class="border rounded p-3">
-                            <h6 class="text-info mb-3">Monthly (Last 30 Days)</h6>
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-info mb-1">{{ $preEmploymentStats['monthly']['total'] }}</div>
-                                        <div class="small text-muted">Total</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-success mb-1">{{ $preEmploymentStats['monthly']['passed'] }}</div>
-                                        <div class="small text-muted">Passed</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-warning mb-1">{{ $preEmploymentStats['monthly']['pending'] }}</div>
-                                        <div class="small text-muted">Pending</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-danger mb-1">{{ $preEmploymentStats['monthly']['failed'] }}</div>
-                                        <div class="small text-muted">Failed</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Yearly Statistics -->
-                    <div class="col-md-4">
-                        <div class="border rounded p-3">
-                            <h6 class="text-info mb-3">Yearly (Last 365 Days)</h6>
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-info mb-1">{{ $preEmploymentStats['yearly']['total'] }}</div>
-                                        <div class="small text-muted">Total</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-success mb-1">{{ $preEmploymentStats['yearly']['passed'] }}</div>
-                                        <div class="small text-muted">Passed</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-warning mb-1">{{ $preEmploymentStats['yearly']['pending'] }}</div>
-                                        <div class="small text-muted">Pending</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="text-center">
-                                        <div class="h4 text-danger mb-1">{{ $preEmploymentStats['yearly']['failed'] }}</div>
-                                        <div class="small text-muted">Failed</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Scheduled Appointments -->
 <div class="card mt-4">
@@ -422,8 +198,13 @@
 <div class="row g-3">
     <div class="col-12">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title">Annual Physical Examination Statistics</h5>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary btn-sm filter-btn" data-period="weekly" data-chart="annual">Weekly</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm filter-btn active" data-period="monthly" data-chart="annual">Monthly</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm filter-btn" data-period="yearly" data-chart="annual">Yearly</button>
+                </div>
             </div>
             <div class="card-body">
                 <canvas id="annualPhysicalChart" style="height: 300px;"></canvas>
@@ -436,8 +217,13 @@
 <div class="row g-3">
     <div class="col-12">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title">Pre-Employment Statistics</h5>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-info btn-sm filter-btn" data-period="weekly" data-chart="preEmployment">Weekly</button>
+                    <button type="button" class="btn btn-outline-info btn-sm filter-btn active" data-period="monthly" data-chart="preEmployment">Monthly</button>
+                    <button type="button" class="btn btn-outline-info btn-sm filter-btn" data-period="yearly" data-chart="preEmployment">Yearly</button>
+                </div>
             </div>
             <div class="card-body">
                 <canvas id="preEmploymentChart" style="height: 300px;"></canvas>
@@ -451,22 +237,36 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Chart instances
+        let annualChart, preEmploymentChart;
+        
+        // Utility to slice dataset by period
+        function getSlice(data, period) {
+            const days = period === 'weekly' ? 7 : period === 'monthly' ? 30 : 365;
+            const sliced = data.slice(-days);
+            return {
+                labels: sliced.map(item => item.date),
+                values: sliced.map(item => item.count)
+            };
+        }
+        
         // Annual Physical Examination Chart
         const annualCtx = document.getElementById('annualPhysicalChart').getContext('2d');
-        const annualChartData = @json($annualPhysicalChartData);
-        new Chart(annualCtx, {
-            type: 'line',
+        const annualFullData = @json($annualPhysicalChartData);
+        // Default view: monthly
+        const annualInitial = getSlice(annualFullData, 'monthly');
+        annualChart = new Chart(annualCtx, {
+            type: 'bar',
             data: {
-                labels: annualChartData.map(item => item.date),
+                labels: annualInitial.labels,
                 datasets: [{
                     label: 'Annual Physical Examinations',
-                    data: annualChartData.map(item => item.count),
-                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                    data: annualInitial.values,
+                    backgroundColor: 'rgba(16, 185, 129, 0.8)',
                     borderColor: '#10b981',
-                    borderWidth: 2,
-                    pointRadius: 5,
-                    pointBackgroundColor: '#10b981',
-                    tension: 0.4
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    borderSkipped: false
                 }]
             },
             options: {
@@ -501,20 +301,21 @@
 
         // Pre-Employment Chart
         const ctx = document.getElementById('preEmploymentChart').getContext('2d');
-        const chartData = @json($preEmploymentChartData);
-        new Chart(ctx, {
-            type: 'line',
+        const preEmploymentFullData = @json($preEmploymentChartData);
+        // Default view: monthly
+        const preEmploymentInitial = getSlice(preEmploymentFullData, 'monthly');
+        preEmploymentChart = new Chart(ctx, {
+            type: 'bar',
             data: {
-                labels: chartData.map(item => item.date),
+                labels: preEmploymentInitial.labels,
                 datasets: [{
                     label: 'Pre-Employment Cases',
-                    data: chartData.map(item => item.count),
-                    backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                    data: preEmploymentInitial.values,
+                    backgroundColor: 'rgba(37, 99, 235, 0.8)',
                     borderColor: '#2563eb',
-                    borderWidth: 2,
-                    pointRadius: 5,
-                    pointBackgroundColor: '#2563eb',
-                    tension: 0.4
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    borderSkipped: false
                 }]
             },
             options: {
@@ -546,6 +347,39 @@
                 }
             }
         });
+
+        // Filter button functionality
+        document.querySelectorAll('.filter-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const period = this.getAttribute('data-period');
+                const chartType = this.getAttribute('data-chart');
+                
+                // Update button states
+                const buttonGroup = this.closest('.btn-group');
+                buttonGroup.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // Update the selected chart with the requested period
+                updateChartData(chartType, period);
+            });
+        });
     });
+    
+    // Function to update chart data using preloaded datasets
+    function updateChartData(chartType, period) {
+        if (chartType === 'annual') {
+            const slice = getSlice(annualFullData, period);
+            annualChart.data.labels = slice.labels;
+            annualChart.data.datasets[0].data = slice.values;
+            annualChart.update();
+        } else if (chartType === 'preEmployment') {
+            const slice = getSlice(preEmploymentFullData, period);
+            preEmploymentChart.data.labels = slice.labels;
+            preEmploymentChart.data.datasets[0].data = slice.values;
+            preEmploymentChart.update();
+        }
+    }
 </script>
 @endpush 

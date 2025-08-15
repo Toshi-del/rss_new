@@ -86,4 +86,58 @@ class CompanyController extends Controller
 
         return redirect()->route('company.settings')->with('success', 'Settings updated successfully!');
     }
+
+    /**
+     * Show medical results page
+     */
+    public function medicalResults(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Get annual physical examination results (from appointments)
+        $annualPhysicalResults = Appointment::where('created_by', $user->id)
+            ->where('appointment_type', 'annual_physical')
+            ->with(['patients' => function($query) {
+                $query->orderBy('created_at', 'desc');
+            }])
+            ->orderBy('appointment_date', 'desc')
+            ->get();
+            
+        // Get pre-employment examination results
+        $preEmploymentResults = PreEmploymentRecord::where('created_by', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
+        // Filter by status if requested
+        $statusFilter = $request->get('status');
+        if ($statusFilter) {
+            if ($statusFilter === 'annual_physical') {
+                $annualPhysicalResults = $annualPhysicalResults->filter(function($appointment) {
+                    return $appointment->status === 'completed';
+                });
+            } elseif ($statusFilter === 'pre_employment') {
+                $preEmploymentResults = $preEmploymentResults->filter(function($record) {
+                    return $record->status === 'passed' || $record->status === 'failed';
+                });
+            }
+        }
+        
+        // Calculate statistics
+        $totalAnnualPhysical = $annualPhysicalResults->count();
+        $completedAnnualPhysical = $annualPhysicalResults->where('status', 'completed')->count();
+        $totalPreEmployment = $preEmploymentResults->count();
+        $passedPreEmployment = $preEmploymentResults->where('status', 'passed')->count();
+        $failedPreEmployment = $preEmploymentResults->where('status', 'failed')->count();
+        
+        return view('company.medical-results', compact(
+            'annualPhysicalResults',
+            'preEmploymentResults',
+            'totalAnnualPhysical',
+            'completedAnnualPhysical',
+            'totalPreEmployment',
+            'passedPreEmployment',
+            'failedPreEmployment',
+            'statusFilter'
+        ));
+    }
 }

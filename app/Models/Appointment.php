@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Appointment extends Model
 {
@@ -16,6 +17,7 @@ class Appointment extends Model
         'patients_data',
         'excel_file_path',
         'created_by',
+        'status',
     ];
 
     protected $casts = [
@@ -27,6 +29,11 @@ class Appointment extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function patients(): HasMany
+    {
+        return $this->hasMany(Patient::class);
     }
 
     public function getFormattedTimeSlotAttribute(): string

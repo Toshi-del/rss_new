@@ -14,7 +14,7 @@ class CompanyAppointmentController extends Controller
 {
     public function index()
     {
-        $appointments = Appointment::where('created_by', Auth::id())
+        $appointments = Appointment::with('patients')->where('created_by', Auth::id())
             ->orderBy('appointment_date', 'asc')
             ->orderBy('time_slot', 'asc')
             ->get();
@@ -51,7 +51,7 @@ class CompanyAppointmentController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'appointment_date' => 'required|date|after_or_equal:today',
+            'appointment_date' => 'nullable|date|after_or_equal:today',
             'time_slot' => 'required|string',
             'appointment_type' => 'required|string',
             'blood_chemistry' => 'array',
@@ -60,8 +60,13 @@ class CompanyAppointmentController extends Controller
         ]);
 
         try {
+            $appointmentDate = $request->appointment_date ?? $request->query('date');
+            if (empty($appointmentDate)) {
+                return back()->withInput()->with('error', 'Appointment date is required. Please select a date.');
+            }
+
             $appointment = Appointment::create([
-                'appointment_date' => $request->appointment_date,
+                'appointment_date' => $appointmentDate,
                 'time_slot' => $request->time_slot,
                 'appointment_type' => $request->appointment_type,
                 'blood_chemistry' => $request->blood_chemistry ?? [],
@@ -69,6 +74,7 @@ class CompanyAppointmentController extends Controller
                 'patients_data' => [], // Will be populated when Excel is processed
                 'excel_file_path' => null, // Will be set if file is uploaded
                 'created_by' => Auth::id(),
+                'status' => 'pending',
             ]);
 
             // Handle Excel file upload and patient creation
@@ -88,6 +94,10 @@ class CompanyAppointmentController extends Controller
                 ->with('success', 'Appointment created successfully.');
 
         } catch (\Exception $e) {
+            \Log::error('Error creating appointment', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
             return back()
                 ->withInput()
                 ->with('error', 'Error creating appointment: ' . $e->getMessage());

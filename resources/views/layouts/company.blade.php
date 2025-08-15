@@ -82,17 +82,19 @@
                     <span>Pre-Employment</span>
                 </a>
 
-                <a href="#" 
-                   class="nav-item flex items-center px-4 py-3">
+                <a href="{{ route('company.medical-results') }}" 
+                   class="nav-item flex items-center px-4 py-3 {{ request()->routeIs('company.medical-results*') ? 'active' : '' }}">
                     <i class="fas fa-file-medical w-6"></i>
-                    <span>Medical Reports</span>
+                    <span>Medical Results</span>
                 </a>
 
-                <a href="{{ route('company.employees.index') }}" 
-                   class="nav-item flex items-center px-4 py-3 {{ request()->routeIs('company.employees.*') ? 'active' : '' }}">
-                    <i class="fas fa-users w-6"></i>
-                    <span>Employee Accounts</span>
+                <a href="{{ route('company.account-invitations.index') }}" 
+                   class="nav-item flex items-center px-4 py-3 {{ request()->routeIs('company.account-invitations*') ? 'active' : '' }}">
+                    <i class="fas fa-link w-6"></i>
+                    <span>Create Account Link</span>
                 </a>
+
+
 
                 <a href="{{ route('company.settings') }}" 
                    class="nav-item flex items-center px-4 py-3 {{ request()->routeIs('company.settings*') ? 'active' : '' }}">

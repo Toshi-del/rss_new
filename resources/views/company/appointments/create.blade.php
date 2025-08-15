@@ -16,12 +16,25 @@
         </div>
         @endif
 
+        @if($errors->any())
+        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+            <ul class="list-disc list-inside text-sm">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+
         <div class="bg-white shadow overflow-hidden sm:rounded-lg">
             <form action="{{ route('company.appointments.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6 p-6">
                 @csrf
 
                 <!-- Hidden Date Field -->
-                <input type="hidden" name="appointment_date" id="appointmentDate" value="{{ old('appointment_date') }}">
+                <input type="hidden" name="appointment_date" id="appointmentDate" value="{{ old('appointment_date', request('date')) }}">
+                @error('appointment_date')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
 
                 <!-- Time Slot -->
                 <div>
@@ -127,8 +140,11 @@
         const selectedDate = urlParams.get('date');
         
         if (selectedDate) {
-            // Set the hidden date field
-            document.getElementById('appointmentDate').value = selectedDate;
+            // Set the hidden date field if still empty
+            const dateInput = document.getElementById('appointmentDate');
+            if (!dateInput.value) {
+                dateInput.value = selectedDate;
+            }
             
             // Format and display the selected date
             const date = new Date(selectedDate);

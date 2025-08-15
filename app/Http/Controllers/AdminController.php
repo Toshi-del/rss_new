@@ -45,10 +45,8 @@ class AdminController extends Controller
             ->limit(5)
             ->get();
         
-        // Generate chart data for pre-employment statistics
+        // Generate chart data (provide up to 365 days so UI can slice to weekly/monthly/yearly)
         $preEmploymentChartData = $this->generatePreEmploymentChartData();
-
-        // Generate chart data for annual physical examination statistics
         $annualPhysicalChartData = $this->generateAnnualPhysicalChartData();
 
         return view('admin.dashboard', compact(
@@ -160,14 +158,14 @@ class AdminController extends Controller
     }
     
     /**
-     * Generate pre-employment chart data for the last 30 days
+     * Generate pre-employment chart data for the last 365 days
      */
     private function generatePreEmploymentChartData()
     {
         $data = [];
-        $startDate = Carbon::now()->subDays(30);
+        $startDate = Carbon::now()->subDays(365);
         
-        for ($i = 0; $i < 30; $i++) {
+        for ($i = 0; $i < 365; $i++) {
             $date = $startDate->copy()->addDays($i);
             $count = PreEmploymentRecord::whereDate('created_at', $date)->count();
             
@@ -181,14 +179,14 @@ class AdminController extends Controller
     }
 
     /**
-     * Generate annual physical examination chart data for the last 30 days
+     * Generate annual physical examination chart data for the last 365 days
      */
     private function generateAnnualPhysicalChartData()
     {
         $data = [];
-        $startDate = Carbon::now()->subDays(30);
+        $startDate = Carbon::now()->subDays(365);
 
-        for ($i = 0; $i < 30; $i++) {
+        for ($i = 0; $i < 365; $i++) {
             $date = $startDate->copy()->addDays($i);
             $count = Appointment::whereDate('appointment_date', $date)
                 ->where('appointment_type', 'annual_physical')
@@ -277,5 +275,27 @@ class AdminController extends Controller
         $appointment->status = 'declined';
         $appointment->save();
         return redirect()->back()->with('success', 'Appointment declined successfully.');
+    }
+
+    /**
+     * Approve a pre-employment record
+     */
+    public function approvePreEmployment($id)
+    {
+        $record = PreEmploymentRecord::findOrFail($id);
+        $record->status = 'passed';
+        $record->save();
+        return redirect()->back()->with('success', 'Pre-employment record approved.');
+    }
+
+    /**
+     * Decline a pre-employment record
+     */
+    public function declinePreEmployment($id)
+    {
+        $record = PreEmploymentRecord::findOrFail($id);
+        $record->status = 'failed';
+        $record->save();
+        return redirect()->back()->with('success', 'Pre-employment record declined.');
     }
 }

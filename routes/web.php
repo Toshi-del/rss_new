@@ -6,7 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanyPreEmploymentController;
 use App\Http\Controllers\CompanyAppointmentController;
-use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\CompanyAccountInvitationController;
 
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\NurseController;
@@ -30,6 +30,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/report', [AdminController::class, 'report'])->name('admin.report');
     Route::post('admin/appointments/{id}/approve', [App\Http\Controllers\AdminController::class, 'approveAppointment'])->name('admin.appointments.approve');
     Route::post('admin/appointments/{id}/decline', [App\Http\Controllers\AdminController::class, 'declineAppointment'])->name('admin.appointments.decline');
+    Route::post('admin/pre-employment/{id}/approve', [App\Http\Controllers\AdminController::class, 'approvePreEmployment'])->name('admin.pre-employment.approve');
+    Route::post('admin/pre-employment/{id}/decline', [App\Http\Controllers\AdminController::class, 'declinePreEmployment'])->name('admin.pre-employment.decline');
 });
 
 Route::middleware(['auth', 'role:company'])->group(function () {
@@ -38,6 +40,9 @@ Route::middleware(['auth', 'role:company'])->group(function () {
     // Settings Routes
     Route::get('/company/settings', [CompanyController::class, 'settings'])->name('company.settings');
     Route::put('/company/settings', [CompanyController::class, 'updateSettings'])->name('company.settings.update');
+    
+    // Medical Results Routes
+    Route::get('/company/medical-results', [CompanyController::class, 'medicalResults'])->name('company.medical-results');
     
     // Pre-Employment Routes
     Route::get('/company/pre-employment', [CompanyPreEmploymentController::class, 'index'])->name('company.pre-employment.index');
@@ -55,19 +60,18 @@ Route::middleware(['auth', 'role:company'])->group(function () {
     Route::delete('/company/appointments/{appointment}', [CompanyAppointmentController::class, 'destroy'])->name('company.appointments.destroy');
     Route::get('/company/appointments/events', [CompanyAppointmentController::class, 'events'])->name('company.appointments.events');
     
-    // Employee Routes
-    Route::get('/company/employees', [EmployeeController::class, 'index'])->name('company.employees.index');
-    Route::get('/company/employees/create', [EmployeeController::class, 'create'])->name('company.employees.create');
-    Route::post('/company/employees/generate-link', [EmployeeController::class, 'generateLink'])->name('company.employees.generate-link');
-    Route::get('/company/employees/{id}', [EmployeeController::class, 'show'])->name('company.employees.show');
-    Route::delete('/company/employees/{id}', [EmployeeController::class, 'destroy'])->name('company.employees.destroy');
+    // Account Invitation Routes
+    Route::get('/company/account-invitations', [CompanyAccountInvitationController::class, 'index'])->name('company.account-invitations.index');
+    Route::get('/company/account-invitations/create', [CompanyAccountInvitationController::class, 'create'])->name('company.account-invitations.create');
+    Route::post('/company/account-invitations', [CompanyAccountInvitationController::class, 'store'])->name('company.account-invitations.store');
+    Route::delete('/company/account-invitations/{invitation}', [CompanyAccountInvitationController::class, 'destroy'])->name('company.account-invitations.destroy');
+    
+
     
 
 });
 
-// Public Employee Registration Routes (No authentication required)
-Route::get('/company/employees/register', [EmployeeController::class, 'showRegisterForm'])->name('company.employees.register');
-Route::post('/company/employees/register', [EmployeeController::class, 'register'])->name('company.employees.register.store');
+
 
 // Debug route to test authentication
 Route::get('/debug-auth', function() {
@@ -106,6 +110,10 @@ Route::middleware(['auth', 'role:patient'])->group(function () {
 });
 
 
+
+// Public invitation routes
+Route::get('/invitation/{token}', [App\Http\Controllers\CompanyAccountInvitationController::class, 'accept'])->name('invitation.accept');
+Route::post('/invitation/{token}', [App\Http\Controllers\CompanyAccountInvitationController::class, 'processInvitation'])->name('invitation.process');
 
 // Default route - redirect to login
 Route::get('/', function () {

@@ -42,6 +42,8 @@
             overflow-y: auto;
             z-index: 1000;
             transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
         }
     
         .sidebar-brand {
@@ -62,6 +64,7 @@
             list-style: none;
             padding: 0;
             margin: 0;
+            flex: 1;
         }
     
         .sidebar-item {

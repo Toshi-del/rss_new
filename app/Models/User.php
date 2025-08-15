@@ -120,10 +120,7 @@ class User extends Authenticatable
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function employees(): HasMany
-    {
-        return $this->hasMany(User::class, 'created_by');
-    }
+
 
     /**
      * Get the user's appointments
