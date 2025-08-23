@@ -37,6 +37,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('admin/pre-employment/{id}/approve', [App\Http\Controllers\AdminController::class, 'approvePreEmployment'])->name('admin.pre-employment.approve');
     Route::post('admin/pre-employment/{id}/decline', [App\Http\Controllers\AdminController::class, 'declinePreEmployment'])->name('admin.pre-employment.decline');
 Route::post('admin/pre-employment/{id}/send-email', [App\Http\Controllers\AdminController::class, 'sendRegistrationEmail'])->name('admin.pre-employment.send-email');
+Route::post('admin/fix-invalid-emails', [App\Http\Controllers\AdminController::class, 'fixInvalidEmails'])->name('admin.fix-invalid-emails');
+Route::patch('admin/pre-employment/{id}/update-email', [App\Http\Controllers\AdminController::class, 'updateRecordEmail'])->name('admin.pre-employment.update-email');
     Route::get('/admin/accounts-and-patients', [AdminController::class, 'companyAccountsAndPatients'])->name('admin.accounts-and-patients');
 });
 

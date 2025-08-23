@@ -13,6 +13,11 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\PreEmploymentExamination;
 use App\Models\AnnualPhysicalExamination;
+// Load PHPMailer directly
+require_once __DIR__ . '/PHPMailer-master/src/PHPMailer.php';
+require_once __DIR__ . '/PHPMailer-master/src/SMTP.php';
+require_once __DIR__ . '/PHPMailer-master/src/Exception.php';
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
@@ -433,9 +438,14 @@ class AdminController extends Controller
                 return redirect()->back()->with('error', 'Only passed pre-employment records can receive registration emails.');
             }
 
-            // Check if email exists
+            // Check if email exists and is valid
             if (empty($record->email)) {
                 return redirect()->back()->with('error', 'No email address found for this record.');
+            }
+            
+            // Validate email format
+            if (!filter_var($record->email, FILTER_VALIDATE_EMAIL)) {
+                return redirect()->back()->with('error', 'Invalid email address format: "' . $record->email . '". This appears to be incorrect data. Please update the record with a valid email address. If this was imported from Excel, check that the email column is in the correct position (column E/5th column).');
             }
 
             // Create PHPMailer instance
@@ -477,6 +487,75 @@ class AdminController extends Controller
         } catch (Exception $e) {
             \Log::error('Email sending failed: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Email could not be sent. Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Fix invalid email addresses in pre-employment records
+     */
+    public function fixInvalidEmails()
+    {
+        try {
+            // Find records with invalid email addresses (common patterns from the bug)
+            $invalidRecords = PreEmploymentRecord::where(function($query) {
+                $query->where('email', 'Male')
+                      ->orWhere('email', 'Female')
+                      ->orWhere('email', 'male')
+                      ->orWhere('email', 'female')
+                      ->orWhere('email', '')
+                      ->orWhereNull('email');
+            })->get();
+
+            $fixedCount = 0;
+            $errors = [];
+
+            foreach ($invalidRecords as $record) {
+                // Check if phone_number field contains a valid email
+                $potentialEmail = $record->phone_number;
+                
+                if (filter_var($potentialEmail, FILTER_VALIDATE_EMAIL)) {
+                    // The phone_number field contains the actual email
+                    $record->email = $potentialEmail;
+                    $record->phone_number = ''; // Clear phone number since it was actually email
+                    $record->save();
+                    $fixedCount++;
+                } else {
+                    // Phone number doesn't contain email, so we need manual intervention
+                    $errors[] = "Record ID {$record->id} ({$record->first_name} {$record->last_name}): Email field contains '{$record->email}', Phone field contains '{$potentialEmail}'. Please manually update this record with the correct email address.";
+                }
+            }
+
+            $message = "Fixed {$fixedCount} records with invalid email addresses.";
+            if (!empty($errors)) {
+                $message .= " Records that need manual update: " . implode('; ', $errors);
+            }
+
+            return redirect()->back()->with('success', $message);
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error fixing emails: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Manually update email for a specific record
+     */
+    public function updateRecordEmail(Request $request, $id)
+    {
+        try {
+            $record = PreEmploymentRecord::findOrFail($id);
+            
+            $request->validate([
+                'email' => 'required|email'
+            ]);
+            
+            $record->email = $request->email;
+            $record->save();
+            
+            return redirect()->back()->with('success', "Email updated successfully for {$record->first_name} {$record->last_name} to {$request->email}");
+            
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error updating email: ' . $e->getMessage());
         }
     }
 
