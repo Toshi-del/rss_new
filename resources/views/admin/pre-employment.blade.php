@@ -55,7 +55,47 @@
                         <tr>
                             <td>{{ $preEmployment->id }}</td>
                             <td>{{ $preEmployment->full_name ?? ($preEmployment->first_name . ' ' . $preEmployment->last_name) }}</td>
-                            <td>{{ $preEmployment->email ?? 'N/A' }}</td>
+                            <td>
+                                @if(filter_var($preEmployment->email, FILTER_VALIDATE_EMAIL))
+                                    {{ $preEmployment->email }}
+                                @else
+                                    <div class="d-flex align-items-center">
+                                        <span class="text-danger me-2">{{ $preEmployment->email ?? 'N/A' }}</span>
+                                        <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#editEmailModal{{ $preEmployment->id }}" title="Fix Invalid Email">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Edit Email Modal -->
+                                    <div class="modal fade" id="editEmailModal{{ $preEmployment->id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Fix Email Address</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form action="{{ route('admin.pre-employment.update-email', $preEmployment->id) }}" method="POST">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <div class="modal-body">
+                                                        <p><strong>Record:</strong> {{ $preEmployment->first_name }} {{ $preEmployment->last_name }}</p>
+                                                        <p><strong>Current Email:</strong> <span class="text-danger">{{ $preEmployment->email ?? 'N/A' }}</span></p>
+                                                        <p><strong>Phone Number:</strong> {{ $preEmployment->phone_number ?? 'N/A' }}</p>
+                                                        <div class="mb-3">
+                                                            <label for="email{{ $preEmployment->id }}" class="form-label">Correct Email Address:</label>
+                                                            <input type="email" class="form-control" id="email{{ $preEmployment->id }}" name="email" required placeholder="Enter correct email address">
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-primary">Update Email</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                            </td>
                             <td>
                                 @if(is_array($preEmployment->medical_exam_type))
                                     {{ implode(', ', $preEmployment->medical_exam_type) }}

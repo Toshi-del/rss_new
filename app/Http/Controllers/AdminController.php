@@ -510,29 +510,52 @@ class AdminController extends Controller
             $errors = [];
 
             foreach ($invalidRecords as $record) {
-                // Try to find the correct email from phone_number field (which might contain the actual email)
+                // Check if phone_number field contains a valid email
                 $potentialEmail = $record->phone_number;
                 
                 if (filter_var($potentialEmail, FILTER_VALIDATE_EMAIL)) {
-                    // Update the record
+                    // The phone_number field contains the actual email
                     $record->email = $potentialEmail;
                     $record->phone_number = ''; // Clear phone number since it was actually email
                     $record->save();
                     $fixedCount++;
                 } else {
-                    $errors[] = "Record ID {$record->id} ({$record->first_name} {$record->last_name}): Could not determine correct email. Phone field contains: {$potentialEmail}";
+                    // Phone number doesn't contain email, so we need manual intervention
+                    $errors[] = "Record ID {$record->id} ({$record->first_name} {$record->last_name}): Email field contains '{$record->email}', Phone field contains '{$potentialEmail}'. Please manually update this record with the correct email address.";
                 }
             }
 
             $message = "Fixed {$fixedCount} records with invalid email addresses.";
             if (!empty($errors)) {
-                $message .= " Errors: " . implode('; ', $errors);
+                $message .= " Records that need manual update: " . implode('; ', $errors);
             }
 
             return redirect()->back()->with('success', $message);
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error fixing emails: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Manually update email for a specific record
+     */
+    public function updateRecordEmail(Request $request, $id)
+    {
+        try {
+            $record = PreEmploymentRecord::findOrFail($id);
+            
+            $request->validate([
+                'email' => 'required|email'
+            ]);
+            
+            $record->email = $request->email;
+            $record->save();
+            
+            return redirect()->back()->with('success', "Email updated successfully for {$record->first_name} {$record->last_name} to {$request->email}");
+            
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error updating email: ' . $e->getMessage());
         }
     }
 
