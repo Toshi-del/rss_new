@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Appointment;
 use App\Models\PreEmploymentRecord;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Message;
+use App\Models\User;
 
 class CompanyController extends Controller
 {
@@ -139,5 +141,73 @@ class CompanyController extends Controller
             'failedPreEmployment',
             'statusFilter'
         ));
+    }
+
+    /**
+     * Show the company chat page
+     */
+    public function messages()
+    {
+        return view('company.messages');
+    }
+
+    /**
+     * Fetch chat messages for the company user.
+     */
+    public function fetchMessages()
+    {
+        $userId = Auth::id();
+        // Mark messages to this user as delivered
+        Message::whereNull('delivered_at')
+            ->where('receiver_id', $userId)
+            ->update(['delivered_at' => now()]);
+
+        $messages = Message::where('sender_id', $userId)
+            ->orWhere('receiver_id', $userId)
+            ->orderBy('created_at', 'asc')
+            ->get();
+        return response()->json($messages);
+    }
+
+    /**
+     * Mark messages from a specific sender as read by the current user.
+     */
+    public function markAsRead(Request $request)
+    {
+        $request->validate([
+            'sender_id' => 'required|exists:users,id',
+        ]);
+        $userId = Auth::id();
+        Message::where('sender_id', $request->sender_id)
+            ->where('receiver_id', $userId)
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
+        return response()->json(['status' => 'ok']);
+    }
+
+    /**
+     * Send a chat message from company user to another user.
+     */
+    public function sendMessage(Request $request)
+    {
+        $request->validate([
+            'receiver_id' => 'required|exists:users,id',
+            'message' => 'required|string',
+        ]);
+        $message = Message::create([
+            'sender_id' => Auth::id(),
+            'receiver_id' => $request->receiver_id,
+            'message' => $request->message,
+        ]);
+        return response()->json($message, 201);
+    }
+
+    /**
+     * Fetch all users except the current user for chat user list
+     */
+    public function chatUsers()
+    {
+        $users = User::where('id', '!=', auth()->id())->get(['id', 'fname', 'lname', 'role', 'company']);
+        return response()->json($users);
     }
 }

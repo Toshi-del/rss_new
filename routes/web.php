@@ -27,11 +27,17 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/pre-employment', [AdminController::class, 'preEmployment'])->name('admin.pre-employment');
     Route::get('/admin/tests', [AdminController::class, 'tests'])->name('admin.tests');
     Route::get('/admin/messages', [AdminController::class, 'messages'])->name('admin.messages');
+    Route::get('/admin/messages/fetch', [AdminController::class, 'fetchMessages']);
+    Route::post('/admin/messages/send', [AdminController::class, 'sendMessage']);
+    Route::post('/admin/messages/mark-read', [AdminController::class, 'markAsRead']);
+    Route::get('/admin/chat-users', [AdminController::class, 'chatUsers']);
     Route::get('/admin/report', [AdminController::class, 'report'])->name('admin.report');
     Route::post('admin/appointments/{id}/approve', [App\Http\Controllers\AdminController::class, 'approveAppointment'])->name('admin.appointments.approve');
     Route::post('admin/appointments/{id}/decline', [App\Http\Controllers\AdminController::class, 'declineAppointment'])->name('admin.appointments.decline');
     Route::post('admin/pre-employment/{id}/approve', [App\Http\Controllers\AdminController::class, 'approvePreEmployment'])->name('admin.pre-employment.approve');
     Route::post('admin/pre-employment/{id}/decline', [App\Http\Controllers\AdminController::class, 'declinePreEmployment'])->name('admin.pre-employment.decline');
+Route::post('admin/pre-employment/{id}/send-email', [App\Http\Controllers\AdminController::class, 'sendRegistrationEmail'])->name('admin.pre-employment.send-email');
+    Route::get('/admin/accounts-and-patients', [AdminController::class, 'companyAccountsAndPatients'])->name('admin.accounts-and-patients');
 });
 
 Route::middleware(['auth', 'role:company'])->group(function () {
@@ -66,9 +72,12 @@ Route::middleware(['auth', 'role:company'])->group(function () {
     Route::post('/company/account-invitations', [CompanyAccountInvitationController::class, 'store'])->name('company.account-invitations.store');
     Route::delete('/company/account-invitations/{invitation}', [CompanyAccountInvitationController::class, 'destroy'])->name('company.account-invitations.destroy');
     
-
-    
-
+    // Company Chat Routes
+    Route::get('/company/messages', [CompanyController::class, 'messages'])->name('company.messages');
+    Route::get('/company/messages/fetch', [CompanyController::class, 'fetchMessages']);
+    Route::post('/company/messages/send', [CompanyController::class, 'sendMessage']);
+    Route::post('/company/messages/mark-read', [CompanyController::class, 'markAsRead']);
+    Route::get('/company/chat-users', [CompanyController::class, 'chatUsers']);
 });
 
 
@@ -94,13 +103,59 @@ Route::get('/debug-auth', function() {
 Route::middleware(['auth', 'role:doctor'])->group(function () {
     Route::get('/doctor/dashboard', [DoctorController::class, 'dashboard'])->name('doctor.dashboard');
     Route::get('/doctor/pre-employment', [DoctorController::class, 'preEmployment'])->name('doctor.pre-employment');
+    Route::get('/doctor/pre-employment/{id}/edit', [DoctorController::class, 'editPreEmployment'])->name('doctor.pre-employment.edit');
+    Route::patch('/doctor/pre-employment/{id}', [DoctorController::class, 'updatePreEmployment'])->name('doctor.pre-employment.update');
     Route::get('/doctor/annual-physical', [DoctorController::class, 'annualPhysical'])->name('doctor.annual-physical');
+    Route::get('/doctor/annual-physical/{id}/edit', [DoctorController::class, 'editAnnualPhysical'])->name('doctor.annual-physical.edit');
+    Route::patch('/doctor/annual-physical/{id}', [DoctorController::class, 'updateAnnualPhysical'])->name('doctor.annual-physical.update');
+    Route::get('/doctor/pre-employment/{record}/examination', [DoctorController::class, 'editExaminationByRecordId'])->name('doctor.pre-employment.examination.edit');
+    
+    // Medical Checklist Routes
+    Route::get('/doctor/medical-checklist/pre-employment/{recordId}', [DoctorController::class, 'showMedicalChecklistPreEmployment'])->name('doctor.medical-checklist.pre-employment');
+    Route::get('/doctor/medical-checklist/annual-physical/{patientId}', [DoctorController::class, 'showMedicalChecklistAnnualPhysical'])->name('doctor.medical-checklist.annual-physical');
+    Route::post('/doctor/medical-checklist', [DoctorController::class, 'storeMedicalChecklist'])->name('doctor.medical-checklist.store');
+    Route::patch('/doctor/medical-checklist/{id}', [DoctorController::class, 'updateMedicalChecklist'])->name('doctor.medical-checklist.update');
+    
+    // Doctor Chat Routes
+    Route::get('/doctor/messages', [DoctorController::class, 'messages'])->name('doctor.messages');
+    Route::get('/doctor/messages/fetch', [DoctorController::class, 'fetchMessages']);
+    Route::post('/doctor/messages/send', [DoctorController::class, 'sendMessage']);
+    Route::post('/doctor/messages/mark-read', [DoctorController::class, 'markAsRead']);
+    Route::get('/doctor/chat-users', [DoctorController::class, 'chatUsers']);
+});
+
+// Debug route to check users (temporary)
+Route::get('/debug-users', function() {
+    $users = \App\Models\User::select('id', 'fname', 'lname', 'role', 'company')->get();
+    return response()->json($users);
 });
 
 Route::middleware(['auth', 'role:nurse'])->group(function () {
     Route::get('/nurse/dashboard', [NurseController::class, 'dashboard'])->name('nurse.dashboard');
     Route::get('/nurse/appointments', [NurseController::class, 'appointments'])->name('nurse.appointments');
     Route::get('/nurse/pre-employment', [NurseController::class, 'preEmployment'])->name('nurse.pre-employment');
+    Route::get('/nurse/annual-physical', [NurseController::class, 'annualPhysical'])->name('nurse.annual-physical');
+    
+    // Nurse Pre-Employment Edit Routes
+    Route::get('/nurse/pre-employment/{id}/edit', [NurseController::class, 'editPreEmployment'])->name('nurse.pre-employment.edit');
+    Route::patch('/nurse/pre-employment/{id}', [NurseController::class, 'updatePreEmployment'])->name('nurse.pre-employment.update');
+    
+    // Nurse Annual Physical Edit Routes
+    Route::get('/nurse/annual-physical/{id}/edit', [NurseController::class, 'editAnnualPhysical'])->name('nurse.annual-physical.edit');
+    Route::patch('/nurse/annual-physical/{id}', [NurseController::class, 'updateAnnualPhysical'])->name('nurse.annual-physical.update');
+    
+    // Nurse Medical Checklist Routes
+    Route::get('/nurse/medical-checklist/pre-employment/{recordId}', [NurseController::class, 'showMedicalChecklistPreEmployment'])->name('nurse.medical-checklist.pre-employment');
+    Route::get('/nurse/medical-checklist/annual-physical/{patientId}', [NurseController::class, 'showMedicalChecklistAnnualPhysical'])->name('nurse.medical-checklist.annual-physical');
+    Route::post('/nurse/medical-checklist', [NurseController::class, 'storeMedicalChecklist'])->name('nurse.medical-checklist.store');
+    Route::patch('/nurse/medical-checklist/{id}', [NurseController::class, 'updateMedicalChecklist'])->name('nurse.medical-checklist.update');
+
+    // Nurse Messaging Routes
+    Route::get('/nurse/messages', [NurseController::class, 'messages'])->name('nurse.messages');
+    Route::get('/nurse/messages/fetch', [NurseController::class, 'fetchMessages']);
+    Route::post('/nurse/messages/send', [NurseController::class, 'sendMessage']);
+    Route::post('/nurse/messages/mark-read', [NurseController::class, 'markAsRead']);
+    Route::get('/nurse/chat-users', [NurseController::class, 'chatUsers']);
 });
 
 Route::middleware(['auth', 'role:patient'])->group(function () {

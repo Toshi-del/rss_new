@@ -4,9 +4,29 @@
 @section('page-title', 'Pre-Employment')
 
 @section('content')
+
+@if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
+@if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
 <div class="card mt-4">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">Pre-Employment Tests</h5>
+        <div>
+            <h5 class="card-title mb-0">Pre-Employment Tests</h5>
+            <small class="text-muted">Click the envelope button (📧) to send registration emails to passed candidates</small>
+        </div>
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -71,6 +91,14 @@
                                         <i class="bi bi-x-lg"></i>
                                     </button>
                                 </form>
+                                @if($preEmployment->status === 'passed')
+                                    <form action="{{ route('admin.pre-employment.send-email', $preEmployment->id) }}" method="POST" style="display:inline-block;">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-outline-primary" onclick="return confirm('Send registration email to {{ $preEmployment->email }}?')" title="Send Email Registration">
+                                            <i class="bi bi-envelope-fill"></i> Send Email
+                                        </button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                     @empty

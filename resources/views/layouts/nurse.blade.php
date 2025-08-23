@@ -21,13 +21,17 @@
                     <i class="fas fa-th-large mr-3"></i>
                     <span class="{{ request()->routeIs('nurse.dashboard') ? 'text-green-300' : '' }}">Overview</span>
                 </a>
-                <a href="{{ route('nurse.appointments') }}" class="flex items-center px-6 py-3 text-green-100 hover:bg-green-800 transition-colors {{ request()->routeIs('nurse.appointments') ? 'bg-green-800' : '' }}">
-                    <i class="fas fa-calendar-check mr-3"></i>
-                    <span class="{{ request()->routeIs('nurse.appointments') ? 'text-green-300' : '' }}">Appointments</span>
-                </a>
                 <a href="{{ route('nurse.pre-employment') }}" class="flex items-center px-6 py-3 text-green-100 hover:bg-green-800 transition-colors {{ request()->routeIs('nurse.pre-employment') ? 'bg-green-800' : '' }}">
                     <i class="fas fa-user-md mr-3"></i>
                     <span class="{{ request()->routeIs('nurse.pre-employment') ? 'text-green-300' : '' }}">Pre-Employment</span>
+                </a>
+                <a href="{{ route('nurse.annual-physical') }}" class="flex items-center px-6 py-3 text-green-100 hover:bg-green-800 transition-colors {{ request()->routeIs('nurse.annual-physical') ? 'bg-green-800' : '' }}">
+                    <i class="fas fa-file-medical mr-3"></i>
+                    <span class="{{ request()->routeIs('nurse.annual-physical') ? 'text-green-300' : '' }}">Annual Physical</span>
+                </a>
+                <a href="{{ route('nurse.messages') }}" class="flex items-center px-6 py-3 text-green-100 hover:bg-green-800 transition-colors {{ request()->routeIs('nurse.messages') ? 'bg-green-800' : '' }}">
+                    <i class="fas fa-comments mr-3"></i>
+                    <span class="{{ request()->routeIs('nurse.messages') ? 'text-green-300' : '' }}">Messages</span>
                 </a>
             </nav>
         </div>

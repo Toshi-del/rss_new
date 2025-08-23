@@ -143,4 +143,32 @@ class User extends Authenticatable
                   });
         });
     }
+
+    /**
+     * Get pre-employment records for the user by email
+     */
+    public function preEmploymentRecords()
+    {
+        return \App\Models\PreEmploymentRecord::where('email', $this->email);
+    }
+
+    /**
+     * Get pre-employment examination results for the user
+     */
+    public function preEmploymentExaminations()
+    {
+        return \App\Models\PreEmploymentExamination::whereHas('preEmploymentRecord', function($query) {
+            $query->where('email', $this->email);
+        });
+    }
+
+    /**
+     * Get annual physical examination results for the user
+     */
+    public function annualPhysicalExaminations()
+    {
+        return \App\Models\AnnualPhysicalExamination::whereHas('patient', function($query) {
+            $query->where('email', $this->email);
+        });
+    }
 }

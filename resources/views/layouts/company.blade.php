@@ -94,6 +94,11 @@
                     <span>Create Account Link</span>
                 </a>
 
+                <a href="{{ route('company.messages') }}" 
+                   class="nav-item flex items-center px-4 py-3 {{ request()->routeIs('company.messages') ? 'active' : '' }}">
+                    <i class="fas fa-comments w-6"></i>
+                    <span>Messages</span>
+                </a>
 
 
                 <a href="{{ route('company.settings') }}" 

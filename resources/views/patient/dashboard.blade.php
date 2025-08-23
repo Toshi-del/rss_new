@@ -157,31 +157,34 @@
                 <!-- Tests Tab -->
                 <div id="tests" class="tab-content">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                        <h5 class="text-lg font-semibold text-gray-800 mb-4 md:mb-0">Available Tests</h5>
+                        <h5 class="text-lg font-semibold text-gray-800 mb-4 md:mb-0">Appointments & Pre-Employment Records</h5>
                         <button class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-md text-sm transition duration-300 transform hover:-translate-y-1">
                             <i class="bi bi-plus-circle me-2"></i>Request New Test
                         </button>
                     </div>
                     
                     <!-- Appointments List -->
-                    <div class="mt-4">
+                    <div class="mb-8">
+                        <h6 class="text-md font-semibold text-gray-700 mb-4 flex items-center">
+                            <i class="bi bi-calendar-check me-2"></i>Appointments
+                        </h6>
                         <div class="overflow-x-auto">
-                            <table class="min-w-full bg-white rounded-lg overflow-hidden">
+                            <table class="min-w-full bg-white rounded-lg overflow-hidden shadow-sm">
                                 <thead class="bg-gray-100 text-gray-700">
                                     <tr>
                                         <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Date</th>
                                         <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Time</th>
-                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Test Type</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Type</th>
                                         <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Status</th>
-                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Created At</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Created</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
-                                                                                @forelse(Auth::user()->patientAppointments()->orderBy('created_at', 'desc')->get() as $appointment)
+                                    @forelse(Auth::user()->patientAppointments()->orderBy('created_at', 'desc')->get() as $appointment)
                                     <tr class="hover:bg-gray-50">
                                         <td class="py-3 px-4 text-sm">{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('M d, Y') }}</td>
-                                        <td class="py-3 px-4 text-sm">{{ \Carbon\Carbon::parse($appointment->appointment_time)->format('h:i A') }}</td>
-                                        <td class="py-3 px-4 text-sm">{{ $appointment->test_type ?? 'General Checkup' }}</td>
+                                        <td class="py-3 px-4 text-sm">{{ $appointment->time_slot }}</td>
+                                        <td class="py-3 px-4 text-sm">{{ $appointment->appointment_type ?? 'General Checkup' }}</td>
                                         <td class="py-3 px-4">
                                             @if($appointment->status == 'approved')
                                                 <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Approved</span>
@@ -202,17 +205,202 @@
                             </table>
                         </div>
                     </div>
+
+                    <!-- Pre-Employment Records List -->
+                    <div class="mb-8">
+                        <h6 class="text-md font-semibold text-gray-700 mb-4 flex items-center">
+                            <i class="bi bi-file-earmark-medical me-2"></i>Pre-Employment Records
+                        </h6>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white rounded-lg overflow-hidden shadow-sm">
+                                <thead class="bg-gray-100 text-gray-700">
+                                    <tr>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Name</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Age/Sex</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Exam Type</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Company</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Created</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    @forelse(Auth::user()->preEmploymentRecords()->orderBy('created_at', 'desc')->get() as $record)
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="py-3 px-4 text-sm font-medium">{{ $record->full_name }}</td>
+                                        <td class="py-3 px-4 text-sm">{{ $record->age }} / {{ $record->sex }}</td>
+                                        <td class="py-3 px-4 text-sm">{{ $record->medical_exam_type }}</td>
+                                        <td class="py-3 px-4 text-sm">{{ $record->company_name ?? 'N/A' }}</td>
+                                        <td class="py-3 px-4">
+                                            @if($record->status == 'completed')
+                                                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Completed</span>
+                                            @elseif($record->status == 'pending')
+                                                <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                                            @elseif($record->status == 'in_progress')
+                                                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">In Progress</span>
+                                            @else
+                                                <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">{{ ucfirst($record->status ?? 'Unknown') }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="py-3 px-4 text-sm">{{ $record->created_at->format('M d, Y') }}</td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="6" class="py-6 text-center text-gray-500">No pre-employment records found</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Results Tab -->
                 <div id="results" class="tab-content hidden">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-                        <h5 class="text-lg font-semibold text-gray-800 mb-4 md:mb-0">Test Results</h5>
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                        <h5 class="text-lg font-semibold text-gray-800 mb-4 md:mb-0">Examination Results</h5>
                         <div class="relative w-full md:w-64">
-                            <input type="text" class="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-primary-500 focus:border-primary-500" placeholder="Search results...">
+                            <input type="text" id="searchResults" class="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-primary-500 focus:border-primary-500" placeholder="Search results...">
                             <button class="absolute right-0 top-0 h-full px-3 text-gray-500 hover:text-primary-600">
                                 <i class="bi bi-search"></i>
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- Pre-Employment Examination Results -->
+                    <div class="mb-8">
+                        <h6 class="text-md font-semibold text-gray-700 mb-4 flex items-center">
+                            <i class="bi bi-file-earmark-medical me-2"></i>Pre-Employment Examination Results
+                        </h6>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white rounded-lg overflow-hidden shadow-sm">
+                                <thead class="bg-gray-100 text-gray-700">
+                                    <tr>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Date</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Physical Findings</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Lab Findings</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">ECG</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    @forelse(Auth::user()->preEmploymentExaminations()->orderBy('created_at', 'desc')->get() as $exam)
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="py-3 px-4 text-sm">{{ $exam->date ? $exam->date->format('M d, Y') : 'N/A' }}</td>
+                                        <td class="py-3 px-4">
+                                            @if($exam->status == 'completed')
+                                                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Completed</span>
+                                            @elseif($exam->status == 'pending')
+                                                <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                                            @elseif($exam->status == 'in_progress')
+                                                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">In Progress</span>
+                                            @else
+                                                <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">{{ ucfirst($exam->status ?? 'Unknown') }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="py-3 px-4 text-sm">
+                                            @if($exam->physical_findings && count($exam->physical_findings) > 0)
+                                                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">Available</span>
+                                            @else
+                                                <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">Not Available</span>
+                                            @endif
+                                        </td>
+                                        <td class="py-3 px-4 text-sm">
+                                            @if($exam->lab_findings && count($exam->lab_findings) > 0)
+                                                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">Available</span>
+                                            @else
+                                                <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">Not Available</span>
+                                            @endif
+                                        </td>
+                                        <td class="py-3 px-4 text-sm">
+                                            @if($exam->ecg)
+                                                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Available</span>
+                                            @else
+                                                <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">Not Available</span>
+                                            @endif
+                                        </td>
+                                        <td class="py-3 px-4 text-sm">
+                                            <button class="text-primary-600 hover:text-primary-800 font-medium" onclick="viewExamDetails('pre-employment', {{ $exam->id }})">
+                                                View Details
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="6" class="py-6 text-center text-gray-500">No pre-employment examination results found</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Annual Physical Examination Results -->
+                    <div class="mb-8">
+                        <h6 class="text-md font-semibold text-gray-700 mb-4 flex items-center">
+                            <i class="bi bi-heart-pulse me-2"></i>Annual Physical Examination Results
+                        </h6>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white rounded-lg overflow-hidden shadow-sm">
+                                <thead class="bg-gray-100 text-gray-700">
+                                    <tr>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Date</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Physical Findings</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Lab Findings</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">ECG</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    @forelse(Auth::user()->annualPhysicalExaminations()->orderBy('created_at', 'desc')->get() as $exam)
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="py-3 px-4 text-sm">{{ $exam->date ? $exam->date->format('M d, Y') : 'N/A' }}</td>
+                                        <td class="py-3 px-4">
+                                            @if($exam->status == 'completed')
+                                                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Completed</span>
+                                            @elseif($exam->status == 'pending')
+                                                <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                                            @elseif($exam->status == 'in_progress')
+                                                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">In Progress</span>
+                                            @else
+                                                <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">{{ ucfirst($exam->status ?? 'Unknown') }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="py-3 px-4 text-sm">
+                                            @if($exam->physical_findings && count($exam->physical_findings) > 0)
+                                                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">Available</span>
+                                            @else
+                                                <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">Not Available</span>
+                                            @endif
+                                        </td>
+                                        <td class="py-3 px-4 text-sm">
+                                            @if($exam->lab_findings && count($exam->lab_findings) > 0)
+                                                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">Available</span>
+                                            @else
+                                                <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">Not Available</span>
+                                            @endif
+                                        </td>
+                                        <td class="py-3 px-4 text-sm">
+                                            @if($exam->ecg)
+                                                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Available</span>
+                                            @else
+                                                <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">Not Available</span>
+                                            @endif
+                                        </td>
+                                        <td class="py-3 px-4 text-sm">
+                                            <button class="text-primary-600 hover:text-primary-800 font-medium" onclick="viewExamDetails('annual-physical', {{ $exam->id }})">
+                                                View Details
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="6" class="py-6 text-center text-gray-500">No annual physical examination results found</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -295,6 +483,29 @@
                     successAlert.remove();
                 }, 500);
             }, 5000);
+        }
+
+        // Search functionality for results
+        document.getElementById('searchResults').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#results tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        // View exam details function
+        function viewExamDetails(type, examId) {
+            // You can implement a modal or redirect to a detailed view page
+            alert(`Viewing ${type} examination details for ID: ${examId}`);
+            // For now, just show an alert. You can implement a modal or redirect later
+            // Example: window.open(`/patient/exam-details/${type}/${examId}`, '_blank');
         }
     </script>
 </body>

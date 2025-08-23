@@ -414,11 +414,12 @@
                 </a>
             </li>
             <li class="sidebar-item">
-                <a href="#" class="sidebar-link">
-                    <i class="bi bi-gear"></i>
-                    <span>Company Account</span>
+                <a href="{{ route('admin.accounts-and-patients') }}" class="sidebar-link {{ request()->routeIs('admin.accounts-and-patients') ? 'active' : '' }}">
+                    <i class="bi bi-people-fill"></i>
+                    <span>Company Accounts & Patients</span>
                 </a>
             </li>
+            
         </ul>
         
         <!-- User profile section -->

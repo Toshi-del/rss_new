@@ -27,7 +27,7 @@
                     <h3 class="text-lg font-semibold text-gray-800">Appointments</h3>
                     <p class="text-3xl font-bold text-blue-600">{{ $appointmentCount }}</p>
                 </div>
-                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-cenater justify-center">
                     <i class="fas fa-calendar-check text-blue-600 text-xl"></i>
                 </div>
             </div>

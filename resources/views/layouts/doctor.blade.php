@@ -29,6 +29,10 @@
                     <i class="fas fa-user mr-3"></i>
                     <span class="{{ request()->routeIs('doctor.pre-employment') ? 'text-blue-300' : '' }}">Pre-Employment</span>
                 </a>
+                <a href="{{ route('doctor.messages') }}" class="flex items-center px-6 py-3 text-blue-100 hover:bg-blue-800 transition-colors {{ request()->routeIs('doctor.messages') ? 'bg-blue-800' : '' }}">
+                    <i class="fas fa-comments mr-3"></i>
+                    <span class="{{ request()->routeIs('doctor.messages') ? 'text-blue-300' : '' }}">Messages</span>
+                </a>
             </nav>
         </div>
 
