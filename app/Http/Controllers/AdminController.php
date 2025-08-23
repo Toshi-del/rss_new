@@ -491,6 +491,52 @@ class AdminController extends Controller
     }
 
     /**
+     * Fix invalid email addresses in pre-employment records
+     */
+    public function fixInvalidEmails()
+    {
+        try {
+            // Find records with invalid email addresses (common patterns from the bug)
+            $invalidRecords = PreEmploymentRecord::where(function($query) {
+                $query->where('email', 'Male')
+                      ->orWhere('email', 'Female')
+                      ->orWhere('email', 'male')
+                      ->orWhere('email', 'female')
+                      ->orWhere('email', '')
+                      ->orWhereNull('email');
+            })->get();
+
+            $fixedCount = 0;
+            $errors = [];
+
+            foreach ($invalidRecords as $record) {
+                // Try to find the correct email from phone_number field (which might contain the actual email)
+                $potentialEmail = $record->phone_number;
+                
+                if (filter_var($potentialEmail, FILTER_VALIDATE_EMAIL)) {
+                    // Update the record
+                    $record->email = $potentialEmail;
+                    $record->phone_number = ''; // Clear phone number since it was actually email
+                    $record->save();
+                    $fixedCount++;
+                } else {
+                    $errors[] = "Record ID {$record->id} ({$record->first_name} {$record->last_name}): Could not determine correct email. Phone field contains: {$potentialEmail}";
+                }
+            }
+
+            $message = "Fixed {$fixedCount} records with invalid email addresses.";
+            if (!empty($errors)) {
+                $message .= " Errors: " . implode('; ', $errors);
+            }
+
+            return redirect()->back()->with('success', $message);
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error fixing emails: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Get HTML email template for registration
      */
     private function getRegistrationEmailTemplate($record, $registrationLink)

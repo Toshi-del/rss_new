@@ -27,6 +27,14 @@
             <h5 class="card-title mb-0">Pre-Employment Tests</h5>
             <small class="text-muted">Click the envelope button (📧) to send registration emails to passed candidates</small>
         </div>
+        <div>
+            <form action="{{ route('admin.fix-invalid-emails') }}" method="POST" style="display:inline-block;">
+                @csrf
+                <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('This will attempt to fix records with invalid email addresses (like \"Male\" in email field). Continue?')" title="Fix Invalid Email Addresses">
+                    <i class="bi bi-tools"></i> Fix Invalid Emails
+                </button>
+            </form>
+        </div>
     </div>
     <div class="card-body">
         <div class="table-responsive">
