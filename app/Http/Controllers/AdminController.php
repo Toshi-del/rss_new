@@ -438,9 +438,14 @@ class AdminController extends Controller
                 return redirect()->back()->with('error', 'Only passed pre-employment records can receive registration emails.');
             }
 
-            // Check if email exists
+            // Check if email exists and is valid
             if (empty($record->email)) {
                 return redirect()->back()->with('error', 'No email address found for this record.');
+            }
+            
+            // Validate email format
+            if (!filter_var($record->email, FILTER_VALIDATE_EMAIL)) {
+                return redirect()->back()->with('error', 'Invalid email address format: "' . $record->email . '". This appears to be incorrect data. Please update the record with a valid email address. If this was imported from Excel, check that the email column is in the correct position (column E/5th column).');
             }
 
             // Create PHPMailer instance
