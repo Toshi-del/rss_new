@@ -13,6 +13,11 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\PreEmploymentExamination;
 use App\Models\AnnualPhysicalExamination;
+// Load PHPMailer directly
+require_once __DIR__ . '/PHPMailer-master/src/PHPMailer.php';
+require_once __DIR__ . '/PHPMailer-master/src/SMTP.php';
+require_once __DIR__ . '/PHPMailer-master/src/Exception.php';
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
