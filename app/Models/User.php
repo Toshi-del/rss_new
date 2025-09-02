@@ -115,6 +115,46 @@ class User extends Authenticatable
         return $this->hasRole('patient');
     }
 
+    /**
+     * Check if user is radtech
+     */
+    public function isRadTech()
+    {
+        return $this->hasRole('radtech');
+    }
+
+    /**
+     * Check if user is radiologist
+     */
+    public function isRadiologist()
+    {
+        return $this->hasRole('radiologist');
+    }
+
+    /**
+     * Check if user is ECG technician
+     */
+    public function isEcgTech()
+    {
+        return $this->hasRole('ecgtech');
+    }
+
+    /**
+     * Check if user is phlebotomist
+     */
+    public function isPlebo()
+    {
+        return $this->hasRole('plebo');
+    }
+
+    /**
+     * Check if user is pathologist
+     */
+    public function isPathologist()
+    {
+        return $this->hasRole('pathologist');
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

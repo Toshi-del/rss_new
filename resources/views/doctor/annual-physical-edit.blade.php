@@ -42,15 +42,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                     <div>
                         <label class="block text-xs font-semibold uppercase mb-1">Illness / Hospitalization</label>
-                        <div class="bg-white p-3 rounded-lg border border-gray-300 min-h-[4rem] text-sm">{{ $annualPhysical->illness_history ?: 'No data entered' }}</div>
+                        <textarea name="illness_history" class="form-input w-full rounded border-gray-300 text-xs min-h-[4rem]">{{ old('illness_history', $annualPhysical->illness_history) }}</textarea>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold uppercase mb-1">Accidents / Operations</label>
-                        <div class="bg-white p-3 rounded-lg border border-gray-300 min-h-[4rem] text-sm">{{ $annualPhysical->accidents_operations ?: 'No data entered' }}</div>
+                        <textarea name="accidents_operations" class="form-input w-full rounded border-gray-300 text-xs min-h-[4rem]">{{ old('accidents_operations', $annualPhysical->accidents_operations) }}</textarea>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold uppercase mb-1">Past Medical History</label>
-                        <div class="bg-white p-3 rounded-lg border border-gray-300 min-h-[4rem] text-sm">{{ $annualPhysical->past_medical_history ?: 'No data entered' }}</div>
+                        <textarea name="past_medical_history" class="form-input w-full rounded border-gray-300 text-xs min-h-[4rem]">{{ old('past_medical_history', $annualPhysical->past_medical_history) }}</textarea>
                     </div>
                 </div>
                 <div class="mb-4">
@@ -61,10 +61,10 @@
                             $options = ['asthma','arthritis','migraine','diabetes','heart_disease','tuberculosis','allergies','anemia','cancer','insanity','hypertension','epilepsy'];
                         @endphp
                         @foreach($options as $opt)
-                            <span class="inline-flex items-center text-xs bg-white px-2 py-1 rounded shadow-sm border border-gray-200 {{ in_array($opt, $family ?? []) ? 'bg-blue-50 border-blue-200' : 'bg-gray-50' }}">
-                                <i class="fas {{ in_array($opt, $family ?? []) ? 'fa-check text-blue-600' : 'fa-times text-gray-400' }} mr-1"></i>
-                                {{ str_replace('_', ' ', ucfirst($opt)) }}
-                            </span>
+                            <label class="inline-flex items-center text-xs bg-white px-2 py-1 rounded shadow-sm border border-gray-200 cursor-pointer">
+                                <input type="checkbox" name="family_history[]" value="{{ $opt }}" class="mr-1" {{ in_array($opt, $family ?? []) ? 'checked' : '' }}>
+                                <span>{{ str_replace('_', ' ', ucfirst($opt)) }}</span>
+                            </label>
                         @endforeach
                     </div>
                 </div>
@@ -78,10 +78,10 @@
                         $habitOptions = ['alcohol','cigarettes','coffee_tea'];
                     @endphp
                     @foreach($habitOptions as $habit)
-                        <span class="inline-flex items-center text-xs bg-white px-2 py-1 rounded shadow-sm border border-gray-200 {{ in_array($habit, $habits ?? []) ? 'bg-blue-50 border-blue-200' : 'bg-gray-50' }}">
-                            <i class="fas {{ in_array($habit, $habits ?? []) ? 'fa-check text-blue-600' : 'fa-times text-gray-400' }} mr-1"></i>
-                            {{ str_replace('_', ' ', ucfirst($habit)) }}
-                        </span>
+                        <label class="inline-flex items-center text-xs bg-white px-2 py-1 rounded shadow-sm border border-gray-200 cursor-pointer">
+                            <input type="checkbox" name="personal_habits[]" value="{{ $habit }}" class="mr-1" {{ in_array($habit, $habits ?? []) ? 'checked' : '' }}>
+                            <span>{{ str_replace('_', ' ', ucfirst($habit)) }}</span>
+                        </label>
                     @endforeach
                 </div>
             </div>
@@ -92,41 +92,41 @@
                     @php $phys = $annualPhysical->physical_exam ?? []; @endphp
                     <div>
                         <label class="block text-xs mb-1">Temp</label>
-                        <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ $phys['temp'] ?: 'Not recorded' }}</div>
+                        <input type="text" name="physical_exam[temp]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('physical_exam.temp', data_get($phys, 'temp', '')) }}">
                     </div>
                     <div>
                         <label class="block text-xs mb-1">Height</label>
-                        <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ $phys['height'] ?: 'Not recorded' }}</div>
+                        <input type="text" name="physical_exam[height]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('physical_exam.height', data_get($phys, 'height', '')) }}">
                     </div>
                     <div>
                         <label class="block text-xs mb-1">Heart Rate</label>
-                        <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ $phys['heart_rate'] ?: 'Not recorded' }}</div>
+                        <input type="text" name="physical_exam[heart_rate]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('physical_exam.heart_rate', data_get($phys, 'heart_rate', '')) }}">
                     </div>
                     <div>
                         <label class="block text-xs mb-1">Weight</label>
-                        <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ $phys['weight'] ?: 'Not recorded' }}</div>
+                        <input type="text" name="physical_exam[weight]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('physical_exam.weight', data_get($phys, 'weight', '')) }}">
                     </div>
                 </div>
             </div>
             <!-- Skin Identification Marks -->
             <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
                 <label class="block text-xs font-semibold uppercase mb-2">Skin Identification Marks</label>
-                <div class="bg-white p-3 rounded-lg border border-gray-300 text-sm">{{ $annualPhysical->skin_marks ?: 'No marks recorded' }}</div>
+                <textarea name="skin_marks" class="form-input w-full rounded border-gray-300 text-xs">{{ old('skin_marks', $annualPhysical->skin_marks) }}</textarea>
             </div>
             <!-- Visual, Ishihara, Findings -->
             <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-xs font-semibold uppercase mb-1">Visual</label>
-                        <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ $annualPhysical->visual ?: 'Not tested' }}</div>
+                        <input type="text" name="visual" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('visual', $annualPhysical->visual ?? '') }}">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold uppercase mb-1">Ishihara Test</label>
-                        <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ $annualPhysical->ishihara_test ?: 'Not tested' }}</div>
+                        <input type="text" name="ishihara_test" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('ishihara_test', $annualPhysical->ishihara_test ?? '') }}">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold uppercase mb-1">Findings</label>
-                        <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ $annualPhysical->findings ?: 'No findings' }}</div>
+                        <input type="text" name="findings" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('findings', $annualPhysical->findings ?? '') }}">
                     </div>
                 </div>
             </div>
@@ -141,7 +141,7 @@
                     @foreach($labFields as $field)
                         <div>
                             <label class="block text-xs capitalize mb-1">{{ str_replace('_', ' ', $field) }}</label>
-                            <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ $lab[$field] ?: 'Not available' }}</div>
+                            <input type="text" name="lab_report[{{ $field }}]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('lab_report.'.$field, data_get($lab, $field, '')) }}">
                         </div>
                     @endforeach
                 </div>
@@ -176,10 +176,10 @@
                         <tr>
                             <td class="px-4 py-2 border-b text-xs">{{ $row }}</td>
                             <td class="px-4 py-2 border-b text-xs">
-                                <input type="text" name="physical_findings[{{ $row }}][result]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('physical_findings.'.$row.'.result', $annualPhysical->physical_findings[$row]['result'] ?? '') }}">
+                                <input type="text" name="physical_findings[{{ $row }}][result]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('physical_findings.'.$row.'.result', data_get($annualPhysical->physical_findings, $row.'.result', '')) }}">
                             </td>
                             <td class="px-4 py-2 border-b text-xs">
-                                <input type="text" name="physical_findings[{{ $row }}][findings]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('physical_findings.'.$row.'.findings', $annualPhysical->physical_findings[$row]['findings'] ?? '') }}">
+                                <input type="text" name="physical_findings[{{ $row }}][findings]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('physical_findings.'.$row.'.findings', data_get($annualPhysical->physical_findings, $row.'.findings', '')) }}">
                             </td>
                         </tr>
                         @endforeach
@@ -213,10 +213,10 @@
                         <tr>
                             <td class="px-4 py-2 border-b text-xs">{{ $row }}</td>
                             <td class="px-4 py-2 border-b text-xs">
-                                <input type="text" name="lab_findings[{{ $row }}][result]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('lab_findings.'.$row.'.result', $annualPhysical->lab_findings[$row]['result'] ?? '') }}">
+                                <input type="text" name="lab_findings[{{ $row }}][result]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('lab_findings.'.$row.'.result', data_get($annualPhysical->lab_findings, $row.'.result', '')) }}">
                             </td>
                             <td class="px-4 py-2 border-b text-xs">
-                                <input type="text" name="lab_findings[{{ $row }}][findings]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('lab_findings.'.$row.'.findings', $annualPhysical->lab_findings[$row]['findings'] ?? '') }}">
+                                <input type="text" name="lab_findings[{{ $row }}][findings]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('lab_findings.'.$row.'.findings', data_get($annualPhysical->lab_findings, $row.'.findings', '')) }}">
                             </td>
                         </tr>
                         @endforeach

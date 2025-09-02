@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pre_employment_records', function (Blueprint $table) {
-            $table->enum('status', ['pending', 'passed', 'failed', 'completed'])->default('pending')->after('uploaded_file');
+            $table->enum('status', ['Pending', 'Approved', 'Declined',])->default('Pending')->after('uploaded_file');
         });
     }
 

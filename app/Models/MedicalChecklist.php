@@ -38,10 +38,16 @@ class MedicalChecklist extends Model
         'optional_exam',
         'doctor_signature',
         'examination_type',
+        // X-ray fields
+        'xray_done_by',
+        'xray_date',
+        'xray_notes',
+        'radtech_id',
     ];
 
     protected $casts = [
         'date' => 'date',
+        'xray_date' => 'date',
     ];
 
     public function user(): BelongsTo
@@ -62,5 +68,10 @@ class MedicalChecklist extends Model
     public function annualPhysicalExamination(): BelongsTo
     {
         return $this->belongsTo(AnnualPhysicalExamination::class);
+    }
+
+    public function radtech(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'radtech_id');
     }
 }

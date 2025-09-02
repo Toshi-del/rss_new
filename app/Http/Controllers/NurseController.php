@@ -309,4 +309,97 @@ class NurseController extends Controller
             ->update(['read_at' => now()]);
         return response()->json(['success' => true]);
     }
+
+    /**
+     * Show create pre-employment examination form
+     */
+    public function createPreEmployment(Request $request)
+    {
+        $recordId = $request->query('record_id');
+        $preEmploymentRecord = PreEmploymentRecord::findOrFail($recordId);
+        
+        return view('nurse.pre-employment-create', compact('preEmploymentRecord'));
+    }
+
+    /**
+     * Store new pre-employment examination
+     */
+    public function storePreEmployment(Request $request)
+    {
+        $validated = $request->validate([
+            'pre_employment_record_id' => 'required|exists:pre_employment_records,id',
+            'illness_history' => 'nullable|string',
+            'accidents_operations' => 'nullable|string',
+            'past_medical_history' => 'nullable|string',
+            'family_history' => 'nullable|array',
+            'personal_habits' => 'nullable|array',
+            'physical_exam' => 'nullable|array',
+            'skin_marks' => 'nullable|string',
+            'visual' => 'nullable|string',
+            'ishihara_test' => 'nullable|string',
+            'findings' => 'nullable|string',
+            'lab_report' => 'nullable|array',
+            'physical_findings' => 'nullable|array',
+            'lab_findings' => 'nullable|array',
+            'ecg' => 'nullable|string',
+        ]);
+
+        // Auto-populate linkage fields from the source record
+        $record = PreEmploymentRecord::findOrFail($validated['pre_employment_record_id']);
+        $validated['user_id'] = $record->created_by;
+        $validated['name'] = $record->first_name . ' ' . $record->last_name;
+        $validated['company_name'] = $record->company_name;
+        $validated['date'] = now()->toDateString();
+        $validated['status'] = $record->status;
+        
+        \App\Models\PreEmploymentExamination::create($validated);
+
+        return redirect()->route('nurse.pre-employment')->with('success', 'Pre-employment examination created successfully.');
+    }
+
+    /**
+     * Show create annual physical examination form
+     */
+    public function createAnnualPhysical(Request $request)
+    {
+        $patientId = $request->query('patient_id');
+        $patient = Patient::findOrFail($patientId);
+        
+        return view('nurse.annual-physical-create', compact('patient'));
+    }
+
+    /**
+     * Store new annual physical examination
+     */
+    public function storeAnnualPhysical(Request $request)
+    {
+        $validated = $request->validate([
+            'patient_id' => 'required|exists:patients,id',
+            'illness_history' => 'nullable|string',
+            'accidents_operations' => 'nullable|string',
+            'past_medical_history' => 'nullable|string',
+            'family_history' => 'nullable|array',
+            'personal_habits' => 'nullable|array',
+            'physical_exam' => 'nullable|array',
+            'skin_marks' => 'nullable|string',
+            'visual' => 'nullable|string',
+            'ishihara_test' => 'nullable|string',
+            'findings' => 'nullable|string',
+            'lab_report' => 'nullable|array',
+            'physical_findings' => 'nullable|array',
+            'lab_findings' => 'nullable|array',
+            'ecg' => 'nullable|string',
+        ]);
+
+        // Auto-populate linkage fields from the patient
+        $patient = Patient::findOrFail($validated['patient_id']);
+        $validated['user_id'] = Auth::id();
+        $validated['name'] = $patient->full_name;
+        $validated['date'] = now()->toDateString();
+        $validated['status'] = 'Pending';
+        
+        \App\Models\AnnualPhysicalExamination::create($validated);
+
+        return redirect()->route('nurse.annual-physical')->with('success', 'Annual physical examination created successfully.');
+    }
 }

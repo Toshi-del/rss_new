@@ -99,7 +99,7 @@ class PatientDashboardSeeder extends Seeder
                 'blood_chemistry' => ['FBS', 'LIPID', 'HBSAG'],
                 'notes' => 'Regular annual checkup',
                 'patients_data' => [],
-                'status' => 'pending',
+                'status' => 'Pending',
                 'created_by' => 1, // Assuming admin user ID
             ],
             [
@@ -109,7 +109,7 @@ class PatientDashboardSeeder extends Seeder
                 'blood_chemistry' => ['FBS', 'LIPID', 'HBSAG', 'CREATININE', 'BUN'],
                 'notes' => 'Pre-employment screening',
                 'patients_data' => [],
-                'status' => 'approved',
+                'status' => 'Approved',
                 'created_by' => 1,
             ],
             [
@@ -159,7 +159,7 @@ class PatientDashboardSeeder extends Seeder
                 'other_exams' => 'Chest X-Ray, ECG',
                 'billing_type' => 'Company',
                 'company_name' => 'AsiaPro',
-                'status' => 'completed',
+                'status' => 'Approved',
                 'created_by' => 1,
             ],
             [
@@ -174,7 +174,7 @@ class PatientDashboardSeeder extends Seeder
                 'other_exams' => 'Chest X-Ray, Drug Test',
                 'billing_type' => 'Company',
                 'company_name' => 'Pasig Catholic College',
-                'status' => 'pending',
+                'status' => 'Pending',
                 'created_by' => 1,
             ],
             [
@@ -189,7 +189,7 @@ class PatientDashboardSeeder extends Seeder
                 'other_exams' => 'Chest X-Ray, ECG, Drug Test',
                 'billing_type' => 'Company',
                 'company_name' => 'PrimeLime',
-                'status' => 'pending',
+                'status' => 'Pending',
                 'created_by' => 1,
             ],
         ];

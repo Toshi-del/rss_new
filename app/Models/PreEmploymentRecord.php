@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class PreEmploymentRecord extends Model
 {
@@ -36,5 +37,10 @@ class PreEmploymentRecord extends Model
     public function getFullNameAttribute(): string
     {
         return $this->first_name . ' ' . $this->last_name;
+    }
+
+    public function preEmploymentExamination(): HasOne
+    {
+        return $this->hasOne(PreEmploymentExamination::class, 'pre_employment_record_id');
     }
 }

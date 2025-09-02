@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class PreEmploymentExamination extends Model
 {
@@ -48,5 +49,27 @@ class PreEmploymentExamination extends Model
     public function preEmploymentRecord(): BelongsTo
     {
         return $this->belongsTo(PreEmploymentRecord::class);
+    }
+
+    protected function name(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value) {
+                if ($value) return $value;
+                $record = $this->preEmploymentRecord;
+                return $record ? ($record->first_name . ' ' . $record->last_name) : null;
+            }
+        );
+    }
+
+    protected function companyName(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value) {
+                if ($value) return $value;
+                $record = $this->preEmploymentRecord;
+                return $record ? $record->company_name : null;
+            }
+        );
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Patient extends Model
 {
@@ -35,5 +36,10 @@ class Patient extends Model
     public function getAgeSexAttribute(): string
     {
         return $this->age . ' / ' . $this->sex;
+    }
+
+    public function annualPhysicalExamination(): HasOne
+    {
+        return $this->hasOne(AnnualPhysicalExamination::class);
     }
 }

@@ -34,7 +34,7 @@
                                 <button class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="View Details">
                                     <i class="fas fa-eye"></i>
                                 </button>
-                                <a href="{{ route('doctor.annual-physical.edit', $patient->id) }}" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors mr-2" title="Update Results">
+                                <a href="{{ route('doctor.annual-physical.by-patient.edit', $patient->id) }}" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors mr-2" title="Update Results">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <a href="{{ route('doctor.medical-checklist.annual-physical', $patient->id) }}" class="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 transition-colors" title="Medical Checklist">

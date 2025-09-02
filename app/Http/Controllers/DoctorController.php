@@ -172,6 +172,18 @@ class DoctorController extends Controller
     {
         $preEmployment = PreEmploymentExamination::findOrFail($id);
         $data = $request->validate([
+            'name' => 'nullable|string',
+            'illness_history' => 'nullable|string',
+            'accidents_operations' => 'nullable|string',
+            'past_medical_history' => 'nullable|string',
+            'family_history' => 'nullable|array',
+            'personal_habits' => 'nullable|array',
+            'physical_exam' => 'nullable|array',
+            'skin_marks' => 'nullable|string',
+            'visual' => 'nullable|string',
+            'ishihara_test' => 'nullable|string',
+            'findings' => 'nullable|string',
+            'lab_report' => 'nullable|array',
             'physical_findings' => 'nullable|array',
             'lab_findings' => 'nullable|array',
             'ecg' => 'nullable|string',
@@ -185,9 +197,19 @@ class DoctorController extends Controller
      */
     public function editExaminationByRecordId($recordId)
     {
+        // Ensure linked examination exists and is populated from the source record
+        $record = \App\Models\PreEmploymentRecord::findOrFail($recordId);
+
         $examination = \App\Models\PreEmploymentExamination::firstOrCreate(
             ['pre_employment_record_id' => $recordId],
-            ['pre_employment_record_id' => $recordId]
+            [
+                'pre_employment_record_id' => $recordId,
+                'user_id' => $record->created_by,
+                'name' => $record->first_name . ' ' . $record->last_name,
+                'company_name' => $record->company_name,
+                'date' => now()->toDateString(),
+                'status' => $record->status,
+            ]
         );
         return redirect()->route('doctor.pre-employment.edit', $examination->id);
     }
@@ -208,6 +230,17 @@ class DoctorController extends Controller
     {
         $annualPhysical = \App\Models\AnnualPhysicalExamination::findOrFail($id);
         $data = $request->validate([
+            'illness_history' => 'nullable|string',
+            'accidents_operations' => 'nullable|string',
+            'past_medical_history' => 'nullable|string',
+            'family_history' => 'nullable|array',
+            'personal_habits' => 'nullable|array',
+            'physical_exam' => 'nullable|array',
+            'skin_marks' => 'nullable|string',
+            'visual' => 'nullable|string',
+            'ishihara_test' => 'nullable|string',
+            'findings' => 'nullable|string',
+            'lab_report' => 'nullable|array',
             'physical_findings' => 'nullable|array',
             'lab_findings' => 'nullable|array',
             'ecg' => 'nullable|string',
@@ -221,9 +254,17 @@ class DoctorController extends Controller
      */
     public function editAnnualPhysicalByPatientId($patientId)
     {
+        $patient = \App\Models\Patient::findOrFail($patientId);
+
         $examination = \App\Models\AnnualPhysicalExamination::firstOrCreate(
             ['patient_id' => $patientId],
-            ['patient_id' => $patientId]
+            [
+                'patient_id' => $patientId,
+                'user_id' => Auth::id(),
+                'name' => $patient->full_name,
+                'date' => now()->toDateString(),
+                'status' => 'Pending',
+            ]
         );
         return redirect()->route('doctor.annual-physical.edit', $examination->id);
     }

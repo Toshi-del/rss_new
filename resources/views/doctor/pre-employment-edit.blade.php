@@ -63,10 +63,10 @@
                             $options = ['asthma','arthritis','migraine','diabetes','heart_disease','tuberculosis','allergies','anemia','cancer','insanity','hypertension','epilepsy'];
                         @endphp
                         @foreach($options as $opt)
-                            <span class="inline-flex items-center text-xs bg-white px-2 py-1 rounded shadow-sm border border-gray-200 {{ in_array($opt, $family ?? []) ? 'bg-blue-50 border-blue-200' : 'bg-gray-50' }}">
-                                <i class="fas {{ in_array($opt, $family ?? []) ? 'fa-check text-blue-600' : 'fa-times text-gray-400' }} mr-1"></i>
-                                {{ str_replace('_', ' ', ucfirst($opt)) }}
-                            </span>
+                            <label class="inline-flex items-center text-xs bg-white px-2 py-1 rounded shadow-sm border border-gray-200 cursor-pointer">
+                                <input type="checkbox" name="family_history[]" value="{{ $opt }}" class="mr-1" {{ in_array($opt, $family ?? []) ? 'checked' : '' }}>
+                                <span>{{ str_replace('_', ' ', ucfirst($opt)) }}</span>
+                            </label>
                         @endforeach
                     </div>
                 </div>
@@ -94,19 +94,19 @@
                     @php $phys = $preEmployment->physical_exam ?? []; @endphp
                     <div>
                         <label class="block text-xs mb-1">Temp</label>
-                        <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ $phys['temp'] ?: 'Not recorded' }}</div>
+                        <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ $phys['temp'] ?? 'Not recorded' }}</div>
                     </div>
                     <div>
                         <label class="block text-xs mb-1">Height</label>
-                        <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ $phys['height'] ?: 'Not recorded' }}</div>
+                        <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ $phys['height'] ?? 'Not recorded' }}</div>
                     </div>
                     <div>
                         <label class="block text-xs mb-1">Heart Rate</label>
-                        <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ $phys['heart_rate'] ?: 'Not recorded' }}</div>
+                        <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ $phys['heart_rate'] ?? 'Not recorded' }}</div>
                     </div>
                     <div>
                         <label class="block text-xs mb-1">Weight</label>
-                        <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ $phys['weight'] ?: 'Not recorded' }}</div>
+                        <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ $phys['weight'] ?? 'Not recorded' }}</div>
                     </div>
                 </div>
             </div>
@@ -143,7 +143,7 @@
                     @foreach($labFields as $field)
                         <div>
                             <label class="block text-xs capitalize mb-1">{{ str_replace('_', ' ', $field) }}</label>
-                            <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ $lab[$field] ?: 'Not available' }}</div>
+                            <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ $lab[$field] ?? 'Not available' }}</div>
                         </div>
                     @endforeach
                 </div>
@@ -178,10 +178,10 @@
                         <tr>
                             <td class="px-4 py-2 border-b text-xs">{{ $row }}</td>
                             <td class="px-4 py-2 border-b text-xs">
-                                <input type="text" name="physical_findings[{{ $row }}][result]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('physical_findings.'.$row.'.result', $preEmployment->physical_findings[$row]['result'] ?? '') }}">
+                                <input type="text" name="physical_findings[{{ $row }}][result]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('physical_findings.'.$row.'.result', data_get($preEmployment->physical_findings, $row.'.result', '')) }}">
                             </td>
                             <td class="px-4 py-2 border-b text-xs">
-                                <input type="text" name="physical_findings[{{ $row }}][findings]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('physical_findings.'.$row.'.findings', $preEmployment->physical_findings[$row]['findings'] ?? '') }}">
+                                <input type="text" name="physical_findings[{{ $row }}][findings]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('physical_findings.'.$row.'.findings', data_get($preEmployment->physical_findings, $row.'.findings', '')) }}">
                             </td>
                         </tr>
                         @endforeach
@@ -215,10 +215,10 @@
                         <tr>
                             <td class="px-4 py-2 border-b text-xs">{{ $row }}</td>
                             <td class="px-4 py-2 border-b text-xs">
-                                <input type="text" name="lab_findings[{{ $row }}][result]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('lab_findings.'.$row.'.result', $preEmployment->lab_findings[$row]['result'] ?? '') }}">
+                                <input type="text" name="lab_findings[{{ $row }}][result]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('lab_findings.'.$row.'.result', data_get($preEmployment->lab_findings, $row.'.result', '')) }}">
                             </td>
                             <td class="px-4 py-2 border-b text-xs">
-                                <input type="text" name="lab_findings[{{ $row }}][findings]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('lab_findings.'.$row.'.findings', $preEmployment->lab_findings[$row]['findings'] ?? '') }}">
+                                <input type="text" name="lab_findings[{{ $row }}][findings]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('lab_findings.'.$row.'.findings', data_get($preEmployment->lab_findings, $row.'.findings', '')) }}">
                             </td>
                         </tr>
                         @endforeach

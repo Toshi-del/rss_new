@@ -55,9 +55,9 @@
                                         <i class="fas fa-edit"></i>
                                     </a>
                                 @else
-                                    <span class="bg-gray-400 text-white px-3 py-1 rounded mr-2" title="No examination yet">
-                                        <i class="fas fa-clock"></i>
-                                    </span>
+                                    <a href="{{ route('nurse.annual-physical.create', ['patient_id' => $patient->id]) }}" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Create Examination">
+                                        <i class="fas fa-plus"></i>
+                                    </a>
                                 @endif
                                 <a href="{{ route('nurse.medical-checklist.annual-physical', $patient->id) }}" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Medical Checklist">
                                     <i class="fas fa-clipboard-list"></i>

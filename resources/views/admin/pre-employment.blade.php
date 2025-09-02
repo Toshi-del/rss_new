@@ -29,6 +29,14 @@
         </div>
     </div>
     <div class="card-body">
+        <div class="mb-3">
+            <form action="{{ route('admin.pre-employment.send-all-emails') }}" method="POST">
+                @csrf
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-envelope-fill me-2"></i> Send Registration link To all passed/approved status
+                </button>
+            </form>
+        </div>
         <div class="table-responsive">
             <table class="table" id="preEmploymentTable">
                 <thead>
@@ -64,11 +72,11 @@
                             </td>
                             <td>
                                 @php
-                                    $status = $preEmployment->status ?? 'pending';
+                                    $status = $preEmployment->status ?? 'Pending';
                                     $statusClass = 'bg-gray-100 text-gray-800';
-                                    if ($status === 'passed') {
+                                    if ($status === 'Approved') {
                                         $statusClass = 'bg-green-100 text-green-800';
-                                    } elseif ($status === 'failed') {
+                                    } elseif ($status === 'Declined') {
                                         $statusClass = 'bg-red-100 text-red-800';
                                     } elseif ($status === 'pending') {
                                         $statusClass = 'bg-orange-100 text-orange-800';
@@ -91,12 +99,9 @@
                                         <i class="bi bi-x-lg"></i>
                                     </button>
                                 </form>
-                                @if($preEmployment->status === 'passed')
+                                @if($preEmployment->status === 'Approved')
                                     <form action="{{ route('admin.pre-employment.send-email', $preEmployment->id) }}" method="POST" style="display:inline-block;">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-outline-primary" onclick="return confirm('Send registration email to {{ $preEmployment->email }}?')" title="Send Email Registration">
-                                            <i class="bi bi-envelope-fill"></i> Send Email
-                                        </button>
+                                      
                                     </form>
                                 @endif
                             </td>

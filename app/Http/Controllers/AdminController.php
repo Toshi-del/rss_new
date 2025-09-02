@@ -16,6 +16,8 @@ use App\Models\AnnualPhysicalExamination;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
+use App\Mail\RegistrationInvitation;
+use Illuminate\Support\Facades\Mail;
 
 class AdminController extends Controller
 {
@@ -404,7 +406,7 @@ class AdminController extends Controller
     public function approvePreEmployment($id)
     {
         $record = PreEmploymentRecord::findOrFail($id);
-        $record->status = 'passed';
+        $record->status = 'approved';
         $record->save();
         return redirect()->back()->with('success', 'Pre-employment record approved.');
     }
@@ -415,7 +417,7 @@ class AdminController extends Controller
     public function declinePreEmployment($id)
     {
         $record = PreEmploymentRecord::findOrFail($id);
-        $record->status = 'failed';
+        $record->status = 'declined';
         $record->save();
         return redirect()->back()->with('success', 'Pre-employment record declined.');
     }
@@ -425,59 +427,54 @@ class AdminController extends Controller
      */
     public function sendRegistrationEmail($id)
     {
+        $record = PreEmploymentRecord::findOrFail($id);
+        if ($record->status !== 'Approved') {
+            return redirect()->back()->with('error', 'Only passed pre-employment records can receive registration emails.');
+        }
+        if (empty($record->email)) {
+            return redirect()->back()->with('error', 'No email address found for this record.');
+        }
         try {
-            $record = PreEmploymentRecord::findOrFail($id);
-            
-            // Check if status is passed
-            if ($record->status !== 'passed') {
-                return redirect()->back()->with('error', 'Only passed pre-employment records can receive registration emails.');
-            }
-
-            // Check if email exists
-            if (empty($record->email)) {
-                return redirect()->back()->with('error', 'No email address found for this record.');
-            }
-
-            // Create PHPMailer instance
-            $mail = new PHPMailer(true);
-            
-            // Server settings
-            $mail->isSMTP();
-            $mail->Host = env('MAIL_HOST', 'smtp.gmail.com');
-            $mail->SMTPAuth = true;
-            $mail->Username = env('MAIL_USERNAME');
-            $mail->Password = env('MAIL_PASSWORD');
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = env('MAIL_PORT', 587);
-            
-            // Debug settings (comment out in production)
-            // $mail->SMTPDebug = SMTP::DEBUG_SERVER;
-            
-            // Set timeout
-            $mail->Timeout = 30;
-            
-            // Recipients
-            $mail->setFrom(env('MAIL_FROM_ADDRESS', 'noreply@rsshealth.com'), 'RSS Citi Health Services');
-            $mail->addAddress($record->email, $record->first_name . ' ' . $record->last_name);
-            
-            // Content
-            $mail->isHTML(true);
-            $mail->Subject = 'Pre-Employment Registration - RSS Citi Health Services';
-            
-            // Generate registration link
-            $registrationLink = route('register') . '?email=' . urlencode($record->email) . '&type=pre_employment&record_id=' . $record->id;
-            
-            $mail->Body = $this->getRegistrationEmailTemplate($record, $registrationLink);
-            $mail->AltBody = $this->getRegistrationEmailTextTemplate($record, $registrationLink);
-            
-            $mail->send();
-            
+            Mail::to($record->email)->send(new RegistrationInvitation(
+                $record->email,
+                $record->full_name ?? ($record->first_name . ' ' . $record->last_name),
+                $record->id
+            ));
             return redirect()->back()->with('success', 'Registration email sent successfully to ' . $record->email);
-            
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             \Log::error('Email sending failed: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Email could not be sent. Error: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Send registration emails to all passed/approved pre-employment records
+     */
+    public function sendAllRegistrationEmails(Request $request)
+    {
+        $sent = 0;
+        $failed = [];
+        $records = PreEmploymentRecord::where('status', 'approved')
+            ->whereNotNull('email')
+            ->get();
+        foreach ($records as $record) {
+            try {
+                Mail::to($record->email)->send(new RegistrationInvitation(
+                    $record->email,
+                    $record->full_name ?? ($record->first_name . ' ' . $record->last_name),
+                    $record->id
+                ));
+                $sent++;
+            } catch (\Exception $e) {
+                \Log::error('Bulk email failed for ' . $record->email . ': ' . $e->getMessage());
+                $failed[] = $record->email;
+            }
+        }
+        $message = $sent . ' registration email(s) sent successfully.';
+        if (count($failed) > 0) {
+            $message .= ' Failed to send to: ' . implode(', ', $failed);
+        }
+        return redirect()->back()->with('success', $message);
     }
 
     /**

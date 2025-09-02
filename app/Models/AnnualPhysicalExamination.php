@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class AnnualPhysicalExamination extends Model
 {
@@ -47,5 +48,16 @@ class AnnualPhysicalExamination extends Model
     public function patient(): BelongsTo
     {
         return $this->belongsTo(Patient::class);
+    }
+
+    protected function name(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value) {
+                if ($value) return $value;
+                $patient = $this->patient;
+                return $patient ? $patient->full_name : null;
+            }
+        );
     }
 }

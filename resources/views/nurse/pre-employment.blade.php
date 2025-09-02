@@ -17,12 +17,10 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NAME</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AGE</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SEX</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">EMAIL</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PHONE</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">COMPANY</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PACKAGE</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MEDICAL EXAMINATION</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">BLOOD CHEMISTRY</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
                     </tr>
                 </thead>
@@ -34,10 +32,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $preEmployment->age }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $preEmployment->sex }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $preEmployment->email }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $preEmployment->phone_number }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $preEmployment->company_name }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $preEmployment->billing_type }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $preEmployment->medical_exam_type }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 @if($preEmployment->blood_tests)
@@ -45,6 +40,19 @@
                                 @else
                                     N/A
                                 @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @php
+                                    $statusClass = match($preEmployment->status) {
+                                        'approved' => 'bg-green-100 text-green-800',
+                                        'declined' => 'bg-red-100 text-red-800',
+                                        'pending' => 'bg-yellow-100 text-yellow-800',
+                                        default => 'bg-gray-100 text-gray-800'
+                                    };
+                                @endphp
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
+                                    {{ ucfirst($preEmployment->status) }}
+                                </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 @php
@@ -55,9 +63,9 @@
                                         <i class="fas fa-edit"></i>
                                     </a>
                                 @else
-                                    <span class="bg-gray-400 text-white px-3 py-1 rounded mr-2" title="No examination yet">
-                                        <i class="fas fa-clock"></i>
-                                    </span>
+                                    <a href="{{ route('nurse.pre-employment.create', ['record_id' => $preEmployment->id]) }}" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Create Examination">
+                                        <i class="fas fa-plus"></i>
+                                    </a>
                                 @endif
                                 <a href="{{ route('nurse.medical-checklist.pre-employment', $preEmployment->id) }}" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Medical Checklist">
                                     <i class="fas fa-clipboard-list"></i>
@@ -78,4 +86,4 @@
             </table>
         </div>
     </div>
-@endsection 
+@endsection

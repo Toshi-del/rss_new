@@ -93,7 +93,7 @@ class MedicalResultsSeeder extends Seeder
                 'other_exams' => 'Chest X-ray, ECG',
                 'billing_type' => 'Company',
                 'company_name' => $companyUser->company_name ?? 'Sample Company',
-                'status' => 'passed',
+                'status' => 'Approved',
                 'created_by' => $companyUser->id,
             ],
             [
@@ -108,7 +108,7 @@ class MedicalResultsSeeder extends Seeder
                 'other_exams' => 'None',
                 'billing_type' => 'Patient',
                 'company_name' => $companyUser->company_name ?? 'Sample Company',
-                'status' => 'failed',
+                'status' => 'Declined',
                 'created_by' => $companyUser->id,
             ],
             [
@@ -123,7 +123,7 @@ class MedicalResultsSeeder extends Seeder
                 'other_exams' => 'Chest X-ray, ECG, Drug Test',
                 'billing_type' => 'Company',
                 'company_name' => $companyUser->company_name ?? 'Sample Company',
-                'status' => 'pending',
+                'status' => 'Pending',
                 'created_by' => $companyUser->id,
             ],
         ];

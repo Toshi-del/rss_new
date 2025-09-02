@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Nurse Dashboard') - RSS Health Services Corp</title>
+    <title>@yield('title', 'Med Tech Dashboard') - RSS Health Services Corp</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     @yield('styles')
@@ -13,7 +13,7 @@
         <!-- Sidebar -->
         <div class="w-64 bg-green-900 text-white">
             <div class="p-6">
-                <h1 class="text-xl font-bold mb-2">Nurse</h1>
+                <h1 class="text-xl font-bold mb-2">Med Tech</h1>
                 <p class="text-green-200 text-sm">Dashboard</p>
             </div>
             <nav class="mt-8">
@@ -50,8 +50,8 @@
                     </div>
                     <div class="flex items-center space-x-4">
                         <div class="text-right">
-                            <p class="font-medium text-gray-800">Nurse {{ Auth::user()->fname }} {{ Auth::user()->lname }}</p>
-                            <p class="text-sm text-gray-600">Nurse</p>
+                            <p class="font-medium text-gray-800">{{ Auth::user()->fname }} {{ Auth::user()->lname }}</p>
+                            <p class="text-sm text-gray-600">Med Tech</p>
                         </div>
                         <div class="relative">
                             <button id="profileButton" class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors">
@@ -87,9 +87,9 @@
                         <i class="fas fa-user-nurse text-white text-xl"></i>
                     </div>
                     <div>
-                        <h4 class="text-lg font-semibold text-gray-900">Nurse {{ Auth::user()->fname }} {{ Auth::user()->lname }}</h4>
+                        <h4 class="text-lg font-semibold text-gray-900"> {{ Auth::user()->fname }} {{ Auth::user()->lname }}</h4>
                         <p class="text-sm text-gray-600">{{ Auth::user()->email }}</p>
-                        <p class="text-sm text-gray-500">Nurse</p>
+                        <p class="text-sm text-gray-500">Med Tech</p>
                     </div>
                 </div>
 
