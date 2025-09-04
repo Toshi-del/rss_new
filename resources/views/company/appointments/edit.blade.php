@@ -32,6 +32,12 @@
                 <!-- Time Slot -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Time Slot</label>
+                    <div class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                        <p class="text-sm text-blue-800">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            <strong>Duplicate Prevention:</strong> Appointments for the same date and time slot are not allowed.
+                        </p>
+                    </div>
                     <select name="time_slot" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
                         <option value="">Select a time slot</option>
                         @foreach($timeSlots as $slot)

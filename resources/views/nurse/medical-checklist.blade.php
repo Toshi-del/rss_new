@@ -40,7 +40,9 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase mb-1">Date</label>
-                    <input type="date" name="date" value="{{ old('date', $medicalChecklist->date ?? $date ?? '') }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500" required />
+                    @php($currentDate = old('date', $medicalChecklist->date ?? $date ?? now()->format('Y-m-d')))
+                    <a class="text-green-700 hover:underline cursor-default">{{ \Carbon\Carbon::parse($currentDate)->format('Y-m-d') }}</a>
+                    <input type="hidden" name="date" value="{{ $currentDate }}" />
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase mb-1">Age</label>
@@ -48,7 +50,13 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase mb-1">Number</label>
-                    <input type="text" name="number" value="{{ old('number', $medicalChecklist->number ?? $number ?? '') }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500" />
+                    @php($displayNumber = old('number', $medicalChecklist->number ?? $number ?? ''))
+                    @if($displayNumber)
+                        <a class="text-green-700 hover:underline cursor-default">{{ $displayNumber }}</a>
+                    @else
+                        <span class="text-sm text-gray-500">N/A</span>
+                    @endif
+                    <input type="hidden" name="number" value="{{ $displayNumber }}" />
                 </div>
             </div>
 
@@ -59,19 +67,15 @@
                 </div>
                 
                 <div class="space-y-4">
-                    @php
-                        $examinations = [
-                            'chest_xray' => 'Chest X-Ray',
-                            'stool_exam' => 'Stool Exam',
-                            'urinalysis' => 'Urinalysis',
-                            'drug_test' => 'Drug Test',
-                            'blood_extraction' => 'Blood Extraction',
-                            'ecg' => 'ElectroCardioGram (ECG)',
-                            'physical_exam' => 'Physical Exam'
-                        ];
-                    @endphp
-                    
-                    @foreach($examinations as $field => $examName)
+                    @foreach([
+                        'chest_xray' => 'Chest X-Ray',
+                        'stool_exam' => 'Stool Exam',
+                        'urinalysis' => 'Urinalysis',
+                        'drug_test' => 'Drug Test',
+                        'blood_extraction' => 'Blood Extraction',
+                        'ecg' => 'ElectroCardioGram (ECG)',
+                        'physical_exam' => 'Physical Exam',
+                    ] as $field => $examName)
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
                                 <span class="text-sm font-medium text-gray-700 mr-4">{{ $loop->iteration }}.</span>

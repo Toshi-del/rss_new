@@ -101,7 +101,10 @@
                                 </form>
                                 @if($preEmployment->status === 'Approved')
                                     <form action="{{ route('admin.pre-employment.send-email', $preEmployment->id) }}" method="POST" style="display:inline-block;">
-                                      
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-outline-primary" onclick="return confirm('Send registration email to {{ $preEmployment->email ?? 'this candidate' }}?')" title="Send Registration Email">
+                                            <i class="bi bi-envelope-fill"></i>
+                                        </button>
                                     </form>
                                 @endif
                             </td>

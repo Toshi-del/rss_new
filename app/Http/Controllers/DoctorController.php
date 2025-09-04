@@ -19,16 +19,16 @@ class DoctorController extends Controller
     public function dashboard()
     {
         // Get pre-employment records
-        $preEmployments = PreEmploymentRecord::latest()->take(5)->get();
-        $preEmploymentCount = PreEmploymentRecord::count();
+        $preEmployments = PreEmploymentRecord::where('status', 'approved')->latest()->take(5)->get();
+        $preEmploymentCount = PreEmploymentRecord::where('status', 'approved')->count();
 
         // Get appointments with patients
         $appointments = Appointment::with('patients')->latest()->take(10)->get();
         $appointmentCount = Appointment::count();
 
         // Get all patients
-        $patients = Patient::latest()->take(10)->get();
-        $patientCount = Patient::count();
+        $patients = Patient::where('status', 'approved')->latest()->take(10)->get();
+        $patientCount = Patient::where('status', 'approved')->count();
 
         // Get annual physicals (appointments with type 'annual_physical')
         $annualPhysicals = Appointment::where('appointment_type', 'annual_physical')->count();
@@ -49,7 +49,7 @@ class DoctorController extends Controller
      */
     public function preEmployment()
     {
-        $preEmployments = \App\Models\PreEmploymentRecord::latest()->get();
+        $preEmployments = \App\Models\PreEmploymentRecord::where('status', 'approved')->latest()->get();
         
         return view('doctor.pre-employment', compact('preEmployments'));
     }
@@ -59,7 +59,7 @@ class DoctorController extends Controller
      */
     public function annualPhysical()
     {
-        $patients = Patient::latest()->get();
+        $patients = Patient::where('status', 'approved')->latest()->get();
         
         return view('doctor.annual-physical', compact('patients'));
     }

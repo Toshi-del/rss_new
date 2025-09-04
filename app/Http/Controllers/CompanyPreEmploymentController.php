@@ -104,34 +104,71 @@ class CompanyPreEmploymentController extends Controller
                         'data' => $row
                     ];
                 } else {
-                    $processedRows++;
+                    // Check for duplicate records (same first name, last name, and email)
+                    $firstName = trim($row[0]);
+                    $lastName = trim($row[1]);
+                    $email = trim($row[4]);
                     
-                    // Save to database
-                    PreEmploymentRecord::create([
-                        'first_name' => trim($row[0]),
-                        'last_name' => trim($row[1]),
-                        'age' => $age,
-                        'sex' => $sex,
-                        'email' => trim($row[4]),
-                        'phone_number' => trim($row[5]),
-                        'medical_exam_type' => $request->medical_exam_type,
-                        'blood_tests' => $request->blood_tests ?? [],
-                        'other_exams' => $request->package_other_exams,
-                        'billing_type' => $request->billing_type,
-                        'company_name' => $request->company_name,
-                        'uploaded_file' => $file->getClientOriginalName(),
-                        'created_by' => Auth::id(),
-                    ]);
+                    $existingRecord = PreEmploymentRecord::where('first_name', $firstName)
+                        ->where('last_name', $lastName)
+                        ->where('email', $email)
+                        ->where('created_by', Auth::id())
+                        ->first();
+                    
+                    if ($existingRecord) {
+                        $errorRows[] = [
+                            'row' => $rowNumber,
+                            'errors' => ['Duplicate record: A person with the same name and email already exists'],
+                            'data' => $row
+                        ];
+                    } else {
+                        $processedRows++;
+                        
+                        // Save to database
+                        PreEmploymentRecord::create([
+                            'first_name' => $firstName,
+                            'last_name' => $lastName,
+                            'age' => $age,
+                            'sex' => $sex,
+                            'email' => $email,
+                            'phone_number' => trim($row[5]),
+                            'medical_exam_type' => $request->medical_exam_type,
+                            'blood_tests' => $request->blood_tests ?? [],
+                            'other_exams' => $request->package_other_exams,
+                            'billing_type' => $request->billing_type,
+                            'company_name' => $request->company_name,
+                            'uploaded_file' => $file->getClientOriginalName(),
+                            'created_by' => Auth::id(),
+                        ]);
+                    }
                 }
             }
 
             if ($processedRows > 0) {
+                $message = "Successfully processed {$processedRows} pre-employment records.";
+                if (!empty($errorRows)) {
+                    $duplicateCount = count(array_filter($errorRows, function($error) {
+                        return in_array('Duplicate record: A person with the same name and email already exists', $error['errors']);
+                    }));
+                    if ($duplicateCount > 0) {
+                        $message .= " {$duplicateCount} duplicate records were skipped.";
+                    }
+                }
                 return redirect()->route('company.pre-employment.index')
-                    ->with('success', "Successfully processed {$processedRows} pre-employment records.");
+                    ->with('success', $message);
             } else {
+                $errorMessage = 'No valid records found in the Excel file. Please check your data format.';
+                if (!empty($errorRows)) {
+                    $duplicateCount = count(array_filter($errorRows, function($error) {
+                        return in_array('Duplicate record: A person with the same name and email already exists', $error['errors']);
+                    }));
+                    if ($duplicateCount > 0) {
+                        $errorMessage = "All records were duplicates or had validation errors. {$duplicateCount} duplicate records were found.";
+                    }
+                }
                 return back()
                     ->withInput()
-                    ->with('error', 'No valid records found in the Excel file. Please check your data format.');
+                    ->with('error', $errorMessage);
             }
 
         } catch (\Exception $e) {

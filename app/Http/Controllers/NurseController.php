@@ -18,16 +18,16 @@ class NurseController extends Controller
     public function dashboard()
     {
         // Get patients
-        $patients = Patient::latest()->take(5)->get();
-        $patientCount = Patient::count();
+        $patients = Patient::where('status', 'approved')->latest()->take(5)->get();
+        $patientCount = Patient::where('status', 'approved')->count();
 
         // Get appointments
         $appointments = Appointment::with('patients')->latest()->take(5)->get();
         $appointmentCount = Appointment::count();
 
         // Get pre-employment records
-        $preEmployments = PreEmploymentRecord::latest()->take(5)->get();
-        $preEmploymentCount = PreEmploymentRecord::count();
+        $preEmployments = PreEmploymentRecord::where('status', 'approved')->latest()->take(5)->get();
+        $preEmploymentCount = PreEmploymentRecord::where('status', 'approved')->count();
 
         return view('nurse.dashboard', compact(
             'patients',
@@ -48,7 +48,7 @@ class NurseController extends Controller
      */
     public function preEmployment()
     {
-        $preEmployments = PreEmploymentRecord::latest()->get();
+        $preEmployments = PreEmploymentRecord::where('status', 'approved')->latest()->get();
         
         return view('nurse.pre-employment', compact('preEmployments'));
     }
@@ -58,7 +58,7 @@ class NurseController extends Controller
      */
     public function annualPhysical()
     {
-        $patients = Patient::latest()->get();
+        $patients = Patient::where('status', 'approved')->latest()->get();
         
         return view('nurse.annual-physical', compact('patients'));
     }

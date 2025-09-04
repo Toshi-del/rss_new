@@ -52,6 +52,10 @@ class AuthController extends Controller
                 return redirect()->route('nurse.dashboard');
             } elseif ($user->isRadTech()) {
                 return redirect()->route('radtech.dashboard');
+            } elseif ($user->isRadiologist()) {
+                return redirect()->route('radiologist.dashboard');
+            } elseif ($user->isPlebo()) {
+                return redirect()->route('plebo.dashboard');
             } else {
                 return redirect()->route('patient.dashboard');
             }
@@ -78,16 +82,46 @@ class AuthController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
+        // Additional duplicate prevention checks
+        $firstName = trim($request->fname);
+        $lastName = trim($request->lname);
+        $email = trim($request->email);
+        $phone = trim($request->phone);
+
+        // Check for existing user with same name and email combination
+        $existingUser = User::where('fname', $firstName)
+            ->where('lname', $lastName)
+            ->where('email', $email)
+            ->first();
+
+        if ($existingUser) {
+            return back()->withErrors([
+                'email' => 'A user with the same name and email already exists. Please use a different email or contact support if this is an error.',
+            ])->withInput($request->except('password', 'password_confirmation'));
+        }
+
+        // Check for existing user with same name and phone combination
+        $existingUserByPhone = User::where('fname', $firstName)
+            ->where('lname', $lastName)
+            ->where('phone', $phone)
+            ->first();
+
+        if ($existingUserByPhone) {
+            return back()->withErrors([
+                'phone' => 'A user with the same name and phone number already exists. Please use a different phone number or contact support if this is an error.',
+            ])->withInput($request->except('password', 'password_confirmation'));
+        }
+
         // Calculate age
         $birthday = Carbon::parse($request->birthday);
         $age = $birthday->age;
 
         $user = User::create([
-            'fname' => $request->fname,
-            'lname' => $request->lname,
+            'fname' => $firstName,
+            'lname' => $lastName,
             'mname' => $request->mname,
-            'email' => $request->email,
-            'phone' => $request->phone,
+            'email' => $email,
+            'phone' => $phone,
             'birthday' => $request->birthday,
             'age' => $age,
             'company' => $request->company,

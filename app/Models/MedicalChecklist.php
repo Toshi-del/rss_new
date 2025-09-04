@@ -38,11 +38,8 @@ class MedicalChecklist extends Model
         'optional_exam',
         'doctor_signature',
         'examination_type',
-        // X-ray fields
-        'xray_done_by',
-        'xray_date',
-        'xray_notes',
-        'radtech_id',
+        // X-ray image
+        'xray_image_path',
     ];
 
     protected $casts = [

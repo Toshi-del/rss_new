@@ -15,7 +15,8 @@ class AnnualPhysicalExaminationSeeder extends Seeder
      */
     public function run(): void
     {
-        $patients = Patient::all();
+        // Get only 3 patients for annual physical examinations
+        $patients = Patient::take(3)->get();
         $doctor = User::where('role', 'doctor')->first();
         
         foreach ($patients as $patient) {

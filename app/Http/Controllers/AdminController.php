@@ -246,6 +246,59 @@ class AdminController extends Controller
         $annualPhysicalResults = \App\Models\AnnualPhysicalExamination::all();
         return view('admin.tests', compact('preEmploymentResults', 'annualPhysicalResults'));
     }
+
+    /**
+     * View pre-employment examination details before sending
+     */
+    public function viewPreEmploymentExamination($id)
+    {
+        $examination = \App\Models\PreEmploymentExamination::findOrFail($id);
+        return view('admin.view-pre-employment-examination', compact('examination'));
+    }
+
+    /**
+     * View annual physical examination details before sending
+     */
+    public function viewAnnualPhysicalExamination($id)
+    {
+        $examination = \App\Models\AnnualPhysicalExamination::findOrFail($id);
+        return view('admin.view-annual-physical-examination', compact('examination'));
+    }
+
+    /**
+     * Send pre-employment examination to company
+     */
+    public function sendPreEmploymentExamination($id)
+    {
+        $examination = \App\Models\PreEmploymentExamination::findOrFail($id);
+        
+        // Here you would implement the actual sending logic
+        // For now, we'll just mark it as sent and redirect back
+        $examination->update(['status' => 'sent_to_company']);
+        
+        return redirect()->route('admin.tests')
+            ->with('success', 'Pre-employment examination sent to ' . $examination->company_name . ' successfully.');
+    }
+
+    /**
+     * Send annual physical examination to company
+     */
+    public function sendAnnualPhysicalExamination($id)
+    {
+        $examination = \App\Models\AnnualPhysicalExamination::findOrFail($id);
+        
+        // Get the company name from the associated patient's appointment
+        $patient = \App\Models\Patient::find($examination->patient_id);
+        $appointment = $patient ? \App\Models\Appointment::find($patient->appointment_id) : null;
+        $companyName = $appointment ? \App\Models\User::find($appointment->created_by)->company : 'Unknown Company';
+        
+        // Here you would implement the actual sending logic
+        // For now, we'll just mark it as sent and redirect back
+        $examination->update(['status' => 'sent_to_company']);
+        
+        return redirect()->route('admin.tests')
+            ->with('success', 'Annual physical examination sent to ' . $companyName . ' successfully.');
+    }
     
     /**
      * Show messages page

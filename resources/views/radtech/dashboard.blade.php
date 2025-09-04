@@ -33,14 +33,7 @@
     </div>
 
     <!-- Appointments Card -->
-    <div class="bg-white rounded-lg shadow-sm p-6">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-gray-800">Appointments</h3>
-            <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $appointmentCount }}</span>
-        </div>
-        <p class="text-gray-600 text-sm mb-4">View upcoming and recent appointments</p>
-        <a href="#appointments-section" class="text-purple-600 hover:text-purple-800 text-sm font-medium">View Appointments →</a>
-    </div>
+   
 </div>
 
 <!-- Pre-Employment Records Section -->

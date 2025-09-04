@@ -16,84 +16,7 @@
         </div>
         @endif
 
-        <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <!-- Annual Physical Statistics -->
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                                <i class="fas fa-stethoscope text-white text-sm"></i>
-                            </div>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Annual Physical</dt>
-                                <dd class="text-lg font-medium text-gray-900">{{ $completedAnnualPhysical }} / {{ $totalAnnualPhysical }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Pre-Employment Statistics -->
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                                <i class="fas fa-briefcase text-white text-sm"></i>
-                            </div>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Pre-Employment</dt>
-                                <dd class="text-lg font-medium text-gray-900">{{ $totalPreEmployment }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Passed Pre-Employment -->
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                                <i class="fas fa-check text-white text-sm"></i>
-                            </div>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Passed</dt>
-                                <dd class="text-lg font-medium text-gray-900">{{ $passedPreEmployment }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Failed Pre-Employment -->
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div class="w-8 h-8 bg-red-500 rounded-md flex items-center justify-center">
-                                <i class="fas fa-times text-white text-sm"></i>
-                            </div>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Failed</dt>
-                                <dd class="text-lg font-medium text-gray-900">{{ $failedPreEmployment }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+   
 
         <!-- Filter Tabs -->
         <div class="mb-6">
@@ -110,6 +33,15 @@
                     <a href="{{ route('company.medical-results', ['status' => 'pre_employment']) }}" 
                        class="py-2 px-1 border-b-2 font-medium text-sm {{ $statusFilter === 'pre_employment' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                         Pre-Employment
+                    </a>
+                    <a href="{{ route('company.medical-results', ['status' => 'sent_results']) }}" 
+                       class="py-2 px-1 border-b-2 font-medium text-sm {{ $statusFilter === 'sent_results' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                        Sent Results
+                        @if($totalSentAnnualPhysical > 0 || $totalSentPreEmployment > 0)
+                            <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ $totalSentAnnualPhysical + $totalSentPreEmployment }}
+                            </span>
+                        @endif
                     </a>
                 </nav>
             </div>
@@ -142,151 +74,102 @@
             </div>
         </div>
 
-        <!-- Annual Physical Examination Results -->
-        @if(!$statusFilter || $statusFilter === 'annual_physical')
+
+
+        @if(!$statusFilter || $statusFilter === 'sent_results')
         <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
             <div class="px-6 py-4 border-b border-gray-200">
                 <h3 class="text-lg font-medium text-gray-900 flex items-center">
-                    <i class="fas fa-stethoscope text-blue-500 mr-2"></i>
-                    Annual Physical Examination Results
+                    <i class="fas fa-paper-plane text-purple-500 mr-2"></i>
+                    Sent Examination Results
+                    <span class="ml-2 text-sm text-gray-500">(Sent by Admin)</span>
                 </h3>
             </div>
             
-            @if($annualPhysicalResults->count() > 0)
+            @if($sentAnnualPhysicalResults->count() > 0 || $sentPreEmploymentResults->count() > 0)
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age/Sex</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appointment Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient/Applicant Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Examination Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sent Date</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Results</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach($annualPhysicalResults as $appointment)
-                            @foreach($appointment->patients as $patient)
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">{{ $patient->full_name }}</div>
-                                    <div class="text-sm text-gray-500">{{ $patient->email }}</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $patient->age_sex }}</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $appointment->formatted_date }}</div>
-                                    <div class="text-sm text-gray-500">{{ $appointment->formatted_time_slot }}</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($appointment->status === 'completed')
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Completed
-                                        </span>
-                                    @elseif($appointment->status === 'pending')
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                            Pending
-                                        </span>
-                                    @else
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                            {{ ucfirst($appointment->status) }}
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    @if($appointment->status === 'completed')
-                                        <span class="text-green-600 font-medium">Available</span>
-                                    @else
-                                        <span class="text-gray-500">Not ready</span>
-                                    @endif
-                                </td>
-                            </tr>
-                            @endforeach
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            @else
-            <div class="px-6 py-8 text-center">
-                <i class="fas fa-stethoscope text-gray-400 text-4xl mb-4"></i>
-                <p class="text-gray-500">No annual physical examination results found.</p>
-            </div>
-            @endif
-        </div>
-        @endif
-
-        <!-- Pre-Employment Examination Results -->
-        @if(!$statusFilter || $statusFilter === 'pre_employment')
-        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900 flex items-center">
-                    <i class="fas fa-briefcase text-green-500 mr-2"></i>
-                    Pre-Employment Examination Results
-                </h3>
-            </div>
-            
-            @if($preEmploymentResults->count() > 0)
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applicant Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age/Sex</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Exam Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach($preEmploymentResults as $record)
+                        <!-- Sent Annual Physical Results -->
+                        @foreach($sentAnnualPhysicalResults as $exam)
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $record->full_name }}</div>
-                                <div class="text-sm text-gray-500">{{ $record->email }}</div>
+                                <div class="text-sm font-medium text-gray-900">{{ $exam->name }}</div>
+                                <div class="text-sm text-gray-500">Patient ID: {{ $exam->patient_id }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ $record->age }} / {{ $record->sex }}</div>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    <i class="fas fa-stethoscope mr-1"></i>
+                                    Annual Physical
+                                </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ ucfirst(str_replace('_', ' ', $record->medical_exam_type)) }}</div>
+                                <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($exam->date)->format('M d, Y') }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($record->status === 'passed')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        Passed
-                                    </span>
-                                @elseif($record->status === 'failed')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                        Failed
-                                    </span>
-                                @elseif($record->status === 'pending')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                        Pending
-                                    </span>
-                                @else
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                        {{ ucfirst($record->status) }}
-                                    </span>
-                                @endif
+                                <div class="text-sm text-gray-900">{{ $exam->updated_at->format('M d, Y') }}</div>
+                                <div class="text-sm text-gray-500">{{ $exam->updated_at->format('g:i A') }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ $record->created_at->format('M d, Y') }}</div>
-                                <div class="text-sm text-gray-500">{{ $record->created_at->format('g:i A') }}</div>
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    <i class="fas fa-check mr-1"></i>
+                                    Sent
+                                </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{{ route('company.pre-employment.show', $record->id) }}" 
-                                   class="text-blue-600 hover:text-blue-900 mr-3">
-                                    <i class="fas fa-eye mr-1"></i>View
-                                </a>
-                                @if($record->uploaded_file)
-                                <a href="{{ asset('storage/' . $record->uploaded_file) }}" 
-                                   target="_blank"
-                                   class="text-green-600 hover:text-green-900">
+                                <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="viewSentResult('annual_physical', {{ $exam->id }})">
+                                    <i class="fas fa-eye mr-1"></i>View Details
+                                </button>
+                                <button class="text-green-600 hover:text-green-900" onclick="downloadResult('annual_physical', {{ $exam->id }})">
                                     <i class="fas fa-download mr-1"></i>Download
-                                </a>
-                                @endif
+                                </button>
+                            </td>
+                        </tr>
+                        @endforeach
+
+                        <!-- Sent Pre-Employment Results -->
+                        @foreach($sentPreEmploymentResults as $exam)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ $exam->name }}</div>
+                                <div class="text-sm text-gray-500">{{ $exam->company_name }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-briefcase mr-1"></i>
+                                    Pre-Employment
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($exam->date)->format('M d, Y') }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ $exam->updated_at->format('M d, Y') }}</div>
+                                <div class="text-sm text-gray-500">{{ $exam->updated_at->format('g:i A') }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    <i class="fas fa-check mr-1"></i>
+                                    Sent
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="viewSentResult('pre_employment', {{ $exam->id }})">
+                                    <i class="fas fa-eye mr-1"></i>View Details
+                                </button>
+                                <button class="text-green-600 hover:text-green-900" onclick="downloadResult('pre_employment', {{ $exam->id }})">
+                                    <i class="fas fa-download mr-1"></i>Download
+                                </button>
                             </td>
                         </tr>
                         @endforeach
@@ -295,8 +178,9 @@
             </div>
             @else
             <div class="px-6 py-8 text-center">
-                <i class="fas fa-briefcase text-gray-400 text-4xl mb-4"></i>
-                <p class="text-gray-500">No pre-employment examination results found.</p>
+                <i class="fas fa-paper-plane text-gray-400 text-4xl mb-4"></i>
+                <p class="text-gray-500">No sent examination results found.</p>
+                <p class="text-sm text-gray-400 mt-2">Results sent by admin will appear here.</p>
             </div>
             @endif
         </div>
@@ -340,6 +224,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Functions for sent results
+function viewSentResult(type, id) {
+    if (type === 'annual_physical') {
+        // Open annual physical examination details in a modal or new page
+        window.open(`/company/view-sent-annual-physical/${id}`, '_blank');
+    } else if (type === 'pre_employment') {
+        // Open pre-employment examination details in a modal or new page
+        window.open(`/company/view-sent-pre-employment/${id}`, '_blank');
+    }
+}
+
+function downloadResult(type, id) {
+    if (type === 'annual_physical') {
+        // Download annual physical examination results
+        window.open(`/company/download-sent-annual-physical/${id}`, '_blank');
+    } else if (type === 'pre_employment') {
+        // Download pre-employment examination results
+        window.open(`/company/download-sent-pre-employment/${id}`, '_blank');
+    }
+}
 </script>
 @endpush
 @endsection

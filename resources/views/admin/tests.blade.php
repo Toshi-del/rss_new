@@ -27,7 +27,7 @@
                         <td>{{ $exam->date }}</td>
                         <td>{{ $exam->status }}</td>
                         <td>
-                            <button class="btn btn-primary btn-sm" disabled>Send to Company</button>
+                            <a href="{{ route('admin.view-pre-employment-examination', $exam->id) }}" class="btn btn-primary btn-sm">View & Send to Company</a>
                         </td>
                     </tr>
                 @endforeach
@@ -55,7 +55,7 @@
                         <td>{{ $exam->date }}</td>
                         <td>{{ $exam->status }}</td>
                         <td>
-                            <button class="btn btn-primary btn-sm" disabled>Send to Company</button>
+                            <a href="{{ route('admin.view-annual-physical-examination', $exam->id) }}" class="btn btn-primary btn-sm">View & Send to Company</a>
                         </td>
                     </tr>
                 @endforeach

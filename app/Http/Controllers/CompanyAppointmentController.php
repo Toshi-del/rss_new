@@ -65,6 +65,16 @@ class CompanyAppointmentController extends Controller
                 return back()->withInput()->with('error', 'Appointment date is required. Please select a date.');
             }
 
+            // Check for duplicate appointment (same date, time slot, and created by same user)
+            $existingAppointment = Appointment::where('appointment_date', $appointmentDate)
+                ->where('time_slot', $request->time_slot)
+                ->where('created_by', Auth::id())
+                ->first();
+
+            if ($existingAppointment) {
+                return back()->withInput()->with('error', 'An appointment already exists for this date and time slot. Please choose a different time.');
+            }
+
             $appointment = Appointment::create([
                 'appointment_date' => $appointmentDate,
                 'time_slot' => $request->time_slot,
@@ -126,18 +136,37 @@ class CompanyAppointmentController extends Controller
                     continue; // Skip invalid rows
                 }
                 
-                // Create patient record
-                Patient::create([
-                    'first_name' => trim($row[0]),
-                    'last_name' => trim($row[1]),
-                    'age' => (int) $row[2],
-                    'sex' => trim($row[3]),
-                    'email' => !empty($row[4]) ? trim($row[4]) : null,
-                    'phone' => !empty($row[5]) ? trim($row[5]) : null,
-                    'appointment_id' => $appointment->id,
-                ]);
+                $firstName = trim($row[0]);
+                $lastName = trim($row[1]);
+                $email = !empty($row[4]) ? trim($row[4]) : null;
                 
-                $processedCount++;
+                // Check for duplicate patients (same first name, last name, and email)
+                $existingPatient = Patient::where('first_name', $firstName)
+                    ->where('last_name', $lastName);
+                
+                if ($email) {
+                    $existingPatient = $existingPatient->where('email', $email);
+                } else {
+                    $existingPatient = $existingPatient->whereNull('email');
+                }
+                
+                $existingPatient = $existingPatient->first();
+                
+                if (!$existingPatient) {
+                    // Create patient record only if no duplicate exists
+                    Patient::create([
+                        'first_name' => $firstName,
+                        'last_name' => $lastName,
+                        'age' => (int) $row[2],
+                        'sex' => trim($row[3]),
+                        'email' => $email,
+                        'phone' => !empty($row[5]) ? trim($row[5]) : null,
+                        'appointment_id' => $appointment->id,
+                    ]);
+                    
+                    $processedCount++;
+                }
+                // Skip duplicate patients silently
             }
             
             // Update appointment with patient count
@@ -193,6 +222,17 @@ class CompanyAppointmentController extends Controller
             'blood_chemistry' => 'array',
             'notes' => 'nullable|string',
         ]);
+
+        // Check for duplicate appointment (same date, time slot, and created by same user, excluding current appointment)
+        $existingAppointment = Appointment::where('appointment_date', $request->appointment_date)
+            ->where('time_slot', $request->time_slot)
+            ->where('created_by', Auth::id())
+            ->where('id', '!=', $id)
+            ->first();
+
+        if ($existingAppointment) {
+            return back()->withInput()->with('error', 'An appointment already exists for this date and time slot. Please choose a different time.');
+        }
 
         $appointment->update([
             'appointment_date' => $request->appointment_date,

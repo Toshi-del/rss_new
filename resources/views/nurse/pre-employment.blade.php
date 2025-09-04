@@ -70,9 +70,7 @@
                                 <a href="{{ route('nurse.medical-checklist.pre-employment', $preEmployment->id) }}" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Medical Checklist">
                                     <i class="fas fa-clipboard-list"></i>
                                 </a>
-                                <a href="#" class="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 transition-colors" title="Assist">
-                                    <i class="fas fa-hands-helping"></i>
-                                </a>
+                                
                             </td>
                         </tr>
                     @empty

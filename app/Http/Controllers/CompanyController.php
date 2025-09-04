@@ -110,6 +110,19 @@ class CompanyController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
             
+        // Get sent examination results from admin
+        $sentPreEmploymentResults = \App\Models\PreEmploymentExamination::where('company_name', $user->company)
+            ->where('status', 'sent_to_company')
+            ->orderBy('updated_at', 'desc')
+            ->get();
+            
+        $sentAnnualPhysicalResults = \App\Models\AnnualPhysicalExamination::where('status', 'sent_to_company')
+            ->whereHas('patient.appointment', function($query) use ($user) {
+                $query->where('created_by', $user->id);
+            })
+            ->orderBy('updated_at', 'desc')
+            ->get();
+            
         // Filter by status if requested
         $statusFilter = $request->get('status');
         if ($statusFilter) {
@@ -121,6 +134,10 @@ class CompanyController extends Controller
                 $preEmploymentResults = $preEmploymentResults->filter(function($record) {
                     return $record->status === 'passed' || $record->status === 'failed';
                 });
+            } elseif ($statusFilter === 'sent_results') {
+                // Show only sent results
+                $annualPhysicalResults = collect();
+                $preEmploymentResults = collect();
             }
         }
         
@@ -131,16 +148,88 @@ class CompanyController extends Controller
         $passedPreEmployment = $preEmploymentResults->where('status', 'passed')->count();
         $failedPreEmployment = $preEmploymentResults->where('status', 'failed')->count();
         
+        // Calculate sent results statistics
+        $totalSentAnnualPhysical = $sentAnnualPhysicalResults->count();
+        $totalSentPreEmployment = $sentPreEmploymentResults->count();
+        
         return view('company.medical-results', compact(
             'annualPhysicalResults',
             'preEmploymentResults',
+            'sentAnnualPhysicalResults',
+            'sentPreEmploymentResults',
             'totalAnnualPhysical',
             'completedAnnualPhysical',
             'totalPreEmployment',
             'passedPreEmployment',
             'failedPreEmployment',
+            'totalSentAnnualPhysical',
+            'totalSentPreEmployment',
             'statusFilter'
         ));
+    }
+
+    /**
+     * View sent pre-employment examination details
+     */
+    public function viewSentPreEmployment($id)
+    {
+        $user = Auth::user();
+        $examination = \App\Models\PreEmploymentExamination::where('id', $id)
+            ->where('company_name', $user->company)
+            ->where('status', 'sent_to_company')
+            ->firstOrFail();
+            
+        return view('company.view-sent-pre-employment', compact('examination'));
+    }
+
+    /**
+     * View sent annual physical examination details
+     */
+    public function viewSentAnnualPhysical($id)
+    {
+        $user = Auth::user();
+        $examination = \App\Models\AnnualPhysicalExamination::where('id', $id)
+            ->where('status', 'sent_to_company')
+            ->whereHas('patient.appointment', function($query) use ($user) {
+                $query->where('created_by', $user->id);
+            })
+            ->firstOrFail();
+            
+        return view('company.view-sent-annual-physical', compact('examination'));
+    }
+
+    /**
+     * Download sent pre-employment examination results
+     */
+    public function downloadSentPreEmployment($id)
+    {
+        $user = Auth::user();
+        $examination = \App\Models\PreEmploymentExamination::where('id', $id)
+            ->where('company_name', $user->company)
+            ->where('status', 'sent_to_company')
+            ->firstOrFail();
+            
+        // For now, redirect to view page - can be enhanced to generate PDF
+        return redirect()->route('company.view-sent-pre-employment', $id)
+            ->with('info', 'Download functionality will be implemented to generate PDF reports.');
+    }
+
+    /**
+     * Download sent annual physical examination results
+     */
+    public function downloadSentAnnualPhysical($id)
+    {
+        $user = Auth::user();
+        $examination = \App\Models\AnnualPhysicalExamination::where('id', $id)
+            ->where('status', 'sent_to_company')
+            ->whereHas('patient.appointment', function($query) use ($user) {
+                $query->where('created_by', $user->id);
+            })
+            ->firstOrFail();
+            
+        // For now, redirect to view page - can be enhanced to generate PDF
+        return redirect()->route('company.view-sent-annual-physical', $id)
+            ->with('info', 'Download functionality will be implemented to generate PDF reports.');
     }
 
     /**

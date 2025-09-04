@@ -12,6 +12,8 @@ use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\NurseController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\RadtechController;
+use App\Http\Controllers\PleboController;
+use App\Http\Controllers\RadiologistController;
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -27,6 +29,13 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/appointments', [AdminController::class, 'appointments'])->name('admin.appointments');
     Route::get('/admin/pre-employment', [AdminController::class, 'preEmployment'])->name('admin.pre-employment');
     Route::get('/admin/tests', [AdminController::class, 'tests'])->name('admin.tests');
+    
+    // Examination view and send routes
+    Route::get('/admin/view-pre-employment-examination/{id}', [AdminController::class, 'viewPreEmploymentExamination'])->name('admin.view-pre-employment-examination');
+    Route::get('/admin/view-annual-physical-examination/{id}', [AdminController::class, 'viewAnnualPhysicalExamination'])->name('admin.view-annual-physical-examination');
+    Route::post('/admin/send-pre-employment-examination/{id}', [AdminController::class, 'sendPreEmploymentExamination'])->name('admin.send-pre-employment-examination');
+    Route::post('/admin/send-annual-physical-examination/{id}', [AdminController::class, 'sendAnnualPhysicalExamination'])->name('admin.send-annual-physical-examination');
+    
     Route::get('/admin/messages', [AdminController::class, 'messages'])->name('admin.messages');
     Route::get('/admin/messages/fetch', [AdminController::class, 'fetchMessages']);
     Route::post('/admin/messages/send', [AdminController::class, 'sendMessage']);
@@ -51,6 +60,12 @@ Route::middleware(['auth', 'role:company'])->group(function () {
     
     // Medical Results Routes
     Route::get('/company/medical-results', [CompanyController::class, 'medicalResults'])->name('company.medical-results');
+    
+    // Sent Results View Routes
+    Route::get('/company/view-sent-pre-employment/{id}', [CompanyController::class, 'viewSentPreEmployment'])->name('company.view-sent-pre-employment');
+    Route::get('/company/view-sent-annual-physical/{id}', [CompanyController::class, 'viewSentAnnualPhysical'])->name('company.view-sent-annual-physical');
+    Route::get('/company/download-sent-pre-employment/{id}', [CompanyController::class, 'downloadSentPreEmployment'])->name('company.download-sent-pre-employment');
+    Route::get('/company/download-sent-annual-physical/{id}', [CompanyController::class, 'downloadSentAnnualPhysical'])->name('company.download-sent-annual-physical');
     
     // Pre-Employment Routes
     Route::get('/company/pre-employment', [CompanyPreEmploymentController::class, 'index'])->name('company.pre-employment.index');
@@ -173,7 +188,26 @@ Route::middleware(['auth', 'role:radtech'])->group(function () {
     // Radtech Medical Checklist Routes
     Route::get('/radtech/medical-checklist/pre-employment/{recordId}', [RadtechController::class, 'showMedicalChecklistPreEmployment'])->name('radtech.medical-checklist.pre-employment');
     Route::get('/radtech/medical-checklist/annual-physical/{patientId}', [RadtechController::class, 'showMedicalChecklistAnnualPhysical'])->name('radtech.medical-checklist.annual-physical');
+    Route::post('/radtech/medical-checklist', [RadtechController::class, 'storeMedicalChecklist'])->name('radtech.medical-checklist.store');
     Route::patch('/radtech/medical-checklist/{id}', [RadtechController::class, 'updateMedicalChecklist'])->name('radtech.medical-checklist.update');
+});
+
+Route::middleware(['auth', 'role:plebo'])->group(function () {
+    Route::get('/plebo/dashboard', [PleboController::class, 'dashboard'])->name('plebo.dashboard');
+    Route::get('/plebo/pre-employment', [PleboController::class, 'preEmployment'])->name('plebo.pre-employment');
+    Route::get('/plebo/annual-physical', [PleboController::class, 'annualPhysical'])->name('plebo.annual-physical');
+    Route::get('/plebo/medical-checklist/pre-employment/{recordId}', [PleboController::class, 'showMedicalChecklistPreEmployment'])->name('plebo.medical-checklist.pre-employment');
+    Route::get('/plebo/medical-checklist/annual-physical/{patientId}', [PleboController::class, 'showMedicalChecklistAnnualPhysical'])->name('plebo.medical-checklist.annual-physical');
+    Route::post('/plebo/medical-checklist', [PleboController::class, 'storeMedicalChecklist'])->name('plebo.medical-checklist.store');
+    Route::patch('/plebo/medical-checklist/{id}', [PleboController::class, 'updateMedicalChecklist'])->name('plebo.medical-checklist.update');
+});
+
+Route::middleware(['auth', 'role:radiologist'])->group(function () {
+    Route::get('/radiologist/dashboard', [RadiologistController::class, 'dashboard'])->name('radiologist.dashboard');
+    Route::get('/radiologist/pre-employment/{id}', [RadiologistController::class, 'showPreEmployment'])->name('radiologist.pre-employment.show');
+    Route::patch('/radiologist/pre-employment/{id}', [RadiologistController::class, 'updatePreEmployment'])->name('radiologist.pre-employment.update');
+    Route::get('/radiologist/annual-physical/{id}', [RadiologistController::class, 'showAnnualPhysical'])->name('radiologist.annual-physical.show');
+    Route::patch('/radiologist/annual-physical/{id}', [RadiologistController::class, 'updateAnnualPhysical'])->name('radiologist.annual-physical.update');
 });
 
 Route::middleware(['auth', 'role:patient'])->group(function () {
@@ -183,10 +217,41 @@ Route::middleware(['auth', 'role:patient'])->group(function () {
 });
 
 
+// Generic dashboard redirector for authenticated users
+Route::middleware(['auth'])->get('/dashboard', function() {
+    $user = Auth::user();
+    if ($user->isAdmin()) return redirect()->route('admin.dashboard');
+    if ($user->isCompany()) return redirect()->route('company.dashboard');
+    if ($user->isDoctor()) return redirect()->route('doctor.dashboard');
+    if ($user->isNurse()) return redirect()->route('nurse.dashboard');
+    if ($user->isRadTech()) return redirect()->route('radtech.dashboard');
+    if ($user->isRadiologist()) return redirect()->route('radiologist.dashboard');
+    if ($user->isPlebo()) return redirect()->route('plebo.dashboard');
+    return redirect()->route('patient.dashboard');
+});
+
+
 
 // Public invitation routes
 Route::get('/invitation/{token}', [App\Http\Controllers\CompanyAccountInvitationController::class, 'accept'])->name('invitation.accept');
 Route::post('/invitation/{token}', [App\Http\Controllers\CompanyAccountInvitationController::class, 'processInvitation'])->name('invitation.process');
+
+// Public pages
+Route::get('/about', function () {
+    return view('about');
+})->name('about');
+
+Route::get('/services', function () {
+    return view('services');
+})->name('services');
+
+Route::get('/service', function () {
+    return redirect('/services');
+});
+
+Route::get('/location', function () {
+    return view('location');
+})->name('location');
 
 // Default route - redirect to login
 Route::get('/', function () {

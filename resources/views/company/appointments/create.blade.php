@@ -88,6 +88,12 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Excel File (Optional - Upload patient data)
                     </label>
+                    <div class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                        <p class="text-sm text-blue-800">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            <strong>Duplicate Prevention:</strong> Patients with the same first name, last name, and email will be automatically skipped. Also, appointments for the same date and time slot are not allowed.
+                        </p>
+                    </div>
                     <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
                         <div class="space-y-1 text-center">
                             <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
