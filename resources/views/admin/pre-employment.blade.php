@@ -28,15 +28,55 @@
             <small class="text-muted">Click the envelope button (📧) to send registration emails to passed candidates</small>
         </div>
     </div>
+    
+    <!-- Filter Tabs -->
+    <div class="card-body border-bottom">
+        <ul class="nav nav-tabs" id="filterTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link {{ $filter === 'pending' ? 'active' : '' }}" 
+                   href="{{ route('admin.pre-employment', ['filter' => 'pending']) }}" 
+                   role="tab">
+                    Pending
+                    <span class="badge bg-warning ms-1">{{ \App\Models\PreEmploymentRecord::where('status', 'pending')->count() }}</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link {{ $filter === 'approved' ? 'active' : '' }}" 
+                   href="{{ route('admin.pre-employment', ['filter' => 'approved']) }}" 
+                   role="tab">
+                    Approved
+                    <span class="badge bg-success ms-1">{{ \App\Models\PreEmploymentRecord::where('status', 'Approved')->where('registration_link_sent', false)->count() }}</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link {{ $filter === 'declined' ? 'active' : '' }}" 
+                   href="{{ route('admin.pre-employment', ['filter' => 'declined']) }}" 
+                   role="tab">
+                    Declined
+                    <span class="badge bg-danger ms-1">{{ \App\Models\PreEmploymentRecord::where('status', 'Declined')->count() }}</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link {{ $filter === 'approved_with_link' ? 'active' : '' }}" 
+                   href="{{ route('admin.pre-employment', ['filter' => 'approved_with_link']) }}" 
+                   role="tab">
+                    Approved (Link Sent)
+                    <span class="badge bg-info ms-1">{{ \App\Models\PreEmploymentRecord::where('status', 'Approved')->where('registration_link_sent', true)->count() }}</span>
+                </a>
+            </li>
+        </ul>
+    </div>
     <div class="card-body">
-        <div class="mb-3">
-            <form action="{{ route('admin.pre-employment.send-all-emails') }}" method="POST">
-                @csrf
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-envelope-fill me-2"></i> Send Registration link To all passed/approved status
-                </button>
-            </form>
-        </div>
+        @if($filter === 'approved')
+            <div class="mb-3">
+                <form action="{{ route('admin.pre-employment.send-all-emails') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-envelope-fill me-2"></i> Send Registration link To all approved records
+                    </button>
+                </form>
+            </div>
+        @endif
         <div class="table-responsive">
             <table class="table" id="preEmploymentTable">
                 <thead>
@@ -47,6 +87,7 @@
                         <th>Medical Examination</th>
                         <th>Blood Chemistry</th>
                         <th>Status</th>
+                        <th>Registration Link</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -87,31 +128,51 @@
                                 </span>
                             </td>
                             <td>
-                                <form action="{{ route('admin.pre-employment.approve', $preEmployment->id) }}" method="POST" style="display:inline-block;">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-outline-success" onclick="return confirm('Approve this record?')">
-                                        <i class="bi bi-check-lg"></i>
-                                    </button>
-                                </form>
-                                <form action="{{ route('admin.pre-employment.decline', $preEmployment->id) }}" method="POST" style="display:inline-block;">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Decline this record?')">
-                                        <i class="bi bi-x-lg"></i>
-                                    </button>
-                                </form>
-                                @if($preEmployment->status === 'Approved')
+                                @if($preEmployment->registration_link_sent)
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Sent
+                                    </span>
+                                @else
+                                    <span class="badge bg-secondary">
+                                        <i class="bi bi-x-circle-fill me-1"></i>Not Sent
+                                    </span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($preEmployment->status === 'pending')
+                                    <form action="{{ route('admin.pre-employment.approve', $preEmployment->id) }}" method="POST" style="display:inline-block;">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-outline-success" onclick="return confirm('Approve this record?')" title="Approve">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                    </form>
+                                    <form action="{{ route('admin.pre-employment.decline', $preEmployment->id) }}" method="POST" style="display:inline-block;">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Decline this record?')" title="Decline">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </form>
+                                @elseif($preEmployment->status === 'Approved' && !$preEmployment->registration_link_sent)
                                     <form action="{{ route('admin.pre-employment.send-email', $preEmployment->id) }}" method="POST" style="display:inline-block;">
                                         @csrf
                                         <button type="submit" class="btn btn-sm btn-outline-primary" onclick="return confirm('Send registration email to {{ $preEmployment->email ?? 'this candidate' }}?')" title="Send Registration Email">
                                             <i class="bi bi-envelope-fill"></i>
                                         </button>
                                     </form>
+                                @elseif($preEmployment->status === 'Approved' && $preEmployment->registration_link_sent)
+                                    <span class="text-muted small">
+                                        <i class="bi bi-check-circle-fill text-success me-1"></i>Link Sent
+                                    </span>
+                                @elseif($preEmployment->status === 'Declined')
+                                    <span class="text-muted small">
+                                        <i class="bi bi-x-circle-fill text-danger me-1"></i>Declined
+                                    </span>
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">
+                            <td colspan="8" class="text-center text-muted py-4">
                                 No pre-employment records found.
                             </td>
                         </tr>

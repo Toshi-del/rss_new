@@ -43,8 +43,11 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 @php
                                     $annualPhysicalExam = \App\Models\AnnualPhysicalExamination::where('patient_id', $patient->id)->first();
+                                    $medicalChecklist = \App\Models\MedicalChecklist::where('patient_id', $patient->id)
+                                        ->where('examination_type', 'annual-physical')
+                                        ->first();
                                 @endphp
-                                @if($annualPhysicalExam)
+                                @if($annualPhysicalExam && $medicalChecklist)
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                         Completed
                                     </span>
@@ -55,12 +58,21 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <form action="{{ route('nurse.annual-physical.send-to-doctor', $patient->id) }}" method="POST" class="inline">
-                                    @csrf
-                                    <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Send to Doctor">
+                                @php
+                                    $canSendToDoctor = $annualPhysicalExam && $medicalChecklist;
+                                @endphp
+                                @if($canSendToDoctor)
+                                    <form action="{{ route('nurse.annual-physical.send-to-doctor', $patient->id) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Send to Doctor">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    </form>
+                                @else
+                                    <button type="button" class="bg-gray-400 text-white px-3 py-1 rounded cursor-not-allowed mr-2" title="Complete examination and medical checklist first" disabled>
                                         <i class="fas fa-paper-plane"></i>
                                     </button>
-                                </form>
+                                @endif
                                 @if($annualPhysicalExam)
                                     <a href="{{ route('nurse.annual-physical.edit', $annualPhysicalExam->id) }}" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors mr-2" title="Edit Examination">
                                         <i class="fas fa-edit"></i>

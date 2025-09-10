@@ -4,6 +4,17 @@
 @section('page-title', 'Create Pre-Employment Examination')
 
 @section('content')
+@if($errors->any())
+    <div class="mb-4 p-4 rounded bg-red-100 text-red-800 border border-red-300 text-center font-semibold">
+        <h3 class="font-bold mb-2">Please complete all required fields:</h3>
+        <ul class="text-sm text-left">
+            @foreach($errors->all() as $error)
+                <li>• {{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 <div class="max-w-4xl mx-auto py-8">
     <div class="bg-white rounded-xl shadow-lg p-8 border border-gray-200 mb-8">
         <div class="bg-green-900 text-white text-center py-3 rounded-t-lg mb-8">
@@ -41,20 +52,32 @@
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     @php $phys = old('physical_exam', []); @endphp
                     <div>
-                        <label class="block text-xs mb-1">Temp</label>
-                        <input type="text" name="physical_exam[temp]" value="{{ $phys['temp'] ?? '' }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500" />
+                        <label class="block text-xs mb-1">Temp <span class="text-red-500">*</span></label>
+                        <input type="text" name="physical_exam[temp]" value="{{ $phys['temp'] ?? '' }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 @error('physical_exam.temp') border-red-500 @enderror" required />
+                        @error('physical_exam.temp')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
-                        <label class="block text-xs mb-1">Height</label>
-                        <input type="text" name="physical_exam[height]" value="{{ $phys['height'] ?? '' }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500" />
+                        <label class="block text-xs mb-1">Height <span class="text-red-500">*</span></label>
+                        <input type="text" name="physical_exam[height]" value="{{ $phys['height'] ?? '' }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 @error('physical_exam.height') border-red-500 @enderror" required />
+                        @error('physical_exam.height')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
-                        <label class="block text-xs mb-1">Weight</label>
-                        <input type="text" name="physical_exam[weight]" value="{{ $phys['weight'] ?? '' }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500" />
+                        <label class="block text-xs mb-1">Weight <span class="text-red-500">*</span></label>
+                        <input type="text" name="physical_exam[weight]" value="{{ $phys['weight'] ?? '' }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 @error('physical_exam.weight') border-red-500 @enderror" required />
+                        @error('physical_exam.weight')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
-                        <label class="block text-xs mb-1">BP</label>
-                        <input type="text" name="physical_exam[bp]" value="{{ $phys['bp'] ?? '' }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500" />
+                        <label class="block text-xs mb-1">Heart Rate <span class="text-red-500">*</span></label>
+                        <input type="text" name="physical_exam[heart_rate]" value="{{ $phys['heart_rate'] ?? '' }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 @error('physical_exam.heart_rate') border-red-500 @enderror" required />
+                        @error('physical_exam.heart_rate')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
                     </div>
                   
                 </div>
@@ -62,28 +85,40 @@
             
             <!-- Skin Marks -->
             <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                <label class="block text-xs font-semibold uppercase mb-2">Skin Marks / Tattoos</label>
-                <textarea name="skin_marks" class="form-textarea w-full h-16 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500">{{ old('skin_marks') }}</textarea>
+                <label class="block text-xs font-semibold uppercase mb-2">Skin Marks / Tattoos <span class="text-red-500">*</span></label>
+                <textarea name="skin_marks" class="form-textarea w-full h-16 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 @error('skin_marks') border-red-500 @enderror" required>{{ old('skin_marks') }}</textarea>
+                @error('skin_marks')
+                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                @enderror
             </div>
             
             <!-- Visual Acuity -->
             <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-xs font-semibold uppercase mb-2">Visual Acuity</label>
-                        <textarea name="visual" class="form-textarea w-full h-16 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500">{{ old('visual') }}</textarea>
+                        <label class="block text-xs font-semibold uppercase mb-2">Visual Acuity <span class="text-red-500">*</span></label>
+                        <textarea name="visual" class="form-textarea w-full h-16 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 @error('visual') border-red-500 @enderror" required>{{ old('visual') }}</textarea>
+                        @error('visual')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase mb-2">Ishihara Test</label>
-                        <textarea name="ishihara_test" class="form-textarea w-full h-16 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500">{{ old('ishihara_test') }}</textarea>
+                        <label class="block text-xs font-semibold uppercase mb-2">Ishihara Test <span class="text-red-500">*</span></label>
+                        <textarea name="ishihara_test" class="form-textarea w-full h-16 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 @error('ishihara_test') border-red-500 @enderror" required>{{ old('ishihara_test') }}</textarea>
+                        @error('ishihara_test')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
             </div>
             
             <!-- Findings -->
             <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                <label class="block text-xs font-semibold uppercase mb-2">Findings</label>
-                <textarea name="findings" class="form-textarea w-full h-24 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500">{{ old('findings') }}</textarea>
+                <label class="block text-xs font-semibold uppercase mb-2">Findings <span class="text-red-500">*</span></label>
+                <textarea name="findings" class="form-textarea w-full h-24 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 @error('findings') border-red-500 @enderror" required>{{ old('findings') }}</textarea>
+                @error('findings')
+                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                @enderror
             </div>
             
           

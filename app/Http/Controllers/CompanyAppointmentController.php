@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Appointment;
 use App\Models\Patient;
+use App\Models\MedicalTest;
+use App\Models\MedicalTestCategory;
 use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -30,14 +32,10 @@ class CompanyAppointmentController extends Controller
                 ->with('error', 'Please select a date from the calendar.');
         }
 
-        $bloodChemistry = [
-            'FBS',
-            'LIPID',
-            'HBSAG',
-            'CREATININE',
-            'BUN',
-            'HEPA A IGM'
-        ];
+        // Get medical tests grouped by category
+        $medicalTestCategories = MedicalTestCategory::with(['medicalTests' => function($query) {
+            $query->where('is_active', true)->orderBy('sort_order');
+        }])->where('is_active', true)->orderBy('sort_order')->get();
 
         $timeSlots = [
             '8:00 AM', '8:30 AM', '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM',
@@ -45,7 +43,7 @@ class CompanyAppointmentController extends Controller
             '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM'
         ];
 
-        return view('company.appointments.create', compact('bloodChemistry', 'timeSlots'));
+        return view('company.appointments.create', compact('medicalTestCategories', 'timeSlots'));
     }
 
     public function store(Request $request)
@@ -54,7 +52,8 @@ class CompanyAppointmentController extends Controller
             'appointment_date' => 'nullable|date|after_or_equal:today',
             'time_slot' => 'required|string',
             'appointment_type' => 'required|string',
-            'blood_chemistry' => 'array',
+            'medical_tests' => 'array',
+            'medical_tests.*' => 'exists:medical_tests,id',
             'notes' => 'nullable|string',
             'excel_file' => 'nullable|file|mimes:xlsx,xls',
         ]);
@@ -64,6 +63,9 @@ class CompanyAppointmentController extends Controller
             if (empty($appointmentDate)) {
                 return back()->withInput()->with('error', 'Appointment date is required. Please select a date.');
             }
+            
+            // Ensure the date is in the correct format
+            $appointmentDate = Carbon::parse($appointmentDate)->format('Y-m-d');
 
             // Check for duplicate appointment (same date, time slot, and created by same user)
             $existingAppointment = Appointment::where('appointment_date', $appointmentDate)
@@ -75,11 +77,16 @@ class CompanyAppointmentController extends Controller
                 return back()->withInput()->with('error', 'An appointment already exists for this date and time slot. Please choose a different time.');
             }
 
+            // Calculate total price from selected medical tests
+            $selectedTests = MedicalTest::whereIn('id', $request->medical_tests ?? [])->get();
+            $totalPrice = $selectedTests->sum('price');
+
             $appointment = Appointment::create([
                 'appointment_date' => $appointmentDate,
                 'time_slot' => $request->time_slot,
                 'appointment_type' => $request->appointment_type,
-                'blood_chemistry' => $request->blood_chemistry ?? [],
+                'blood_chemistry' => $request->medical_tests ?? [], // Store medical test IDs
+                'total_price' => $totalPrice,
                 'notes' => $request->notes,
                 'patients_data' => [], // Will be populated when Excel is processed
                 'excel_file_path' => null, // Will be set if file is uploaded
@@ -98,6 +105,12 @@ class CompanyAppointmentController extends Controller
                 
                 // Process Excel file and create patients
                 $this->processExcelFile($file, $appointment);
+                
+                \Log::info('Excel file processed for appointment', [
+                    'appointment_id' => $appointment->id,
+                    'file_path' => $filePath,
+                    'patients_count' => $appointment->patients()->count()
+                ]);
             }
 
             return redirect()->route('company.appointments.index')
@@ -117,22 +130,45 @@ class CompanyAppointmentController extends Controller
     private function processExcelFile($file, $appointment)
     {
         try {
+            \Log::info('Starting Excel file processing', [
+                'appointment_id' => $appointment->id,
+                'file_name' => $file->getClientOriginalName(),
+                'file_size' => $file->getSize()
+            ]);
+            
             $spreadsheet = IOFactory::load($file->getPathname());
             $worksheet = $spreadsheet->getActiveSheet();
             $rows = $worksheet->toArray();
+            
+            \Log::info('Excel file loaded', [
+                'appointment_id' => $appointment->id,
+                'total_rows' => count($rows)
+            ]);
             
             // Skip header row
             array_shift($rows);
             
             $processedCount = 0;
+            $skippedCount = 0;
             
-            foreach ($rows as $row) {
+            foreach ($rows as $index => $row) {
+                \Log::info('Processing row', [
+                    'appointment_id' => $appointment->id,
+                    'row_index' => $index,
+                    'row_data' => $row
+                ]);
+                
                 if (empty($row[0]) && empty($row[1])) {
+                    \Log::info('Skipping empty row', ['row_index' => $index]);
                     continue; // Skip empty rows
                 }
                 
                 // Validate required fields
                 if (empty($row[0]) || empty($row[1]) || empty($row[2]) || empty($row[3])) {
+                    \Log::info('Skipping invalid row - missing required fields', [
+                        'row_index' => $index,
+                        'row_data' => $row
+                    ]);
                     continue; // Skip invalid rows
                 }
                 
@@ -140,38 +176,80 @@ class CompanyAppointmentController extends Controller
                 $lastName = trim($row[1]);
                 $email = !empty($row[4]) ? trim($row[4]) : null;
                 
-                // Check for duplicate patients (same first name, last name, and email)
-                $existingPatient = Patient::where('first_name', $firstName)
-                    ->where('last_name', $lastName);
+                // Check for duplicate patients (same first name, last name, and email) for this specific appointment
+                $existingPatientForAppointment = Patient::where('first_name', $firstName)
+                    ->where('last_name', $lastName)
+                    ->where('appointment_id', $appointment->id);
                 
                 if ($email) {
-                    $existingPatient = $existingPatient->where('email', $email);
+                    $existingPatientForAppointment = $existingPatientForAppointment->where('email', $email);
                 } else {
-                    $existingPatient = $existingPatient->whereNull('email');
+                    $existingPatientForAppointment = $existingPatientForAppointment->whereNull('email');
                 }
                 
-                $existingPatient = $existingPatient->first();
+                $existingPatientForAppointment = $existingPatientForAppointment->first();
                 
-                if (!$existingPatient) {
-                    // Create patient record only if no duplicate exists
-                    Patient::create([
-                        'first_name' => $firstName,
-                        'last_name' => $lastName,
-                        'age' => (int) $row[2],
-                        'sex' => trim($row[3]),
-                        'email' => $email,
-                        'phone' => !empty($row[5]) ? trim($row[5]) : null,
-                        'appointment_id' => $appointment->id,
-                    ]);
+                if (!$existingPatientForAppointment) {
+                    // Check if patient exists globally (across all appointments)
+                    $globalExistingPatient = Patient::where('first_name', $firstName)
+                        ->where('last_name', $lastName);
                     
-                    $processedCount++;
+                    if ($email) {
+                        $globalExistingPatient = $globalExistingPatient->where('email', $email);
+                    } else {
+                        $globalExistingPatient = $globalExistingPatient->whereNull('email');
+                    }
+                    
+                    $globalExistingPatient = $globalExistingPatient->first();
+                    
+                    if (!$globalExistingPatient) {
+                        // Create new patient record
+                        Patient::create([
+                            'first_name' => $firstName,
+                            'last_name' => $lastName,
+                            'age' => (int) $row[2],
+                            'sex' => trim($row[3]),
+                            'email' => $email,
+                            'phone' => !empty($row[5]) ? trim($row[5]) : null,
+                            'appointment_id' => $appointment->id,
+                        ]);
+                        $processedCount++;
+                    } else {
+                        // Patient exists globally but not for this appointment, create a new record for this appointment
+                        Patient::create([
+                            'first_name' => $firstName,
+                            'last_name' => $lastName,
+                            'age' => (int) $row[2],
+                            'sex' => trim($row[3]),
+                            'email' => $email,
+                            'phone' => !empty($row[5]) ? trim($row[5]) : null,
+                            'appointment_id' => $appointment->id,
+                        ]);
+                        $processedCount++;
+                    }
+                } else {
+                    // Patient already exists for this appointment, skip
+                    $skippedCount++;
                 }
-                // Skip duplicate patients silently
             }
             
-            // Update appointment with patient count
+            // Get total patient count for this appointment
+            $totalPatients = Patient::where('appointment_id', $appointment->id)->count();
+            
+            // Update appointment with patient data
             $appointment->update([
-                'patients_data' => ['count' => $processedCount]
+                'patients_data' => [
+                    'count' => $totalPatients,
+                    'processed' => $processedCount,
+                    'skipped' => $skippedCount
+                ]
+            ]);
+            
+            \Log::info('Excel processing completed', [
+                'appointment_id' => $appointment->id,
+                'total_patients' => $totalPatients,
+                'processed' => $processedCount,
+                'skipped' => $skippedCount
             ]);
             
         } catch (\Exception $e) {
@@ -192,14 +270,10 @@ class CompanyAppointmentController extends Controller
         $appointment = Appointment::where('created_by', Auth::id())
             ->findOrFail($id);
         
-        $bloodChemistry = [
-            'FBS',
-            'LIPID',
-            'HBSAG',
-            'CREATININE',
-            'BUN',
-            'HEPA A IGM'
-        ];
+        // Get medical tests grouped by category
+        $medicalTestCategories = MedicalTestCategory::with(['medicalTests' => function($query) {
+            $query->where('is_active', true)->orderBy('sort_order');
+        }])->where('is_active', true)->orderBy('sort_order')->get();
 
         $timeSlots = [
             '8:00 AM', '8:30 AM', '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM',
@@ -207,7 +281,7 @@ class CompanyAppointmentController extends Controller
             '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM'
         ];
 
-        return view('company.appointments.edit', compact('appointment', 'bloodChemistry', 'timeSlots'));
+        return view('company.appointments.edit', compact('appointment', 'medicalTestCategories', 'timeSlots'));
     }
 
     public function update(Request $request, $id)
@@ -219,7 +293,8 @@ class CompanyAppointmentController extends Controller
             'appointment_date' => 'required|date',
             'time_slot' => 'required|string',
             'appointment_type' => 'required|string',
-            'blood_chemistry' => 'array',
+            'medical_tests' => 'array',
+            'medical_tests.*' => 'exists:medical_tests,id',
             'notes' => 'nullable|string',
         ]);
 
@@ -234,11 +309,16 @@ class CompanyAppointmentController extends Controller
             return back()->withInput()->with('error', 'An appointment already exists for this date and time slot. Please choose a different time.');
         }
 
+        // Calculate total price from selected medical tests
+        $selectedTests = MedicalTest::whereIn('id', $request->medical_tests ?? [])->get();
+        $totalPrice = $selectedTests->sum('price');
+
         $appointment->update([
             'appointment_date' => $request->appointment_date,
             'time_slot' => $request->time_slot,
             'appointment_type' => $request->appointment_type,
-            'blood_chemistry' => $request->blood_chemistry ?? [],
+            'blood_chemistry' => $request->medical_tests ?? [], // Store medical test IDs
+            'total_price' => $totalPrice,
             'notes' => $request->notes,
         ]);
 

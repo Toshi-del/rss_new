@@ -51,6 +51,10 @@ Route::post('admin/pre-employment/{id}/send-email', [App\Http\Controllers\AdminC
     Route::post('admin/pre-employment/send-all-emails', [AdminController::class, 'sendAllRegistrationEmails'])->name('admin.pre-employment.send-all-emails');
     Route::get('/admin/accounts-and-patients', [AdminController::class, 'companyAccountsAndPatients'])->name('admin.accounts-and-patients');
     Route::delete('/admin/company/{id}', [AdminController::class, 'deleteCompany'])->name('admin.delete-company');
+    
+    // Medical Test Management Routes
+    Route::resource('admin/medical-test-categories', App\Http\Controllers\Admin\MedicalTestCategoryController::class);
+    Route::resource('admin/medical-tests', App\Http\Controllers\Admin\MedicalTestController::class)->except(['index']);
 });
 
 Route::middleware(['auth', 'role:company'])->group(function () {
@@ -152,6 +156,28 @@ Route::middleware(['auth', 'role:doctor'])->group(function () {
 Route::get('/debug-users', function() {
     $users = \App\Models\User::select('id', 'fname', 'lname', 'role', 'company')->get();
     return response()->json($users);
+});
+
+// Debug route to check patients for an appointment
+Route::get('/debug-patients/{appointmentId}', function($appointmentId) {
+    $appointment = App\Models\Appointment::with('patients')->find($appointmentId);
+    if (!$appointment) {
+        return 'Appointment not found';
+    }
+    
+    return response()->json([
+        'appointment_id' => $appointment->id,
+        'patients_count' => $appointment->patients->count(),
+        'patients' => $appointment->patients->map(function($patient) {
+            return [
+                'id' => $patient->id,
+                'name' => $patient->first_name . ' ' . $patient->last_name,
+                'email' => $patient->email,
+                'appointment_id' => $patient->appointment_id
+            ];
+        }),
+        'patients_data' => $appointment->patients_data
+    ]);
 });
 
 Route::middleware(['auth', 'role:nurse'])->group(function () {

@@ -187,7 +187,11 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 // Add click event for future dates
                 dayElement.addEventListener('click', function() {
-                    const selectedDate = date.toISOString().split('T')[0];
+                    // Format date in local timezone to avoid timezone offset issues
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const selectedDate = `${year}-${month}-${day}`;
                     window.location.href = `{{ route('company.appointments.create') }}?date=${selectedDate}`;
                 });
             }

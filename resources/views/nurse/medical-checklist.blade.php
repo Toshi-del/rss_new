@@ -36,7 +36,18 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div>
                     <label class="block text-xs font-semibold uppercase mb-1">Name</label>
-                    <input type="text" name="name" value="{{ old('name', $medicalChecklist->name ?? $name ?? '') }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500" required />
+                    <div class="w-full rounded-lg border-gray-300 bg-gray-100 px-3 py-2 text-gray-700">
+                        @if(isset($medicalChecklist) && $medicalChecklist->patient)
+                            {{ $medicalChecklist->patient->full_name }}
+                        @elseif(isset($patient))
+                            {{ $patient->full_name }}
+                        @elseif(isset($preEmploymentRecord))
+                            {{ $preEmploymentRecord->first_name }} {{ $preEmploymentRecord->last_name }}
+                        @else
+                            {{ old('name', $medicalChecklist->name ?? $name ?? '') }}
+                        @endif
+                    </div>
+                    <input type="hidden" name="name" value="@if(isset($medicalChecklist) && $medicalChecklist->patient){{ $medicalChecklist->patient->full_name }}@elseif(isset($patient)){{ $patient->full_name }}@elseif(isset($preEmploymentRecord)){{ $preEmploymentRecord->first_name }} {{ $preEmploymentRecord->last_name }}@else{{ old('name', $medicalChecklist->name ?? $name ?? '') }}@endif" />
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase mb-1">Date</label>
@@ -46,17 +57,33 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase mb-1">Age</label>
-                    <input type="number" name="age" value="{{ old('age', $medicalChecklist->age ?? $age ?? '') }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500" required />
+                    <div class="w-full rounded-lg border-gray-300 bg-gray-100 px-3 py-2 text-gray-700">
+                        @if(isset($medicalChecklist) && $medicalChecklist->patient)
+                            {{ $medicalChecklist->patient->age }}
+                        @elseif(isset($patient))
+                            {{ $patient->age }}
+                        @elseif(isset($preEmploymentRecord))
+                            {{ $preEmploymentRecord->age }}
+                        @else
+                            {{ old('age', $medicalChecklist->age ?? $age ?? '') }}
+                        @endif
+                    </div>
+                    <input type="hidden" name="age" value="@if(isset($medicalChecklist) && $medicalChecklist->patient){{ $medicalChecklist->patient->age }}@elseif(isset($patient)){{ $patient->age }}@elseif(isset($preEmploymentRecord)){{ $preEmploymentRecord->age }}@else{{ old('age', $medicalChecklist->age ?? $age ?? '') }}@endif" />
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase mb-1">Number</label>
-                    @php($displayNumber = old('number', $medicalChecklist->number ?? $number ?? ''))
-                    @if($displayNumber)
-                        <a class="text-green-700 hover:underline cursor-default">{{ $displayNumber }}</a>
-                    @else
-                        <span class="text-sm text-gray-500">N/A</span>
-                    @endif
-                    <input type="hidden" name="number" value="{{ $displayNumber }}" />
+                    <div class="w-full rounded-lg border-gray-300 bg-gray-100 px-3 py-2 text-gray-700">
+                        @if(isset($medicalChecklist) && $medicalChecklist->patient)
+                            {{ $medicalChecklist->patient->id }}
+                        @elseif(isset($patient))
+                            {{ $patient->id }}
+                        @elseif(isset($preEmploymentRecord))
+                            EMP-{{ str_pad($preEmploymentRecord->id, 4, '0', STR_PAD_LEFT) }}
+                        @else
+                            {{ old('number', $medicalChecklist->number ?? $number ?? 'N/A') }}
+                        @endif
+                    </div>
+                    <input type="hidden" name="number" value="@if(isset($medicalChecklist) && $medicalChecklist->patient){{ $medicalChecklist->patient->id }}@elseif(isset($patient)){{ $patient->id }}@elseif(isset($preEmploymentRecord))EMP-{{ str_pad($preEmploymentRecord->id, 4, '0', STR_PAD_LEFT) }}@else{{ old('number', $medicalChecklist->number ?? $number ?? '') }}@endif" />
                 </div>
             </div>
 
@@ -93,15 +120,11 @@
                 </div>
             </div>
 
-            <!-- Optional Exam and Nurse Signature -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Optional Exam -->
+            <div class="grid grid-cols-1 gap-6">
                 <div>
                     <label class="block text-xs font-semibold uppercase mb-1">Optional</label>
                     <input type="text" name="optional_exam" value="{{ old('optional_exam', $medicalChecklist->optional_exam ?? $optionalExam ?? 'Audiometry/Ishihara') }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500" />
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase mb-1">Nurse's Signature</label>
-                    <input type="text" name="nurse_signature" value="{{ old('nurse_signature', $medicalChecklist->nurse_signature ?? $nurseSignature ?? '') }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500" />
                 </div>
             </div>
 

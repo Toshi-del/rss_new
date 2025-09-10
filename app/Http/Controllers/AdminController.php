@@ -248,10 +248,31 @@ class AdminController extends Controller
     /**
      * Show pre-employment page
      */
-    public function preEmployment()
+    public function preEmployment(Request $request)
     {
-        $preEmployments = PreEmploymentRecord::paginate(15);
-        return view('admin.pre-employment', compact('preEmployments'));
+        $filter = $request->get('filter', 'pending');
+        
+        $query = PreEmploymentRecord::query();
+        
+        switch ($filter) {
+            case 'pending':
+                $query->where('status', 'pending');
+                break;
+            case 'approved':
+                $query->where('status', 'Approved')->where('registration_link_sent', false);
+                break;
+            case 'declined':
+                $query->where('status', 'Declined');
+                break;
+            case 'approved_with_link':
+                $query->where('status', 'Approved')->where('registration_link_sent', true);
+                break;
+            default:
+                $query->where('status', 'pending');
+        }
+        
+        $preEmployments = $query->paginate(15);
+        return view('admin.pre-employment', compact('preEmployments', 'filter'));
     }
     
     /**
@@ -518,6 +539,8 @@ class AdminController extends Controller
                 $record->full_name ?? ($record->first_name . ' ' . $record->last_name),
                 $record->id
             ));
+            // Mark registration link as sent
+            $record->update(['registration_link_sent' => true]);
             return redirect()->back()->with('success', 'Registration email sent successfully to ' . $record->email);
         } catch (\Exception $e) {
             \Log::error('Email sending failed: ' . $e->getMessage());
@@ -542,6 +565,8 @@ class AdminController extends Controller
                     $record->full_name ?? ($record->first_name . ' ' . $record->last_name),
                     $record->id
                 ));
+                // Mark registration link as sent
+                $record->update(['registration_link_sent' => true]);
                 $sent++;
             } catch (\Exception $e) {
                 \Log::error('Bulk email failed for ' . $record->email . ': ' . $e->getMessage());

@@ -22,6 +22,7 @@ class PreEmploymentRecord extends Model
         'company_name',
         'uploaded_file',
         'status',
+        'registration_link_sent',
         'created_by',
     ];
 

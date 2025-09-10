@@ -18,12 +18,14 @@ class Appointment extends Model
         'excel_file_path',
         'created_by',
         'status',
+        'total_price',
     ];
 
     protected $casts = [
         'appointment_date' => 'date',
         'blood_chemistry' => 'array',
         'patients_data' => 'array',
+        'total_price' => 'decimal:2',
     ];
 
     public function creator(): BelongsTo

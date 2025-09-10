@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Models\PreEmploymentRecord;
+use App\Models\MedicalTestCategory;
 
 class CompanyPreEmploymentController extends Controller
 {
@@ -21,16 +22,12 @@ class CompanyPreEmploymentController extends Controller
 
     public function create()
     {
-        $bloodTests = [
-            'FBS',
-            'LIPID',
-            'HBSAG',
-            'CREATININE',
-            'BUN',
-            'HEPA A IGM'
-        ];
+        $medicalTestCategories = MedicalTestCategory::with('activeMedicalTests')
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
 
-        return view('company.pre-employment.create', compact('bloodTests'));
+        return view('company.pre-employment.create', compact('medicalTestCategories'));
     }
 
     public function store(Request $request)

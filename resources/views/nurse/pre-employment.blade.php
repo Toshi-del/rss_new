@@ -62,13 +62,25 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 @php
                                     $preEmploymentExam = \App\Models\PreEmploymentExamination::where('pre_employment_record_id', $preEmployment->id)->first();
+                                    $medicalChecklist = \App\Models\MedicalChecklist::where('pre_employment_record_id', $preEmployment->id)
+                                        ->where('examination_type', 'pre_employment')
+                                        ->first();
                                 @endphp
-                                <form action="{{ route('nurse.pre-employment.send-to-doctor', $preEmployment->id) }}" method="POST" class="inline">
-                                    @csrf
-                                    <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Send to Doctor">
+                                @php
+                                    $canSendToDoctor = $preEmploymentExam && $medicalChecklist;
+                                @endphp
+                                @if($canSendToDoctor)
+                                    <form action="{{ route('nurse.pre-employment.send-to-doctor', $preEmployment->id) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Send to Doctor">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    </form>
+                                @else
+                                    <button type="button" class="bg-gray-400 text-white px-3 py-1 rounded cursor-not-allowed mr-2" title="Complete examination and medical checklist first" disabled>
                                         <i class="fas fa-paper-plane"></i>
                                     </button>
-                                </form>
+                                @endif
                                 @if($preEmploymentExam)
                                     <a href="{{ route('nurse.pre-employment.edit', $preEmploymentExam->id) }}" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors mr-2" title="Edit Examination">
                                         <i class="fas fa-edit"></i>

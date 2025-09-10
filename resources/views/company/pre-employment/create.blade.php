@@ -67,19 +67,40 @@
                     @enderror
                 </div>
 
-                <!-- Blood Chemistry -->
+                <!-- Medical Tests by Category -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-tint mr-2"></i>Blood Chemistry
+                    <label class="block text-sm font-medium text-gray-700 mb-4">
+                        <i class="fas fa-flask mr-2"></i>Medical Tests
                     </label>
-                    <div class="mt-2 space-y-2">
-                        @foreach($bloodTests as $test)
-                        <div class="flex items-center">
-                            <input type="checkbox" name="blood_tests[]" value="{{ $test }}" id="blood{{ $loop->index + 1 }}" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                            <label for="blood{{ $loop->index + 1 }}" class="ml-2 block text-sm text-gray-900">{{ $test }}</label>
+                    
+                    @foreach($medicalTestCategories as $category)
+                        <div class="mb-6">
+                            <h4 class="text-lg font-medium text-gray-800 mb-3 border-b border-gray-200 pb-2">
+                                {{ $category->name }}
+                                @if($category->description)
+                                    <span class="text-sm text-gray-500 font-normal">- {{ $category->description }}</span>
+                                @endif
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                @foreach($category->activeMedicalTests as $test)
+                                    <div class="flex items-center">
+                                        <input type="checkbox" 
+                                               name="blood_tests[]" 
+                                               value="{{ $test->name }}" 
+                                               id="test_{{ $test->id }}" 
+                                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="test_{{ $test->id }}" class="ml-2 block text-sm text-gray-900">
+                                            {{ $test->name }}
+                                            @if($test->description)
+                                                <span class="text-xs text-gray-500">({{ $test->description }})</span>
+                                            @endif
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
-                        @endforeach
-                    </div>
+                    @endforeach
+                    
                     @error('blood_tests')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror

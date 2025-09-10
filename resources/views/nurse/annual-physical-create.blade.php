@@ -4,6 +4,17 @@
 @section('page-title', 'Create Annual Physical Examination')
 
 @section('content')
+@if($errors->any())
+    <div class="mb-4 p-4 rounded bg-red-100 text-red-800 border border-red-300 text-center font-semibold">
+        <h3 class="font-bold mb-2">Please complete all required fields:</h3>
+        <ul class="text-sm text-left">
+            @foreach($errors->all() as $error)
+                <li>• {{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 <div class="max-w-4xl mx-auto py-8">
     <div class="bg-white rounded-xl shadow-lg p-8 border border-gray-200 mb-8">
         <div class="bg-green-900 text-white text-center py-3 rounded-t-lg mb-8">
@@ -39,44 +50,68 @@
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     @php $phys = old('physical_exam', []); @endphp
                     <div>
-                        <label class="block text-xs mb-1">Temp</label>
-                        <input type="text" name="physical_exam[temp]" value="{{ $phys['temp'] ?? '' }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500" />
+                        <label class="block text-xs mb-1">Temp <span class="text-red-500">*</span></label>
+                        <input type="text" name="physical_exam[temp]" value="{{ $phys['temp'] ?? '' }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 @error('physical_exam.temp') border-red-500 @enderror" required />
+                        @error('physical_exam.temp')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
-                        <label class="block text-xs mb-1">Height</label>
-                        <input type="text" name="physical_exam[height]" value="{{ $phys['height'] ?? '' }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500" />
+                        <label class="block text-xs mb-1">Height <span class="text-red-500">*</span></label>
+                        <input type="text" name="physical_exam[height]" value="{{ $phys['height'] ?? '' }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 @error('physical_exam.height') border-red-500 @enderror" required />
+                        @error('physical_exam.height')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
-                        <label class="block text-xs mb-1">Heart Rate</label>
-                        <input type="text" name="physical_exam[heart_rate]" value="{{ $phys['heart_rate'] ?? '' }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500" />
+                        <label class="block text-xs mb-1">Heart Rate <span class="text-red-500">*</span></label>
+                        <input type="text" name="physical_exam[heart_rate]" value="{{ $phys['heart_rate'] ?? '' }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 @error('physical_exam.heart_rate') border-red-500 @enderror" required />
+                        @error('physical_exam.heart_rate')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
-                        <label class="block text-xs mb-1">Weight</label>
-                        <input type="text" name="physical_exam[weight]" value="{{ $phys['weight'] ?? '' }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500" />
+                        <label class="block text-xs mb-1">Weight <span class="text-red-500">*</span></label>
+                        <input type="text" name="physical_exam[weight]" value="{{ $phys['weight'] ?? '' }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 @error('physical_exam.weight') border-red-500 @enderror" required />
+                        @error('physical_exam.weight')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
             </div>
             
             <!-- Skin Identification Marks -->
             <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                <label class="block text-xs font-semibold uppercase mb-2">Skin Identification Marks</label>
-                <input type="text" name="skin_marks" value="{{ old('skin_marks') }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500" />
+                <label class="block text-xs font-semibold uppercase mb-2">Skin Identification Marks <span class="text-red-500">*</span></label>
+                <input type="text" name="skin_marks" value="{{ old('skin_marks') }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 @error('skin_marks') border-red-500 @enderror" required />
+                @error('skin_marks')
+                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                @enderror
             </div>
             
             <!-- Visual, Ishihara, Findings -->
             <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label class="block text-xs font-semibold uppercase mb-1">Visual</label>
-                        <input type="text" name="visual" value="{{ old('visual') }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500" />
+                        <label class="block text-xs font-semibold uppercase mb-1">Visual <span class="text-red-500">*</span></label>
+                        <input type="text" name="visual" value="{{ old('visual') }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 @error('visual') border-red-500 @enderror" required />
+                        @error('visual')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase mb-1">Ishihara Test</label>
-                        <input type="text" name="ishihara_test" value="{{ old('ishihara_test') }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500" />
+                        <label class="block text-xs font-semibold uppercase mb-1">Ishihara Test <span class="text-red-500">*</span></label>
+                        <input type="text" name="ishihara_test" value="{{ old('ishihara_test') }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 @error('ishihara_test') border-red-500 @enderror" required />
+                        @error('ishihara_test')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase mb-1">Findings</label>
-                        <input type="text" name="findings" value="{{ old('findings') }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500" />
+                        <label class="block text-xs font-semibold uppercase mb-1">Findings <span class="text-red-500">*</span></label>
+                        <input type="text" name="findings" value="{{ old('findings') }}" class="form-input w-full rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 @error('findings') border-red-500 @enderror" required />
+                        @error('findings')
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
             </div>

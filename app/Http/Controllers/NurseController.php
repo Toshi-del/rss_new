@@ -193,8 +193,12 @@ class NurseController extends Controller
         $preEmploymentRecord = PreEmploymentRecord::findOrFail($recordId);
         $medicalChecklist = \App\Models\MedicalChecklist::where('pre_employment_record_id', $recordId)->first();
         $examinationType = 'pre-employment';
+        $number = 'EMP-' . str_pad($preEmploymentRecord->id, 4, '0', STR_PAD_LEFT);
+        $name = trim(($preEmploymentRecord->first_name ?? '') . ' ' . ($preEmploymentRecord->last_name ?? ''));
+        $age = $preEmploymentRecord->age ?? null;
+        $date = now()->format('Y-m-d');
         
-        return view('nurse.medical-checklist', compact('medicalChecklist', 'preEmploymentRecord', 'examinationType'));
+        return view('nurse.medical-checklist', compact('medicalChecklist', 'preEmploymentRecord', 'examinationType', 'number', 'name', 'age', 'date'));
     }
 
     /**
@@ -377,15 +381,29 @@ class NurseController extends Controller
             'past_medical_history' => 'nullable|string',
             'family_history' => 'nullable|array',
             'personal_habits' => 'nullable|array',
-            'physical_exam' => 'nullable|array',
-            'skin_marks' => 'nullable|string',
-            'visual' => 'nullable|string',
-            'ishihara_test' => 'nullable|string',
-            'findings' => 'nullable|string',
+            'physical_exam' => 'required|array',
+            'physical_exam.temp' => 'required|string',
+            'physical_exam.height' => 'required|string',
+            'physical_exam.weight' => 'required|string',
+            'physical_exam.heart_rate' => 'required|string',
+            'skin_marks' => 'required|string',
+            'visual' => 'required|string',
+            'ishihara_test' => 'required|string',
+            'findings' => 'required|string',
             'lab_report' => 'nullable|array',
             'physical_findings' => 'nullable|array',
             'lab_findings' => 'nullable|array',
             'ecg' => 'nullable|string',
+        ], [
+            'physical_exam.required' => 'Physical examination data is required.',
+            'physical_exam.temp.required' => 'Temperature is required.',
+            'physical_exam.height.required' => 'Height is required.',
+            'physical_exam.weight.required' => 'Weight is required.',
+            'physical_exam.heart_rate.required' => 'Heart rate is required.',
+            'skin_marks.required' => 'Skin marks/tattoos are required.',
+            'visual.required' => 'Visual acuity is required.',
+            'ishihara_test.required' => 'Ishihara test is required.',
+            'findings.required' => 'Findings are required.',
         ]);
 
         // Auto-populate linkage fields from the source record
@@ -424,15 +442,29 @@ class NurseController extends Controller
             'past_medical_history' => 'nullable|string',
             'family_history' => 'nullable|array',
             'personal_habits' => 'nullable|array',
-            'physical_exam' => 'nullable|array',
-            'skin_marks' => 'nullable|string',
-            'visual' => 'nullable|string',
-            'ishihara_test' => 'nullable|string',
-            'findings' => 'nullable|string',
+            'physical_exam' => 'required|array',
+            'physical_exam.temp' => 'required|string',
+            'physical_exam.height' => 'required|string',
+            'physical_exam.heart_rate' => 'required|string',
+            'physical_exam.weight' => 'required|string',
+            'skin_marks' => 'required|string',
+            'visual' => 'required|string',
+            'ishihara_test' => 'required|string',
+            'findings' => 'required|string',
             'lab_report' => 'nullable|array',
             'physical_findings' => 'nullable|array',
             'lab_findings' => 'nullable|array',
             'ecg' => 'nullable|string',
+        ], [
+            'physical_exam.required' => 'Physical examination data is required.',
+            'physical_exam.temp.required' => 'Temperature is required.',
+            'physical_exam.height.required' => 'Height is required.',
+            'physical_exam.heart_rate.required' => 'Heart rate is required.',
+            'physical_exam.weight.required' => 'Weight is required.',
+            'skin_marks.required' => 'Skin identification marks are required.',
+            'visual.required' => 'Visual examination is required.',
+            'ishihara_test.required' => 'Ishihara test is required.',
+            'findings.required' => 'Findings are required.',
         ]);
 
         // Auto-populate linkage fields from the patient
