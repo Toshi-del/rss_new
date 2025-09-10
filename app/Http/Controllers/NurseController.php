@@ -48,7 +48,11 @@ class NurseController extends Controller
      */
     public function preEmployment()
     {
-        $preEmployments = PreEmploymentRecord::where('status', 'approved')->latest()->get();
+        $preEmployments = PreEmploymentRecord::whereIn('status', ['Approved', 'approved'])
+            ->whereDoesntHave('preEmploymentExamination', function ($q) {
+                $q->whereIn('status', ['Approved', 'sent_to_company']);
+            })
+            ->latest()->get();
         
         return view('nurse.pre-employment', compact('preEmployments'));
     }
@@ -58,9 +62,49 @@ class NurseController extends Controller
      */
     public function annualPhysical()
     {
-        $patients = Patient::where('status', 'approved')->latest()->get();
+        $patients = Patient::where('status', 'approved')
+            ->whereDoesntHave('annualPhysicalExamination', function ($q) {
+                $q->whereIn('status', ['completed', 'sent_to_company']);
+            })
+            ->latest()->get();
         
         return view('nurse.annual-physical', compact('patients'));
+    }
+
+    /** Send nurse annual physical to doctor */
+    public function sendAnnualPhysicalToDoctor($patientId)
+    {
+        $patient = Patient::findOrFail($patientId);
+        $exam = \App\Models\AnnualPhysicalExamination::firstOrCreate(
+            ['patient_id' => $patientId],
+            [
+                'user_id' => Auth::id(),
+                'name' => $patient->full_name,
+                'date' => now()->toDateString(),
+                'status' => 'Pending',
+            ]
+        );
+        // Mark as completed from nurse to send up to doctor
+        $exam->update(['status' => 'completed']);
+        return redirect()->route('nurse.annual-physical')->with('success', 'Annual physical sent to doctor.');
+    }
+
+    /** Send nurse pre-employment to doctor */
+    public function sendPreEmploymentToDoctor($recordId)
+    {
+        $record = PreEmploymentRecord::findOrFail($recordId);
+        $exam = \App\Models\PreEmploymentExamination::firstOrCreate(
+            ['pre_employment_record_id' => $recordId],
+            [
+                'user_id' => $record->created_by,
+                'name' => $record->full_name,
+                'company_name' => $record->company_name,
+                'date' => now()->toDateString(),
+                'status' => $record->status,
+            ]
+        );
+        $exam->update(['status' => 'Approved']);
+        return redirect()->route('nurse.pre-employment')->with('success', 'Pre-employment sent to doctor.');
     }
 
     /**
@@ -99,7 +143,7 @@ class NurseController extends Controller
 
         $preEmployment->update($validated);
 
-        return redirect()->back()->with('success', 'Pre-employment examination updated successfully.');
+        return redirect()->back()->with('success', 'Pre-employment examination saved. Not yet sent to doctor.');
     }
 
     /**
@@ -354,7 +398,7 @@ class NurseController extends Controller
         
         \App\Models\PreEmploymentExamination::create($validated);
 
-        return redirect()->route('nurse.pre-employment')->with('success', 'Pre-employment examination created successfully.');
+        return redirect()->route('nurse.pre-employment')->with('success', 'Pre-employment examination saved. Not yet sent to doctor.');
     }
 
     /**

@@ -5,6 +5,11 @@
 @section('page-title', 'Annual Physical Examination')
 
 @section('content')
+    @if(session('success'))
+        <div class="mb-4 p-4 rounded bg-green-100 text-green-800 border border-green-200">
+            {{ session('success') }}
+        </div>
+    @endif
     <!-- Annual Physical Table -->
     <div class="bg-white rounded-lg shadow-sm">
         <div class="p-6 border-b border-gray-200">
@@ -50,12 +55,18 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <form action="{{ route('nurse.annual-physical.send-to-doctor', $patient->id) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Send to Doctor">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </form>
                                 @if($annualPhysicalExam)
                                     <a href="{{ route('nurse.annual-physical.edit', $annualPhysicalExam->id) }}" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors mr-2" title="Edit Examination">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                 @else
-                                    <a href="{{ route('nurse.annual-physical.create', ['patient_id' => $patient->id]) }}" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Create Examination">
+                                    <a href="{{ route('nurse.annual-physical.create', ['patient_id' => $patient->id]) }}" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors mr-2" title="Create Examination">
                                         <i class="fas fa-plus"></i>
                                     </a>
                                 @endif

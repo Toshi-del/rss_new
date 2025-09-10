@@ -5,6 +5,11 @@
 @section('page-title', 'Annual Physical Examination')
 
 @section('content')
+    @if(session('success'))
+        <div class="mb-4 p-4 rounded bg-green-100 text-green-800 border border-green-200">
+            {{ session('success') }}
+        </div>
+    @endif
     <!-- Patients Table -->
     <div class="bg-white rounded-lg shadow-sm">
         <div class="p-6 border-b border-gray-200">
@@ -17,7 +22,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PATIENT NAME</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AGE</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SEX</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">APPOINTMENT ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TYPE</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
                     </tr>
                 </thead>
@@ -29,11 +34,14 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->age }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->sex }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->appointment_id }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->appointment->appointment_type ?? 'N/A' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <button class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="View Details">
-                                    <i class="fas fa-eye"></i>
-                                </button>
+                                <form action="{{ route('doctor.annual-physical.by-patient.submit', $patient->id) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Send to Admin">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </form>
                                 <a href="{{ route('doctor.annual-physical.by-patient.edit', $patient->id) }}" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors mr-2" title="Update Results">
                                     <i class="fas fa-edit"></i>
                                 </a>

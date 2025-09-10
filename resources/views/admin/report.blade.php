@@ -66,30 +66,7 @@
         </table>
     </div>
 
-    <h2 class="mb-4">Patients and Their Company Accounts</h2>
-    <div class="table-responsive">
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Patient Name</th>
-                    <th>Appointment ID</th>
-                    <th>Company User ID</th>
-                    <th>Company Name</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($patients as $patient)
-                    <tr>
-                        <td>{{ $patient->full_name ?? ($patient->fname . ' ' . $patient->lname) }}</td>
-                        <td>{{ $patient->appointment_id ?? 'N/A' }}</td>
-                        <td>{{ $patient->appointment && $patient->appointment->creator ? $patient->appointment->creator->id : 'N/A' }}</td>
-                        <td>{{ $patient->appointment && $patient->appointment->creator ? $patient->appointment->creator->company : 'N/A' }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="4" class="text-center text-muted">No patients found</td>
-                    </tr>
-                @endforelse
+   
             </tbody>
         </table>
     </div>

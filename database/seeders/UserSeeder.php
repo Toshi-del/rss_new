@@ -64,18 +64,7 @@ class UserSeeder extends Seeder
                 'role' => 'nurse',
                 'password' => Hash::make('password123'),
             ],
-            [
-                'fname' => 'Patient',
-                'lname' => 'Doe',
-                'mname' => 'Jane',
-                'email' => 'patient@rsshealth.com',
-                'phone' => '09123456793',
-                'birthday' => '1995-12-25',
-                'age' => 29,
-                'company' => 'AsiaPro',
-                'role' => 'patient',
-                'password' => Hash::make('password123'),
-            ],
+
             [
                 'fname' => 'Robert',
                 'lname' => 'Chen',

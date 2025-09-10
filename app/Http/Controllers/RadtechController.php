@@ -6,6 +6,8 @@ use App\Models\Appointment;
 use App\Models\Patient;
 use App\Models\PreEmploymentRecord;
 use App\Models\MedicalChecklist;
+use App\Models\PreEmploymentExamination;
+use App\Models\AnnualPhysicalExamination;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,12 +18,20 @@ class RadtechController extends Controller
      */
     public function dashboard()
     {
-        // Get pre-employment records
-        $preEmployments = PreEmploymentRecord::where('status', 'approved')->latest()->take(5)->get();
+        // Get pre-employment records not yet submitted
+        $preEmployments = PreEmploymentRecord::where('status', 'approved')
+            ->whereDoesntHave('preEmploymentExamination', function ($q) {
+                $q->whereIn('status', ['Approved', 'sent_to_company']);
+            })
+            ->latest()->take(5)->get();
         $preEmploymentCount = PreEmploymentRecord::where('status', 'approved')->count();
 
-        // Get patients for annual physical
-        $patients = Patient::where('status', 'approved')->latest()->take(5)->get();
+        // Get patients for annual physical not yet submitted
+        $patients = Patient::where('status', 'approved')
+            ->whereDoesntHave('annualPhysicalExamination', function ($q) {
+                $q->whereIn('status', ['completed', 'sent_to_company']);
+            })
+            ->latest()->take(5)->get();
         $patientCount = Patient::where('status', 'approved')->count();
 
         // Get appointments
@@ -140,5 +150,44 @@ class RadtechController extends Controller
         $medicalChecklist = MedicalChecklist::create($validated);
 
         return redirect()->back()->with('success', 'Medical checklist created successfully.');
+    }
+
+    /**
+     * Send pre-employment to doctor (marks exam Approved)
+     */
+    public function sendPreEmploymentToDoctor($recordId)
+    {
+        $record = PreEmploymentRecord::findOrFail($recordId);
+        $exam = PreEmploymentExamination::firstOrCreate(
+            ['pre_employment_record_id' => $recordId],
+            [
+                'user_id' => $record->created_by,
+                'name' => $record->first_name . ' ' . $record->last_name,
+                'company_name' => $record->company_name,
+                'date' => now()->toDateString(),
+                'status' => $record->status,
+            ]
+        );
+        $exam->update(['status' => 'Approved']);
+        return redirect()->route('radtech.dashboard')->with('success', 'Pre-employment sent to doctor.');
+    }
+
+    /**
+     * Send annual physical to doctor (marks exam completed)
+     */
+    public function sendAnnualPhysicalToDoctor($patientId)
+    {
+        $patient = Patient::findOrFail($patientId);
+        $exam = AnnualPhysicalExamination::firstOrCreate(
+            ['patient_id' => $patientId],
+            [
+                'user_id' => Auth::id(),
+                'name' => $patient->full_name,
+                'date' => now()->toDateString(),
+                'status' => 'Pending',
+            ]
+        );
+        $exam->update(['status' => 'completed']);
+        return redirect()->route('radtech.dashboard')->with('success', 'Annual physical sent to doctor.');
     }
 }

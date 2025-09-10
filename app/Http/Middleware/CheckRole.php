@@ -22,7 +22,22 @@ class CheckRole
 
         $user = Auth::user();
 
-        if (!$user->hasRole($role)) {
+        // Support composite "staff" role and multi-role syntax like "role:a|b|c" or "role:a,b,c"
+        $allowedRoles = [];
+
+        if ($role === 'staff') {
+            $allowedRoles = ['admin', 'doctor', 'nurse', 'radtech', 'radiologist', 'ecgtech', 'plebo', 'pathologist'];
+        } elseif (str_contains($role, '|')) {
+            $allowedRoles = explode('|', $role);
+        } elseif (str_contains($role, ',')) {
+            $allowedRoles = array_map('trim', explode(',', $role));
+        } else {
+            $allowedRoles = [$role];
+        }
+
+        $isAuthorized = in_array($user->role, $allowedRoles, true);
+
+        if (!$isAuthorized) {
             abort(403, 'Unauthorized access. You do not have permission to access this page.');
         }
 

@@ -20,6 +20,7 @@ class RadiologistController extends Controller
             ->whereHas('preEmploymentRecord', function($query) {
                 $query->where('status', 'approved');
             })
+            ->whereNotIn('status', ['Approved', 'sent_to_company'])
             ->latest('date')
             ->take(20)
             ->get()
@@ -47,6 +48,7 @@ class RadiologistController extends Controller
             ->whereHas('patient', function($query) {
                 $query->where('status', 'approved');
             })
+            ->whereNotIn('status', ['completed', 'sent_to_company'])
             ->latest('date')
             ->take(20)
             ->get()

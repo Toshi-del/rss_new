@@ -58,6 +58,22 @@ class AdminController extends Controller
         $preEmploymentChartData = $this->generatePreEmploymentChartData();
         $annualPhysicalChartData = $this->generateAnnualPhysicalChartData();
 
+        // Get all company users
+        $companyUsers = User::where('role', 'company')->orderBy('company')->get();
+        $companyData = [];
+        foreach ($companyUsers as $company) {
+            // Patients: via appointments created by this company user
+            $appointmentIds = Appointment::where('created_by', $company->id)->pluck('id');
+            $patients = Patient::whereIn('appointment_id', $appointmentIds)->get();
+            // Pre-employment records: created_by = company user id
+            $preEmployments = PreEmploymentRecord::where('created_by', $company->id)->get();
+            $companyData[] = [
+                'company' => $company,
+                'patients' => $patients,
+                'preEmployments' => $preEmployments,
+            ];
+        }
+
         return view('admin.dashboard', compact(
             'totalPatients',
             'approvedAppointments', 
@@ -68,7 +84,8 @@ class AdminController extends Controller
             'preEmploymentChartData',
             'annualPhysicalChartData',
             'appointmentStats',
-            'preEmploymentStats'
+            'preEmploymentStats',
+            'companyData' // <-- pass to view
         ));
     }
     
@@ -242,8 +259,15 @@ class AdminController extends Controller
      */
     public function tests()
     {
-        $preEmploymentResults = \App\Models\PreEmploymentExamination::all();
-        $annualPhysicalResults = \App\Models\AnnualPhysicalExamination::all();
+        // Only show examinations that have been completed/submitted by doctors
+        // For PreEmploymentExamination: show 'Approved' status (doctor has completed the examination)
+        // For AnnualPhysicalExamination: show 'completed' status (doctor has completed the examination)
+        $preEmploymentResults = \App\Models\PreEmploymentExamination::where('status', 'Approved')
+            ->orWhere('status', 'sent_to_company')
+            ->get();
+        $annualPhysicalResults = \App\Models\AnnualPhysicalExamination::where('status', 'completed')
+            ->orWhere('status', 'sent_to_company')
+            ->get();
         return view('admin.tests', compact('preEmploymentResults', 'annualPhysicalResults'));
     }
 
@@ -339,22 +363,23 @@ class AdminController extends Controller
     }
 
     /**
-     * Show all company accounts and their patients (admin view)
+     * Show all company accounts and their patients and pre-employment records (admin view)
      */
     public function companyAccountsAndPatients()
     {
-        // Get all users with role 'company'
-        $companies = User::where('role', 'company')->get();
-        // For each company, get all patients under their appointments
-        $companiesWithPatients = $companies->map(function ($company) {
-            // Get all appointment IDs created by this company
-            $appointmentIds = $company->appointments()->pluck('id');
-            // Get all patients whose appointment_id is in those appointments
+        $companyUsers = User::where('role', 'company')->orderBy('company')->get();
+        $companyData = [];
+        foreach ($companyUsers as $company) {
+            $appointmentIds = Appointment::where('created_by', $company->id)->pluck('id');
             $patients = Patient::whereIn('appointment_id', $appointmentIds)->get();
-            $company->patients = $patients;
-            return $company;
-        });
-        return view('admin.accounts-and-patients', compact('companiesWithPatients'));
+            $preEmployments = PreEmploymentRecord::where('created_by', $company->id)->get();
+            $companyData[] = [
+                'company' => $company,
+                'patients' => $patients,
+                'preEmployments' => $preEmployments,
+            ];
+        }
+        return view('admin.accounts-and-patients', compact('companyData'));
     }
 
     /**
@@ -610,5 +635,24 @@ class AdminController extends Controller
                "- Company: " . ($record->company_name ?? 'N/A') . "\n\n" .
                "To complete your registration, visit: " . $registrationLink . "\n\n" .
                "Best regards,\nRSS Citi Health Services Team";
+    }
+
+    /**
+     * Delete a company account and all related data (appointments, patients, pre-employment records)
+     */
+    public function deleteCompany($id)
+    {
+        $company = User::where('role', 'company')->findOrFail($id);
+        // Delete related appointments and their patients
+        $appointments = Appointment::where('created_by', $company->id)->get();
+        foreach ($appointments as $appointment) {
+            Patient::where('appointment_id', $appointment->id)->delete();
+            $appointment->delete();
+        }
+        // Delete related pre-employment records
+        PreEmploymentRecord::where('created_by', $company->id)->delete();
+        // Delete the company user
+        $company->delete();
+        return redirect()->route('admin.dashboard')->with('success', 'Company account and all related data deleted successfully.');
     }
 }

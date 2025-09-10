@@ -77,7 +77,13 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <button onclick="openMedicalChecklistModal('pre-employment', {{ $preEmployment->id }})" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors" title="Medical Checklist">
+                            <form action="{{ route('radtech.pre-employment.send-to-doctor', $preEmployment->id) }}" method="POST" class="inline">
+                                @csrf
+                                <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Send to Doctor">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </form>
+                            <button onclick="openMedicalChecklistModal('pre-employment', {{ $preEmployment->id }})" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors" title="Medical Checklist">
                                 <i class="fas fa-clipboard-list"></i> X-Ray Checklist
                             </button>
                         </td>
@@ -121,6 +127,12 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->sex }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->email }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <form action="{{ route('radtech.annual-physical.send-to-doctor', $patient->id) }}" method="POST" class="inline">
+                                @csrf
+                                <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Send to Doctor">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </form>
                             <button onclick="openMedicalChecklistModal('annual-physical', {{ $patient->id }})" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors" title="Medical Checklist">
                                 <i class="fas fa-clipboard-list"></i> X-Ray Checklist
                             </button>

@@ -27,8 +27,8 @@ class DoctorController extends Controller
         $appointmentCount = Appointment::count();
 
         // Get all patients
-        $patients = Patient::where('status', 'approved')->latest()->take(10)->get();
-        $patientCount = Patient::where('status', 'approved')->count();
+        $patients = Patient::with('appointment')->where('status', 'pending')->latest()->take(10)->get();
+        $patientCount = Patient::where('status', 'pending')->count();
 
         // Get annual physicals (appointments with type 'annual_physical')
         $annualPhysicals = Appointment::where('appointment_type', 'annual_physical')->count();
@@ -49,9 +49,40 @@ class DoctorController extends Controller
      */
     public function preEmployment()
     {
-        $preEmployments = \App\Models\PreEmploymentRecord::where('status', 'approved')->latest()->get();
+        // Show only records that have been explicitly submitted to the doctor
+        // by staff (nurse/plebo/radtech/pathologist) via PreEmploymentExamination status 'Approved'.
+        $preEmployments = \App\Models\PreEmploymentRecord::where('status', 'approved')
+            ->whereHas('preEmploymentExamination', function ($q) {
+                $q->where('status', 'Approved');
+            })
+            ->latest()
+            ->get();
         
         return view('doctor.pre-employment', compact('preEmployments'));
+    }
+
+    /**
+     * Submit a pre-employment examination for a record to Admin.
+     */
+    public function submitPreEmploymentByRecordId($recordId)
+    {
+        $record = \App\Models\PreEmploymentRecord::findOrFail($recordId);
+        // Ensure examination exists
+        $examination = \App\Models\PreEmploymentExamination::firstOrCreate(
+            ['pre_employment_record_id' => $recordId],
+            [
+                'user_id' => $record->created_by,
+                'name' => $record->full_name,
+                'company_name' => $record->company_name,
+                'date' => now()->toDateString(),
+                'status' => $record->status,
+            ]
+        );
+
+        // Mark as Approved (doctor submission)
+        $examination->update(['status' => 'Approved']);
+
+        return redirect()->route('doctor.pre-employment')->with('success', 'Pre-employment examination submitted to admin.');
     }
 
     /**
@@ -59,7 +90,13 @@ class DoctorController extends Controller
      */
     public function annualPhysical()
     {
-        $patients = Patient::where('status', 'approved')->latest()->get();
+        $patients = Patient::with(['appointment', 'annualPhysicalExamination'])
+            ->where('status', 'pending')
+            ->whereDoesntHave('annualPhysicalExamination', function ($q) {
+                $q->whereIn('status', ['completed', 'sent_to_company']);
+            })
+            ->latest()
+            ->get();
         
         return view('doctor.annual-physical', compact('patients'));
     }
@@ -267,6 +304,33 @@ class DoctorController extends Controller
             ]
         );
         return redirect()->route('doctor.annual-physical.edit', $examination->id);
+    }
+
+    /**
+     * Submit an annual physical examination for a patient to Admin.
+     * Marks the examination as completed and the patient as approved so it no longer shows in the pending list.
+     */
+    public function submitAnnualPhysicalByPatientId($patientId)
+    {
+        $patient = \App\Models\Patient::findOrFail($patientId);
+        // Ensure an examination exists
+        $examination = \App\Models\AnnualPhysicalExamination::firstOrCreate(
+            ['patient_id' => $patientId],
+            [
+                'patient_id' => $patientId,
+                'user_id' => Auth::id(),
+                'name' => $patient->full_name,
+                'date' => now()->toDateString(),
+            ]
+        );
+
+        // Mark as completed
+        $examination->update(['status' => 'completed']);
+
+        // Mark patient as approved so it is removed from the pending table in doctor list
+        $patient->update(['status' => 'approved']);
+
+        return redirect()->route('doctor.annual-physical')->with('success', 'Annual physical submitted to admin.');
     }
 
     /**

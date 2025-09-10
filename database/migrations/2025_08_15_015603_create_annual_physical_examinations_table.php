@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')->nullable();
             $table->unsignedBigInteger('patient_id')->nullable();
             $table->string('name')->nullable();
+            $table->string('company_name')->nullable();
             $table->date('date')->nullable();
             $table->string('status')->nullable();
             $table->text('illness_history')->nullable();
@@ -33,6 +34,8 @@ return new class extends Migration
             $table->text('lab_findings')->nullable();
             $table->string('ecg')->nullable();
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
         });
     }
 

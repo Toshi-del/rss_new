@@ -493,7 +493,7 @@
                             </div>
                             <div class="contact-text">
                                 <h4>Email</h4>
-                                <p>info@rssciti.com</p>
+                                <p>rsscitihealthservices@gmail.com</p>
                             </div>
                         </div>
                     </div>
@@ -512,7 +512,7 @@
                             </div>
                             <div class="contact-text">
                                 <h4>Weekdays</h4>
-                                <p>Monday to Friday: 7:00 AM - 7:00 PM</p>
+                                <p>Monday to Friday: 7:00 AM - 4:00 PM</p>
                             </div>
                         </div>
                         
@@ -638,8 +638,8 @@
                             <ul class="list-unstyled">
                                 <li class="mb-2" style="color: #4b5563;"><i class="bi bi-geo-alt me-2"></i> 123 Health Avenue, Medical District</li>
                                 <li class="mb-2" style="color: #4b5563;"><i class="bi bi-telephone me-2"></i> (123) 456-7890</li>
-                                <li class="mb-2" style="color: #4b5563;"><i class="bi bi-envelope me-2"></i> info@rssciti.com</li>
-                                <li class="mb-2" style="color: #4b5563;"><i class="bi bi-clock me-2"></i> Mon-Sat: 8:00 AM - 6:00 PM</li>
+                                <li class="mb-2" style="color: #4b5563;"><i class="bi bi-envelope me-2"></i> rsscitihealthservices@gmail.com</li>
+                                <li class="mb-2" style="color: #4b5563;"><i class="bi bi-clock me-2"></i> Mon-Fri: 8:00 AM - 4:00 PM</li>
                             </ul>
                         </div>
                     </div>

@@ -5,6 +5,11 @@
 @section('page-title', 'Pre-Employment Records')
 
 @section('content')
+    @if(session('success'))
+        <div class="mb-4 p-4 rounded bg-green-100 text-green-800 border border-green-200">
+            {{ session('success') }}
+        </div>
+    @endif
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="bg-white rounded-lg shadow-sm p-6">
             <div class="flex items-center justify-between mb-4">
@@ -56,7 +61,13 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <a href="{{ route('plebo.medical-checklist.pre-employment', $preEmployment->id) }}" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors" title="Medical Checklist">
+                                <form action="{{ route('plebo.pre-employment.send-to-doctor', $preEmployment->id) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Send to Doctor">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </form>
+                                <a href="{{ route('plebo.medical-checklist.pre-employment', $preEmployment->id) }}" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors" title="Medical Checklist">
                                     <i class="fas fa-clipboard-list"></i>
                                 </a>
                             </td>

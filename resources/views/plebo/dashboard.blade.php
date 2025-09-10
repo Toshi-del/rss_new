@@ -1,8 +1,8 @@
 @extends('layouts.plebo')
 
-@section('title', 'Plebo Dashboard')
+@section('title', 'Phlebo Dashboard')
 
-@section('page-title', 'Plebo Dashboard')
+@section('page-title', 'Phlebo Dashboard')
 
 @section('content')
 @if(session('success'))

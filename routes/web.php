@@ -14,6 +14,7 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\RadtechController;
 use App\Http\Controllers\PleboController;
 use App\Http\Controllers\RadiologistController;
+use App\Http\Controllers\PathologistController;
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -49,6 +50,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 Route::post('admin/pre-employment/{id}/send-email', [App\Http\Controllers\AdminController::class, 'sendRegistrationEmail'])->name('admin.pre-employment.send-email');
     Route::post('admin/pre-employment/send-all-emails', [AdminController::class, 'sendAllRegistrationEmails'])->name('admin.pre-employment.send-all-emails');
     Route::get('/admin/accounts-and-patients', [AdminController::class, 'companyAccountsAndPatients'])->name('admin.accounts-and-patients');
+    Route::delete('/admin/company/{id}', [AdminController::class, 'deleteCompany'])->name('admin.delete-company');
 });
 
 Route::middleware(['auth', 'role:company'])->group(function () {
@@ -128,7 +130,9 @@ Route::middleware(['auth', 'role:doctor'])->group(function () {
     Route::get('/doctor/annual-physical/{id}/edit', [DoctorController::class, 'editAnnualPhysical'])->name('doctor.annual-physical.edit');
     Route::patch('/doctor/annual-physical/{id}', [DoctorController::class, 'updateAnnualPhysical'])->name('doctor.annual-physical.update');
     Route::get('/doctor/pre-employment/{record}/examination', [DoctorController::class, 'editExaminationByRecordId'])->name('doctor.pre-employment.examination.edit');
+    Route::post('/doctor/pre-employment/{record}/submit', [DoctorController::class, 'submitPreEmploymentByRecordId'])->name('doctor.pre-employment.by-record.submit');
     Route::get('/doctor/annual-physical/patient/{patientId}/edit', [DoctorController::class, 'editAnnualPhysicalByPatientId'])->name('doctor.annual-physical.by-patient.edit');
+    Route::post('/doctor/annual-physical/patient/{patientId}/submit', [DoctorController::class, 'submitAnnualPhysicalByPatientId'])->name('doctor.annual-physical.by-patient.submit');
     
     // Medical Checklist Routes
     Route::get('/doctor/medical-checklist/pre-employment/{recordId}', [DoctorController::class, 'showMedicalChecklistPreEmployment'])->name('doctor.medical-checklist.pre-employment');
@@ -163,10 +167,12 @@ Route::middleware(['auth', 'role:nurse'])->group(function () {
     // Nurse Pre-Employment Edit Routes
     Route::get('/nurse/pre-employment/{id}/edit', [NurseController::class, 'editPreEmployment'])->name('nurse.pre-employment.edit');
     Route::patch('/nurse/pre-employment/{id}', [NurseController::class, 'updatePreEmployment'])->name('nurse.pre-employment.update');
+    Route::post('/nurse/pre-employment/{recordId}/send', [NurseController::class, 'sendPreEmploymentToDoctor'])->name('nurse.pre-employment.send-to-doctor');
     
     // Nurse Annual Physical Edit Routes
     Route::get('/nurse/annual-physical/{id}/edit', [NurseController::class, 'editAnnualPhysical'])->name('nurse.annual-physical.edit');
     Route::patch('/nurse/annual-physical/{id}', [NurseController::class, 'updateAnnualPhysical'])->name('nurse.annual-physical.update');
+    Route::post('/nurse/annual-physical/patient/{patientId}/send', [NurseController::class, 'sendAnnualPhysicalToDoctor'])->name('nurse.annual-physical.send-to-doctor');
     
     // Nurse Medical Checklist Routes
     Route::get('/nurse/medical-checklist/pre-employment/{recordId}', [NurseController::class, 'showMedicalChecklistPreEmployment'])->name('nurse.medical-checklist.pre-employment');
@@ -190,12 +196,17 @@ Route::middleware(['auth', 'role:radtech'])->group(function () {
     Route::get('/radtech/medical-checklist/annual-physical/{patientId}', [RadtechController::class, 'showMedicalChecklistAnnualPhysical'])->name('radtech.medical-checklist.annual-physical');
     Route::post('/radtech/medical-checklist', [RadtechController::class, 'storeMedicalChecklist'])->name('radtech.medical-checklist.store');
     Route::patch('/radtech/medical-checklist/{id}', [RadtechController::class, 'updateMedicalChecklist'])->name('radtech.medical-checklist.update');
+    // Radtech send-to-doctor actions
+    Route::post('/radtech/pre-employment/{recordId}/send', [RadtechController::class, 'sendPreEmploymentToDoctor'])->name('radtech.pre-employment.send-to-doctor');
+    Route::post('/radtech/annual-physical/patient/{patientId}/send', [RadtechController::class, 'sendAnnualPhysicalToDoctor'])->name('radtech.annual-physical.send-to-doctor');
 });
 
 Route::middleware(['auth', 'role:plebo'])->group(function () {
     Route::get('/plebo/dashboard', [PleboController::class, 'dashboard'])->name('plebo.dashboard');
     Route::get('/plebo/pre-employment', [PleboController::class, 'preEmployment'])->name('plebo.pre-employment');
     Route::get('/plebo/annual-physical', [PleboController::class, 'annualPhysical'])->name('plebo.annual-physical');
+    Route::post('/plebo/pre-employment/{recordId}/send', [PleboController::class, 'sendPreEmploymentToDoctor'])->name('plebo.pre-employment.send-to-doctor');
+    Route::post('/plebo/annual-physical/patient/{patientId}/send', [PleboController::class, 'sendAnnualPhysicalToDoctor'])->name('plebo.annual-physical.send-to-doctor');
     Route::get('/plebo/medical-checklist/pre-employment/{recordId}', [PleboController::class, 'showMedicalChecklistPreEmployment'])->name('plebo.medical-checklist.pre-employment');
     Route::get('/plebo/medical-checklist/annual-physical/{patientId}', [PleboController::class, 'showMedicalChecklistAnnualPhysical'])->name('plebo.medical-checklist.annual-physical');
     Route::post('/plebo/medical-checklist', [PleboController::class, 'storeMedicalChecklist'])->name('plebo.medical-checklist.store');
@@ -208,6 +219,13 @@ Route::middleware(['auth', 'role:radiologist'])->group(function () {
     Route::patch('/radiologist/pre-employment/{id}', [RadiologistController::class, 'updatePreEmployment'])->name('radiologist.pre-employment.update');
     Route::get('/radiologist/annual-physical/{id}', [RadiologistController::class, 'showAnnualPhysical'])->name('radiologist.annual-physical.show');
     Route::patch('/radiologist/annual-physical/{id}', [RadiologistController::class, 'updateAnnualPhysical'])->name('radiologist.annual-physical.update');
+    // Radiologist "send to doctor" not required; radiologist updates findings only.
+});
+
+Route::middleware(['auth', 'role:pathologist'])->group(function () {
+    Route::get('/pathologist/dashboard', [PathologistController::class, 'dashboard'])->name('pathologist.dashboard');
+    Route::post('/pathologist/annual-physical/patient/{patientId}/send', [PathologistController::class, 'sendAnnualPhysicalToDoctor'])->name('pathologist.annual-physical.send-to-doctor');
+    Route::post('/pathologist/pre-employment/{recordId}/send', [PathologistController::class, 'sendPreEmploymentToDoctor'])->name('pathologist.pre-employment.send-to-doctor');
 });
 
 Route::middleware(['auth', 'role:patient'])->group(function () {
@@ -226,6 +244,7 @@ Route::middleware(['auth'])->get('/dashboard', function() {
     if ($user->isNurse()) return redirect()->route('nurse.dashboard');
     if ($user->isRadTech()) return redirect()->route('radtech.dashboard');
     if ($user->isRadiologist()) return redirect()->route('radiologist.dashboard');
+    if ($user->isPathologist()) return redirect()->route('pathologist.dashboard');
     if ($user->isPlebo()) return redirect()->route('plebo.dashboard');
     return redirect()->route('patient.dashboard');
 });

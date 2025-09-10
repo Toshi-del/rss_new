@@ -5,6 +5,11 @@
 @section('page-title', 'Pre-Employment Records')
 
 @section('content')
+    @if(session('success'))
+        <div class="mb-4 p-4 rounded bg-green-100 text-green-800 border border-green-200">
+            {{ session('success') }}
+        </div>
+    @endif
     <!-- Pre-Employment Table -->
     <div class="bg-white rounded-lg shadow-sm">
         <div class="p-6 border-b border-gray-200">
@@ -43,7 +48,13 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <a href="{{ route('doctor.pre-employment.examination.edit', $preEmployment->id) }}" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Edit Results">
+                                <form action="{{ route('doctor.pre-employment.by-record.submit', $preEmployment->id) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Send to Admin">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </form>
+                                <a href="{{ route('doctor.pre-employment.examination.edit', $preEmployment->id) }}" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors mr-2" title="Edit Results">
                                     <i class="fas fa-pencil-alt"></i>
                                 </a>
                                 <a href="{{ route('doctor.medical-checklist.pre-employment', $preEmployment->id) }}" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors" title="Medical Checklist">

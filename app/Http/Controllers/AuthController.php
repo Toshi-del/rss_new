@@ -56,6 +56,8 @@ class AuthController extends Controller
                 return redirect()->route('radiologist.dashboard');
             } elseif ($user->isPlebo()) {
                 return redirect()->route('plebo.dashboard');
+            } elseif ($user->isPathologist()) {
+                return redirect()->route('pathologist.dashboard');
             } else {
                 return redirect()->route('patient.dashboard');
             }

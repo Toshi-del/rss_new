@@ -27,7 +27,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (DB::connection()->getDriverName() === 'sqlite') {
+        if (DB::connection()->getDriverName() === 'mysql') {
             return; // no-op
         }
 

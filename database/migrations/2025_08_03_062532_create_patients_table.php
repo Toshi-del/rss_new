@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('middle_name')->nullable();
             $table->integer('age');
             $table->enum('sex', ['Male', 'Female']);
+            $table->enum('company_name', ['Pasig Catholic College', 'AsiaPro', 'PrimeLime'])->nullable();
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
             $table->foreignId('appointment_id')->constrained('appointments')->onDelete('cascade');
