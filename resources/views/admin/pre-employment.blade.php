@@ -85,7 +85,7 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Medical Examination</th>
-                        <th>Blood Chemistry</th>
+                        <th>Price</th>
                         <th>Status</th>
                         <th>Registration Link</th>
                         <th>Actions</th>
@@ -98,18 +98,17 @@
                             <td>{{ $preEmployment->full_name ?? ($preEmployment->first_name . ' ' . $preEmployment->last_name) }}</td>
                             <td>{{ $preEmployment->email ?? 'N/A' }}</td>
                             <td>
-                                @if(is_array($preEmployment->medical_exam_type))
-                                    {{ implode(', ', $preEmployment->medical_exam_type) }}
+                                @if($preEmployment->medicalTestCategory)
+                                    {{ $preEmployment->medicalTestCategory->name }}
+                                    @if($preEmployment->medicalTest)
+                                        - {{ $preEmployment->medicalTest->name }}
+                                    @endif
                                 @else
                                     {{ $preEmployment->medical_exam_type ?? 'N/A' }}
                                 @endif
                             </td>
                             <td>
-                                @if(is_array($preEmployment->blood_tests))
-                                    {{ implode(', ', $preEmployment->blood_tests) }}
-                                @else
-                                    {{ $preEmployment->blood_tests ?? 'N/A' }}
-                                @endif
+                                ₱{{ number_format((float)($preEmployment->total_price ?? 0), 2) }}
                             </td>
                             <td>
                                 @php
@@ -139,35 +138,32 @@
                                 @endif
                             </td>
                             <td>
-                                @if($preEmployment->status === 'pending')
-                                    <form action="{{ route('admin.pre-employment.approve', $preEmployment->id) }}" method="POST" style="display:inline-block;">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-outline-success" onclick="return confirm('Approve this record?')" title="Approve">
-                                            <i class="bi bi-check-lg"></i>
-                                        </button>
-                                    </form>
-                                    <form action="{{ route('admin.pre-employment.decline', $preEmployment->id) }}" method="POST" style="display:inline-block;">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Decline this record?')" title="Decline">
-                                            <i class="bi bi-x-lg"></i>
-                                        </button>
-                                    </form>
-                                @elseif($preEmployment->status === 'Approved' && !$preEmployment->registration_link_sent)
-                                    <form action="{{ route('admin.pre-employment.send-email', $preEmployment->id) }}" method="POST" style="display:inline-block;">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-outline-primary" onclick="return confirm('Send registration email to {{ $preEmployment->email ?? 'this candidate' }}?')" title="Send Registration Email">
-                                            <i class="bi bi-envelope-fill"></i>
-                                        </button>
-                                    </form>
-                                @elseif($preEmployment->status === 'Approved' && $preEmployment->registration_link_sent)
-                                    <span class="text-muted small">
-                                        <i class="bi bi-check-circle-fill text-success me-1"></i>Link Sent
-                                    </span>
-                                @elseif($preEmployment->status === 'Declined')
-                                    <span class="text-muted small">
-                                        <i class="bi bi-x-circle-fill text-danger me-1"></i>Declined
-                                    </span>
-                                @endif
+                                <div class="btn-group" role="group" aria-label="Actions">
+                                    @if($preEmployment->status !== 'Approved')
+                                        <form action="{{ route('admin.pre-employment.approve', $preEmployment->id) }}" method="POST" style="display:inline-block;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Approve this record?')" title="Approve">
+                                                <i class="bi bi-check2-circle"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                    @if($preEmployment->status !== 'Declined')
+                                        <form action="{{ route('admin.pre-employment.decline', $preEmployment->id) }}" method="POST" style="display:inline-block;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Decline this record?')" title="Decline">
+                                                <i class="bi bi-x-octagon"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                    @if($preEmployment->status === 'Approved' && !$preEmployment->registration_link_sent)
+                                        <form action="{{ route('admin.pre-employment.send-email', $preEmployment->id) }}" method="POST" style="display:inline-block;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-outline-primary" onclick="return confirm('Send registration email to {{ $preEmployment->email ?? 'this candidate' }}?')" title="Send Registration Email">
+                                                <i class="bi bi-envelope-fill"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @empty

@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('pre_employment_records', function (Blueprint $table) {
-            $table->boolean('registration_link_sent')->default(false)->after('status');
-        });
+        if (Schema::hasTable('pre_employment_records') && !Schema::hasColumn('pre_employment_records', 'registration_link_sent')) {
+            Schema::table('pre_employment_records', function (Blueprint $table) {
+                $table->boolean('registration_link_sent')->default(false);
+            });
+        }
     }
 
     /**
@@ -21,8 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('pre_employment_records', function (Blueprint $table) {
-            $table->dropColumn('registration_link_sent');
-        });
+        if (Schema::hasTable('pre_employment_records') && Schema::hasColumn('pre_employment_records', 'registration_link_sent')) {
+            Schema::table('pre_employment_records', function (Blueprint $table) {
+                $table->dropColumn('registration_link_sent');
+            });
+        }
     }
 };

@@ -23,8 +23,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AGE</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SEX</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">COMPANY</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MEDICAL EXAMINATION</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">BLOOD CHEMISTRY</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MEDICAL TEST</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
                     </tr>
@@ -38,12 +37,14 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $preEmployment->age }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $preEmployment->sex }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $preEmployment->company_name }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $preEmployment->medical_exam_type }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                @if($preEmployment->blood_tests)
-                                    {{ implode(', ', $preEmployment->blood_tests) }}
+                                @if($preEmployment->medicalTestCategory)
+                                    {{ optional($preEmployment->medicalTestCategory)->name }}
+                                    @if($preEmployment->medicalTest)
+                                        - {{ $preEmployment->medicalTest->name }}
+                                    @endif
                                 @else
-                                    N/A
+                                    {{ $preEmployment->medical_exam_type ?? 'N/A' }}
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -63,11 +64,11 @@
                                 @php
                                     $preEmploymentExam = \App\Models\PreEmploymentExamination::where('pre_employment_record_id', $preEmployment->id)->first();
                                     $medicalChecklist = \App\Models\MedicalChecklist::where('pre_employment_record_id', $preEmployment->id)
-                                        ->where('examination_type', 'pre_employment')
+                                        ->where('examination_type', 'pre-employment')
                                         ->first();
                                 @endphp
                                 @php
-                                    $canSendToDoctor = $preEmploymentExam && $medicalChecklist;
+                                    $canSendToDoctor = $preEmploymentExam && $medicalChecklist && !empty($medicalChecklist->physical_exam_done_by);
                                 @endphp
                                 @if($canSendToDoctor)
                                     <form action="{{ route('nurse.pre-employment.send-to-doctor', $preEmployment->id) }}" method="POST" class="inline">

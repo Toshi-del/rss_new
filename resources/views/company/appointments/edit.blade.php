@@ -49,36 +49,49 @@
                     @enderror
                 </div>
 
-                <!-- Appointment Type -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Appointment Type</label>
-                    <select name="appointment_type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                        <option value="">Select appointment type</option>
-                        <option value="ANNUAL MEDICAL EXAMINATION" {{ old('appointment_type', $appointment->appointment_type) == 'ANNUAL MEDICAL EXAMINATION' ? 'selected' : '' }}>Annual Medical Examination</option>
-                        <option value="ANNUAL MEDICAL WITH DRUG TEST" {{ old('appointment_type', $appointment->appointment_type) == 'ANNUAL MEDICAL WITH DRUG TEST' ? 'selected' : '' }}>Annual Medical with Drug Test</option>
-                        <option value="ANNUAL MEDICAL WITH ECG" {{ old('appointment_type', $appointment->appointment_type) == 'ANNUAL MEDICAL WITH ECG' ? 'selected' : '' }}>Annual Medical with ECG</option>
-                        <option value="ANNUAL MEDICAL COMPLETE" {{ old('appointment_type', $appointment->appointment_type) == 'ANNUAL MEDICAL COMPLETE' ? 'selected' : '' }}>Annual Medical Complete</option>
-                    </select>
-                    @error('appointment_type')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+             
 
-                <!-- Blood Chemistry -->
+                <!-- Medical Tests -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-tint mr-2"></i>Blood Chemistry
+                        <i class="fas fa-vials mr-2"></i>Medical Tests
                     </label>
-                    <div class="mt-2 space-y-2">
-                        @foreach($bloodChemistry as $test)
-                        <div class="flex items-center">
-                            <input type="checkbox" name="blood_chemistry[]" value="{{ $test }}" id="blood{{ $loop->index + 1 }}" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" 
-                                {{ in_array($test, old('blood_chemistry', $appointment->blood_chemistry ?? [])) ? 'checked' : '' }}>
-                            <label for="blood{{ $loop->index + 1 }}" class="ml-2 block text-sm text-gray-900">{{ $test }}</label>
-                        </div>
+                    <div class="mt-4 space-y-8">
+                        @php
+                            $selectedTests = old('medical_tests', $appointment->blood_chemistry ?? []);
+                        @endphp
+                        @foreach($medicalTestCategories as $category)
+                            @php $categoryName = strtolower(trim($category->name)); @endphp
+                            @if($categoryName === 'pre-employment')
+                                @continue
+                            @endif
+                            <div>
+                                <h3 class="text-lg font-semibold text-red-800 mb-3">{{ $category->name }}</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                                    @foreach($category->medicalTests as $test)
+                                        <label for="test{{ $test->id }}" class="cursor-pointer block border rounded-xl p-5 hover:shadow transition bg-white">
+                                            <div class="flex items-start">
+                                                <input
+                                                    id="test{{ $test->id }}"
+                                                    type="checkbox"
+                                                    name="medical_tests[]"
+                                                    value="{{ $test->id }}"
+                                                    class="mt-1 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                                    {{ in_array($test->id, $selectedTests) ? 'checked' : '' }}
+                                                >
+                                                <div class="ml-3">
+                                                    <p class="text-base font-semibold text-gray-900">{{ $test->name }}</p>
+                                                    <p class="text-sm text-gray-500">{{ $test->description ?? $category->name }}</p>
+                                                    <p class="mt-2 text-sm font-semibold text-emerald-600">₱{{ number_format((float)($test->price ?? 0), 2) }}</p>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
                         @endforeach
                     </div>
-                    @error('blood_chemistry')
+                    @error('medical_tests')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>

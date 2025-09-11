@@ -10,7 +10,7 @@
     </div>
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table" id="patientsTable">
+            <table class="table table-hover align-middle" id="patientsTable">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -19,7 +19,7 @@
                         <th>Email</th>
                         <th>Appointment Date</th>
                         <th>Appointment Time</th>
-                        <th>Type</th>
+                        <th>Exam</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -29,7 +29,13 @@
                         <tr>
                             <td>{{ $patient->id }}</td>
                             <td>{{ $patient->first_name }} {{ $patient->last_name }}</td>
-                            <td>{{ $patient->company_name ?? 'N/A' }}</td>
+                            <td>
+                                @if($patient->appointment && $patient->appointment->creator)
+                                    {{ $patient->appointment->creator->company ?? 'N/A' }}
+                                @else
+                                    N/A
+                                @endif
+                            </td>
                             <td>{{ $patient->email }}</td>
                             <td>
                                 @if($patient->appointment)
@@ -47,7 +53,10 @@
                             </td>
                             <td>
                                 @if($patient->appointment)
-                                    {{ $patient->appointment->appointment_type ?? 'N/A' }}
+                                    {{ optional($patient->appointment->medicalTestCategory)->name }}
+                                    @if($patient->appointment->medicalTest)
+                                        - {{ $patient->appointment->medicalTest->name }}
+                                    @endif
                                 @else
                                     N/A
                                 @endif
@@ -60,8 +69,18 @@
                                 @endif
                             </td>
                             <td>
-                                <button class="btn btn-sm btn-outline-info" disabled title="Not available yet">View Result</button>
-                                <button class="btn btn-sm btn-outline-success" disabled title="Not available yet">Send Results</button>
+                                @php
+                                    $examId = optional($patient->annualPhysicalExamination)->id ?? \App\Models\AnnualPhysicalExamination::where('patient_id', $patient->id)->value('id');
+                                @endphp
+                                @if($examId)
+                                    <a href="{{ route('admin.view-annual-physical-examination', $examId) }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="View detailed results">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                @else
+                                    <button type="button" class="btn btn-sm btn-primary" disabled data-bs-toggle="tooltip" data-bs-placement="top" title="No examination available">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                @endif
                             </td>
                         </tr>
                     @empty

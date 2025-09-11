@@ -40,10 +40,13 @@ class AdminController extends Controller
         // Get pre-employment statistics
         $preEmploymentStats = $this->getPreEmploymentStatistics();
         
-        // Get recent patients with appointments (last 5 records)
-        $patients = Patient::with(['appointment' => function($query) {
-            $query->orderBy('appointment_date', 'desc');
-        }])
+        // Get recent patients with appointments (last 5 records) and the creating company
+        $patients = Patient::with([
+            'appointment' => function($query) {
+                $query->orderBy('appointment_date', 'desc');
+            },
+            'appointment.creator'
+        ])
         ->whereHas('appointment')
         ->orderBy('created_at', 'desc')
         ->limit(5)
@@ -215,7 +218,7 @@ class AdminController extends Controller
         for ($i = 0; $i < 365; $i++) {
             $date = $startDate->copy()->addDays($i);
             $count = Appointment::whereDate('appointment_date', $date)
-                ->where('appointment_type', 'annual_physical')
+                ->whereNotNull('medical_test_id')
                 ->count();
 
             $data[] = [
@@ -232,7 +235,7 @@ class AdminController extends Controller
      */
     public function patients()
     {
-        $patients = Patient::with('appointment')->paginate(15);
+        $patients = Patient::with(['appointment.creator', 'annualPhysicalExamination'])->paginate(15);
         return view('admin.patients', compact('patients'));
     }
     

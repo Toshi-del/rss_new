@@ -34,7 +34,12 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->age }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->sex }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->appointment->appointment_type ?? 'N/A' }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ optional($patient->appointment->medicalTestCategory)->name }}
+                                @if(optional($patient->appointment)->medicalTest)
+                                    - {{ $patient->appointment->medicalTest->name }}
+                                @endif
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 <form action="{{ route('doctor.annual-physical.by-patient.submit', $patient->id) }}" method="POST" class="inline">
                                     @csrf

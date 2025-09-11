@@ -21,12 +21,13 @@ class NurseController extends Controller
         $patients = Patient::where('status', 'approved')->latest()->take(5)->get();
         $patientCount = Patient::where('status', 'approved')->count();
 
-        // Get appointments
-        $appointments = Appointment::with('patients')->latest()->take(5)->get();
+        // Get appointments with linked medical tests
+        $appointments = Appointment::with(['patients', 'medicalTestCategory', 'medicalTest'])->latest()->take(5)->get();
         $appointmentCount = Appointment::count();
 
         // Get pre-employment records
-        $preEmployments = PreEmploymentRecord::where('status', 'approved')->latest()->take(5)->get();
+        $preEmployments = PreEmploymentRecord::with(['medicalTestCategory','medicalTest'])
+            ->where('status', 'approved')->latest()->take(5)->get();
         $preEmploymentCount = PreEmploymentRecord::where('status', 'approved')->count();
 
         return view('nurse.dashboard', compact(
@@ -48,7 +49,8 @@ class NurseController extends Controller
      */
     public function preEmployment()
     {
-        $preEmployments = PreEmploymentRecord::whereIn('status', ['Approved', 'approved'])
+        $preEmployments = PreEmploymentRecord::with(['medicalTestCategory','medicalTest'])
+            ->whereIn('status', ['Approved', 'approved'])
             ->whereDoesntHave('preEmploymentExamination', function ($q) {
                 $q->whereIn('status', ['Approved', 'sent_to_company']);
             })
@@ -143,7 +145,7 @@ class NurseController extends Controller
 
         $preEmployment->update($validated);
 
-        return redirect()->back()->with('success', 'Pre-employment examination saved. Not yet sent to doctor.');
+        return redirect()->route('nurse.pre-employment')->with('success', 'Pre-employment examination saved. Not yet sent to doctor.');
     }
 
     /**
@@ -182,7 +184,7 @@ class NurseController extends Controller
 
         $annualPhysical->update($validated);
 
-        return redirect()->back()->with('success', 'Annual physical examination updated successfully.');
+        return redirect()->route('nurse.annual-physical')->with('success', 'Annual physical examination updated successfully.');
     }
 
     /**
@@ -228,20 +230,21 @@ class NurseController extends Controller
             'pre_employment_record_id' => 'nullable|integer',
             'patient_id' => 'nullable|integer',
             'annual_physical_examination_id' => 'nullable|integer',
-            'chest_xray_done_by' => 'nullable|string',
-            'stool_exam_done_by' => 'nullable|string',
-            'urinalysis_done_by' => 'nullable|string',
-            'drug_test_done_by' => 'nullable|string',
-            'blood_extraction_done_by' => 'nullable|string',
-            'ecg_done_by' => 'nullable|string',
             'physical_exam_done_by' => 'nullable|string',
             'optional_exam' => 'nullable|string',
             'nurse_signature' => 'nullable|string',
         ]);
 
+        $validated['user_id'] = Auth::id();
+
         \App\Models\MedicalChecklist::create($validated);
 
-        return redirect()->back()->with('success', 'Medical checklist created successfully.');
+        // Redirect out of the checklist page back to the appropriate list
+        $redirectRoute = ($validated['examination_type'] === 'pre-employment')
+            ? 'nurse.pre-employment'
+            : 'nurse.annual-physical';
+
+        return redirect()->route($redirectRoute)->with('success', 'Medical checklist created successfully.');
     }
 
     /**
@@ -256,12 +259,6 @@ class NurseController extends Controller
             'date' => 'required|date',
             'age' => 'required|integer',
             'number' => 'nullable|string',
-            'chest_xray_done_by' => 'nullable|string',
-            'stool_exam_done_by' => 'nullable|string',
-            'urinalysis_done_by' => 'nullable|string',
-            'drug_test_done_by' => 'nullable|string',
-            'blood_extraction_done_by' => 'nullable|string',
-            'ecg_done_by' => 'nullable|string',
             'physical_exam_done_by' => 'nullable|string',
             'optional_exam' => 'nullable|string',
             'nurse_signature' => 'nullable|string',
@@ -269,7 +266,12 @@ class NurseController extends Controller
 
         $medicalChecklist->update($validated);
 
-        return redirect()->back()->with('success', 'Medical checklist updated successfully.');
+        // Redirect out of the checklist page back to the appropriate list
+        $redirectRoute = ($request->input('examination_type') === 'pre-employment')
+            ? 'nurse.pre-employment'
+            : 'nurse.annual-physical';
+
+        return redirect()->route($redirectRoute)->with('success', 'Medical checklist updated successfully.');
     }
 
     /**
@@ -412,7 +414,8 @@ class NurseController extends Controller
         $validated['name'] = $record->first_name . ' ' . $record->last_name;
         $validated['company_name'] = $record->company_name;
         $validated['date'] = now()->toDateString();
-        $validated['status'] = $record->status;
+        // Ensure new examinations are not sent to the doctor on create
+        $validated['status'] = 'Pending';
         
         \App\Models\PreEmploymentExamination::create($validated);
 

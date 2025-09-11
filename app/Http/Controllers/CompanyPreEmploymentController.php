@@ -8,12 +8,14 @@ use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Models\PreEmploymentRecord;
 use App\Models\MedicalTestCategory;
+use App\Models\MedicalTest;
 
 class CompanyPreEmploymentController extends Controller
 {
     public function index()
     {
-        $files = PreEmploymentRecord::where('created_by', Auth::id())
+        $files = PreEmploymentRecord::with(['medicalTestCategory', 'medicalTest'])
+            ->where('created_by', Auth::id())
             ->orderBy('created_at', 'desc')
             ->paginate(10);
         
@@ -32,14 +34,22 @@ class CompanyPreEmploymentController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'excel_file' => 'required|file|mimes:xlsx,xls',
-            'medical_exam_type' => 'required|string',
-            'blood_tests' => 'array',
+            'medical_test_categories_id' => 'required|exists:medical_test_categories,id',
+            'medical_test_id' => 'required|exists:medical_tests,id',
             'package_other_exams' => 'nullable|string',
             'billing_type' => 'required|in:Patient,Company',
             'company_name' => 'required_if:billing_type,Company|nullable|string',
         ]);
+
+        // Ensure the selected test belongs to the selected category
+        $selectedTest = MedicalTest::find($request->medical_test_id);
+        if (!$selectedTest || (int) $selectedTest->medical_test_category_id !== (int) $request->medical_test_categories_id) {
+            return back()
+                ->withInput()
+                ->withErrors(['medical_test_id' => 'Selected medical test does not belong to the chosen category.']);
+        }
 
         try {
             $file = $request->file('excel_file');
@@ -121,7 +131,7 @@ class CompanyPreEmploymentController extends Controller
                     } else {
                         $processedRows++;
                         
-                        // Save to database
+                        // Save to database with price of selected medical test
                         PreEmploymentRecord::create([
                             'first_name' => $firstName,
                             'last_name' => $lastName,
@@ -129,8 +139,9 @@ class CompanyPreEmploymentController extends Controller
                             'sex' => $sex,
                             'email' => $email,
                             'phone_number' => trim($row[5]),
-                            'medical_exam_type' => $request->medical_exam_type,
-                            'blood_tests' => $request->blood_tests ?? [],
+                            'medical_test_categories_id' => $request->medical_test_categories_id,
+                            'medical_test_id' => $request->medical_test_id,
+                            'total_price' => $selectedTest->price ?? 0,
                             'other_exams' => $request->package_other_exams,
                             'billing_type' => $request->billing_type,
                             'company_name' => $request->company_name,
@@ -177,7 +188,8 @@ class CompanyPreEmploymentController extends Controller
 
     public function show($id)
     {
-        $record = PreEmploymentRecord::where('created_by', Auth::id())
+        $record = PreEmploymentRecord::with(['medicalTestCategory', 'medicalTest'])
+            ->where('created_by', Auth::id())
             ->findOrFail($id);
         
         return view('company.pre-employment.show', compact('record'));

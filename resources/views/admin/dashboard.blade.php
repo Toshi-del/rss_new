@@ -5,6 +5,15 @@
 @section('page-title', 'Dashboard')
 
 @section('content')
+<style>
+    html { scroll-behavior: auto !important; }
+    body { overflow-x: hidden; }
+    .stats-card { min-height: 80px; max-height: 100px; }
+    .stats-number { font-size: 1.5rem; }
+    .stats-label { font-size: 0.875rem; }
+    .card-body canvas { max-height: 120px !important; }
+    .container-fluid { max-width: 100%; overflow-x: hidden; }
+</style>
 <!-- Stats row -->
 <div class="row g-3">
     <div class="col-md-3">
@@ -61,6 +70,42 @@
     </div>
 </div>
 
+@php
+    // Build Top Categories (Last 90 Days) for dashboard
+    $dashboardSince = \Carbon\Carbon::now()->subDays(90);
+    $dashboardCategoryData = \App\Models\MedicalTestCategory::select('id','name')
+        ->get()
+        ->map(function ($cat) use ($dashboardSince) {
+            $per = \App\Models\PreEmploymentRecord::where('medical_test_categories_id', $cat->id)
+                ->where('created_at', '>=', $dashboardSince)
+                ->count();
+            $appt = \App\Models\Appointment::where('medical_test_categories_id', $cat->id)
+                ->where('created_at', '>=', $dashboardSince)
+                ->count();
+            return [ 'name' => $cat->name, 'count' => $per + $appt ];
+        })
+        ->sortByDesc('count')
+        ->take(6)
+        ->values();
+@endphp
+
+<!-- Top Categories (Last 90 Days) -->
+<div class="row g-3 mt-3">
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Top Categories (Last 90 Days)</h5>
+            </div>
+            <div class="card-body" style="height: 180px; overflow: hidden;">
+                <canvas id="dashTopCategoriesChart" height="110" tabindex="-1"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6">
+        <!-- empty placeholder to keep grid balanced; add more widgets here later -->
+    </div>
+    
+</div>
 
 
 <!-- Scheduled Appointments -->
@@ -80,7 +125,7 @@
                         <th>Email</th>
                         <th>Appointment Date</th>
                         <th>Appointment Time</th>
-                        <th>Type</th>
+                        <th>Exam</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -88,7 +133,13 @@
                     <tr>
                         <td>{{ $patient->id }}</td>
                         <td>{{ $patient->first_name }} {{ $patient->last_name }}</td>
-                        <td>{{ $patient->company_name ?? 'N/A' }}</td>
+                        <td>
+                            @if($patient->appointment && $patient->appointment->creator)
+                                {{ $patient->appointment->creator->company ?? 'N/A' }}
+                            @else
+                                N/A
+                            @endif
+                        </td>
                         <td>{{ $patient->email }}</td>
                         <td>
                             @if($patient->appointment)
@@ -106,7 +157,10 @@
                         </td>
                         <td>
                             @if($patient->appointment)
-                                {{ $patient->appointment->appointment_type ?? 'N/A' }}
+                                {{ optional($patient->appointment->medicalTestCategory)->name }}
+                                @if($patient->appointment->medicalTest)
+                                    - {{ $patient->appointment->medicalTest->name }}
+                                @endif
                             @else
                                 N/A
                             @endif
@@ -139,8 +193,8 @@
                         <th>ID</th>
                         <th>Name</th>
                         <th>Email</th>
-                        <th>Medical Examination</th>
-                        <th>Blood Chemistry</th>
+                        <th>Medical Exam</th>
+                        <th>Total Price</th>
                         <th>Status</th>
                     </tr>
                 </thead>
@@ -151,19 +205,12 @@
                             <td>{{ $preEmployment->full_name }}</td>
                             <td>{{ $preEmployment->email }}</td>
                             <td>
-                                @if(is_array($preEmployment->medical_exam_type))
-                                    {{ implode(', ', $preEmployment->medical_exam_type) }}
-                                @else
-                                    {{ $preEmployment->medical_exam_type ?? 'N/A' }}
+                                {{ optional($preEmployment->medicalTestCategory)->name }}
+                                @if($preEmployment->medicalTest)
+                                    - {{ $preEmployment->medicalTest->name }}
                                 @endif
                             </td>
-                            <td>
-                                @if(is_array($preEmployment->blood_tests))
-                                    {{ implode(', ', $preEmployment->blood_tests) }}
-                                @else
-                                    {{ $preEmployment->blood_tests ?? 'N/A' }}
-                                @endif
-                            </td>
+                            <td>₱{{ number_format($preEmployment->total_price ?? 0, 2) }}</td>
                             <td>
                                 @php
                                     $statusClass = 'bg-gray-100 text-gray-800';
@@ -194,192 +241,37 @@
     </div>
 </div>
 
-<!-- Annual Physical Examination Statistics Chart -->
-<div class="row g-3">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title">Annual Physical Examination Statistics</h5>
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-outline-primary btn-sm filter-btn" data-period="weekly" data-chart="annual">Weekly</button>
-                    <button type="button" class="btn btn-outline-primary btn-sm filter-btn active" data-period="monthly" data-chart="annual">Monthly</button>
-                    <button type="button" class="btn btn-outline-primary btn-sm filter-btn" data-period="yearly" data-chart="annual">Yearly</button>
-                </div>
-            </div>
-            <div class="card-body">
-                <canvas id="annualPhysicalChart" style="height: 300px;"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Pre-Employment Statistics Chart -->
-<div class="row g-3">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title">Pre-Employment Statistics</h5>
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-outline-info btn-sm filter-btn" data-period="weekly" data-chart="preEmployment">Weekly</button>
-                    <button type="button" class="btn btn-outline-info btn-sm filter-btn active" data-period="monthly" data-chart="preEmployment">Monthly</button>
-                    <button type="button" class="btn btn-outline-info btn-sm filter-btn" data-period="yearly" data-chart="preEmployment">Yearly</button>
-                </div>
-            </div>
-            <div class="card-body">
-                <canvas id="preEmploymentChart" style="height: 300px;"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
+
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Chart instances
-        let annualChart, preEmploymentChart;
-        
-        // Utility to slice dataset by period
-        function getSlice(data, period) {
-            const days = period === 'weekly' ? 7 : period === 'monthly' ? 30 : 365;
-            const sliced = data.slice(-days);
-            return {
-                labels: sliced.map(item => item.date),
-                values: sliced.map(item => item.count)
-            };
-        }
-        
-        // Annual Physical Examination Chart
-        const annualCtx = document.getElementById('annualPhysicalChart').getContext('2d');
-        const annualFullData = @json($annualPhysicalChartData);
-        // Default view: monthly
-        const annualInitial = getSlice(annualFullData, 'monthly');
-        annualChart = new Chart(annualCtx, {
+    (function(){
+        const labels = @json($dashboardCategoryData->pluck('name'));
+        const counts = @json($dashboardCategoryData->pluck('count'));
+        const primary = getComputedStyle(document.documentElement).getPropertyValue('--bs-primary') || '#0d6efd';
+        const success = getComputedStyle(document.documentElement).getPropertyValue('--bs-success') || '#198754';
+        const warning = getComputedStyle(document.documentElement).getPropertyValue('--bs-warning') || '#ffc107';
+        new Chart(document.getElementById('dashTopCategoriesChart'), {
             type: 'bar',
             data: {
-                labels: annualInitial.labels,
+                labels,
                 datasets: [{
-                    label: 'Annual Physical Examinations',
-                    data: annualInitial.values,
-                    backgroundColor: 'rgba(16, 185, 129, 0.8)',
-                    borderColor: '#10b981',
-                    borderWidth: 1,
-                    borderRadius: 4,
-                    borderSkipped: false
+                    label: 'Count',
+                    data: counts,
+                    backgroundColor: [primary.trim(), success.trim(), warning.trim(), '#6f42c1', '#20c997', '#fd7e14']
                 }]
             },
             options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Number of Cases'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Date'
-                        }
-                    }
-                },
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false
-                    }
-                }
+                animation: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
             }
         });
-
-        // Pre-Employment Chart
-        const ctx = document.getElementById('preEmploymentChart').getContext('2d');
-        const preEmploymentFullData = @json($preEmploymentChartData);
-        // Default view: monthly
-        const preEmploymentInitial = getSlice(preEmploymentFullData, 'monthly');
-        preEmploymentChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: preEmploymentInitial.labels,
-                datasets: [{
-                    label: 'Pre-Employment Cases',
-                    data: preEmploymentInitial.values,
-                    backgroundColor: 'rgba(37, 99, 235, 0.8)',
-                    borderColor: '#2563eb',
-                    borderWidth: 1,
-                    borderRadius: 4,
-                    borderSkipped: false
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Number of Cases'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Date'
-                        }
-                    }
-                },
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false
-                    }
-                }
-            }
-        });
-
-        // Filter button functionality
-        document.querySelectorAll('.filter-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const period = this.getAttribute('data-period');
-                const chartType = this.getAttribute('data-chart');
-                
-                // Update button states
-                const buttonGroup = this.closest('.btn-group');
-                buttonGroup.querySelectorAll('.filter-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                this.classList.add('active');
-                
-                // Update the selected chart with the requested period
-                updateChartData(chartType, period);
-            });
-        });
-    });
-    
-    // Function to update chart data using preloaded datasets
-    function updateChartData(chartType, period) {
-        if (chartType === 'annual') {
-            const slice = getSlice(annualFullData, period);
-            annualChart.data.labels = slice.labels;
-            annualChart.data.datasets[0].data = slice.values;
-            annualChart.update();
-        } else if (chartType === 'preEmployment') {
-            const slice = getSlice(preEmploymentFullData, period);
-            preEmploymentChart.data.labels = slice.labels;
-            preEmploymentChart.data.datasets[0].data = slice.values;
-            preEmploymentChart.update();
-        }
-    }
+    })();
 </script>
-@endpush 
+@endpush

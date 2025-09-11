@@ -66,7 +66,10 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->phone }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 @if($patient->appointment)
-                                    {{ $patient->appointment->appointment_type ?? 'N/A' }}
+                                    {{ optional($patient->appointment->medicalTestCategory)->name }}
+                                    @if($patient->appointment->medicalTest)
+                                        - {{ $patient->appointment->medicalTest->name }}
+                                    @endif
                                 @else
                                     No Appointment
                                 @endif

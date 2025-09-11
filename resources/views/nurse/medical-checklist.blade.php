@@ -32,6 +32,20 @@
                 <input type="hidden" name="annual_physical_examination_id" value="{{ $annualPhysicalExamination->id }}">
             @endif
 
+            @php
+                // Precompute generated number once for reuse
+                $generatedNumber = null;
+                if (isset($medicalChecklist) && ($medicalChecklist->number ?? null)) {
+                    $generatedNumber = $medicalChecklist->number;
+                } elseif (isset($patient)) {
+                    $generatedNumber = 'APEP-' . str_pad($patient->id, 4, '0', STR_PAD_LEFT);
+                } elseif (isset($preEmploymentRecord)) {
+                    $generatedNumber = 'PPEP-' . str_pad($preEmploymentRecord->id, 4, '0', STR_PAD_LEFT);
+                } else {
+                    $generatedNumber = old('number', $number ?? '');
+                }
+            @endphp
+
             <!-- Patient Information -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div>
@@ -73,17 +87,9 @@
                 <div>
                     <label class="block text-xs font-semibold uppercase mb-1">Number</label>
                     <div class="w-full rounded-lg border-gray-300 bg-gray-100 px-3 py-2 text-gray-700">
-                        @if(isset($medicalChecklist) && $medicalChecklist->patient)
-                            {{ $medicalChecklist->patient->id }}
-                        @elseif(isset($patient))
-                            {{ $patient->id }}
-                        @elseif(isset($preEmploymentRecord))
-                            EMP-{{ str_pad($preEmploymentRecord->id, 4, '0', STR_PAD_LEFT) }}
-                        @else
-                            {{ old('number', $medicalChecklist->number ?? $number ?? 'N/A') }}
-                        @endif
+                        {{ $generatedNumber ?: 'N/A' }}
                     </div>
-                    <input type="hidden" name="number" value="@if(isset($medicalChecklist) && $medicalChecklist->patient){{ $medicalChecklist->patient->id }}@elseif(isset($patient)){{ $patient->id }}@elseif(isset($preEmploymentRecord))EMP-{{ str_pad($preEmploymentRecord->id, 4, '0', STR_PAD_LEFT) }}@else{{ old('number', $medicalChecklist->number ?? $number ?? '') }}@endif" />
+                    <input type="hidden" name="number" value="{{ $generatedNumber }}" />
                 </div>
             </div>
 
@@ -110,10 +116,10 @@
                             </div>
                             <div class="flex items-center space-x-4">
                                 <span class="text-sm text-gray-700">Completed by:</span>
-                                <input type="text" name="{{ $field }}_done_by" 
-                                       value="{{ old($field . '_done_by', $medicalChecklist->{$field . '_done_by'} ?? '') }}" 
-                                       placeholder="Initials/Signature" 
-                                       class="form-input w-32 rounded border-gray-300 text-sm">
+                                <input type="text" name="{{ $field }}_done_by"
+                                       value="{{ old($field . '_done_by', $medicalChecklist->{$field . '_done_by'} ?? '') }}"
+                                       placeholder="Initials/Signature"
+                                       @if($field !== 'physical_exam') readonly disabled class="form-input w-32 rounded border-gray-300 text-sm bg-gray-100 cursor-not-allowed" @else class="form-input w-32 rounded border-gray-300 text-sm" @endif>
                             </div>
                         </div>
                     @endforeach
@@ -129,7 +135,8 @@
             </div>
 
             <!-- Submit Button -->
-            <div class="flex justify-end">
+            <div class="flex justify-between">
+               
                 <button type="submit" class="bg-green-600 text-white px-8 py-3 rounded-lg shadow hover:bg-green-700 transition-colors font-semibold tracking-wide">
                     Submit
                 </button>

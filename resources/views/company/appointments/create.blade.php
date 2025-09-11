@@ -70,54 +70,45 @@
                         @enderror
                     </div>
 
-                    <!-- Appointment Type -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-calendar-check mr-2 text-blue-600"></i>Appointment Type
-                        </label>
-                        <select name="appointment_type" class="mt-1 block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg shadow-sm">
-                            <option value="">Select appointment type</option>
-                            <option value="ANNUAL MEDICAL EXAMINATION" {{ old('appointment_type') == 'ANNUAL MEDICAL EXAMINATION' ? 'selected' : '' }}>Annual Medical Examination</option>
-                            <option value="ANNUAL MEDICAL WITH DRUG TEST" {{ old('appointment_type') == 'ANNUAL MEDICAL WITH DRUG TEST' ? 'selected' : '' }}>Annual Medical with Drug Test</option>
-                            <option value="ANNUAL MEDICAL WITH ECG" {{ old('appointment_type') == 'ANNUAL MEDICAL WITH ECG' ? 'selected' : '' }}>Annual Medical with ECG</option>
-                            <option value="ANNUAL MEDICAL COMPLETE" {{ old('appointment_type') == 'ANNUAL MEDICAL COMPLETE' ? 'selected' : '' }}>Annual Medical Complete</option>
-                        </select>
-                        @error('appointment_type')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-            </div>
-
+                 
             <!-- Medical Tests Selection Card -->
             <div class="bg-white shadow rounded-lg overflow-hidden">
                 <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
                     <h2 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">
                         <i class="fas fa-vial mr-2 text-blue-600"></i>Medical Tests Selection
                     </h2>
-                    <p class="text-sm text-gray-600 mt-1">Select the medical tests you want to include in this appointment</p>
+                    <p class="text-sm text-gray-600 mt-1">Select one category and one test for this appointment</p>
                 </div>
                 <div class="p-6">
+                    <input type="hidden" name="medical_test_categories_id" id="medical_test_categories_id" value="{{ old('medical_test_categories_id') }}">
+                    <input type="hidden" name="medical_test_id" id="medical_test_id" value="{{ old('medical_test_id') }}">
+                    @error('medical_test_categories_id')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    @error('medical_test_id')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                     @if($medicalTestCategories->count() > 0)
                         <div class="space-y-6">
                             @foreach($medicalTestCategories as $category)
-                                @if($category->medicalTests->count() > 0)
+                                @php $categoryName = strtolower(trim($category->name)); @endphp
+                                @if($category->medicalTests->count() > 0 && $categoryName !== 'pre-employment')
                                     <div class="border border-gray-200 rounded-lg p-4">
                                         <h3 class="text-md font-semibold text-gray-900 mb-3" style="font-family: 'Poppins', sans-serif; color: #800000;">
                                             {{ $category->name }}
                                         </h3>
                                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                             @foreach($category->medicalTests as $test)
-                                                <div class="relative flex items-start space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group {{ in_array($test->id, old('medical_tests', [])) ? 'bg-blue-50 border-blue-300' : '' }}"
-                                                     onclick="toggleTest({{ $test->id }})"
+                                                <div class="relative flex items-start space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
+                                                     onclick="selectTest({{ $category->id }}, {{ $test->id }})"
                                                      id="container_{{ $test->id }}">
-                                                    <input type="checkbox" 
-                                                           name="medical_tests[]" 
+                                                    <input type="radio" 
+                                                           name="appointment_selected_test" 
                                                            value="{{ $test->id }}" 
                                                            id="test_{{ $test->id }}" 
                                                            class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded pointer-events-none"
-                                                           {{ in_array($test->id, old('medical_tests', [])) ? 'checked' : '' }}
-                                                           onchange="updateTotalPrice()">
+                                                           data-category-id="{{ $category->id }}"
+                                                           {{ old('medical_test_id') == $test->id ? 'checked' : '' }}>
                                                     <div class="flex-1 min-w-0">
                                                         <label for="test_{{ $test->id }}" class="block text-sm font-medium text-gray-900 cursor-pointer">
                                                             {{ $test->name }}
@@ -139,10 +130,10 @@
                             @endforeach
                         </div>
                         
-                        <!-- Total Price Display -->
+                        <!-- Selected Test Summary -->
                         <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                             <div class="flex justify-between items-center">
-                                <span class="text-lg font-semibold text-gray-900">Total Price:</span>
+                                <span class="text-lg font-semibold text-gray-900">Selected Test Price:</span>
                                 <span id="totalPrice" class="text-2xl font-bold text-blue-600">₱0.00</span>
                             </div>
                         </div>
@@ -294,38 +285,28 @@
         updateTotalPrice();
     });
 
-    // Toggle test selection when container is clicked
-    function toggleTest(testId) {
-        const checkbox = document.getElementById('test_' + testId);
-        const container = document.getElementById('container_' + testId);
-        
-        checkbox.checked = !checkbox.checked;
-        
-        // Update visual styling
-        if (checkbox.checked) {
-            container.classList.add('bg-blue-50', 'border-blue-300');
-            container.classList.remove('border-gray-200');
-        } else {
-            container.classList.remove('bg-blue-50', 'border-blue-300');
-            container.classList.add('border-gray-200');
+    function selectTest(categoryId, testId) {
+        const previousSelected = document.querySelector('input[name="appointment_selected_test"]:checked');
+        if (previousSelected && parseInt(previousSelected.value) === testId) {
+            // already selected via clicking container; nothing to do
         }
-        
-        updateTotalPrice();
+        // Check the radio
+        const radio = document.getElementById('test_' + testId);
+        radio.checked = true;
+        // Update hidden inputs
+        document.getElementById('medical_test_categories_id').value = String(categoryId);
+        document.getElementById('medical_test_id').value = String(testId);
+        // Restyle all containers
+        document.querySelectorAll('[id^="container_"]').forEach(c => c.classList.remove('bg-blue-50','border-blue-300'));
+        const container = document.getElementById('container_' + testId);
+        container.classList.add('bg-blue-50','border-blue-300');
+        // Update price
+        updateTotalPrice(testId);
     }
 
-    // Update total price when medical tests are selected/deselected
-    function updateTotalPrice() {
-        const checkboxes = document.querySelectorAll('input[name="medical_tests[]"]:checked');
-        let total = 0;
-        
-        checkboxes.forEach(checkbox => {
-            const testId = parseInt(checkbox.value);
-            if (testPrices[testId]) {
-                total += testPrices[testId];
-            }
-        });
-        
-        document.getElementById('totalPrice').textContent = '₱' + total.toFixed(2);
+    function updateTotalPrice(testId) {
+        const price = testPrices[testId] || 0;
+        document.getElementById('totalPrice').textContent = '₱' + Number(price).toFixed(2);
     }
 
     // Handle file selection and preview

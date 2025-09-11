@@ -68,7 +68,8 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Exam</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -80,7 +81,13 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $appointment->id }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $appointment->formatted_date }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $appointment->formatted_time_slot }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $appointment->appointment_type }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ optional($appointment->medicalTestCategory)->name }}
+                            @if($appointment->medicalTest)
+                                - {{ $appointment->medicalTest->name }}
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₱{{ number_format($appointment->total_price ?? 0, 2) }}</td>
                         <td class="px-6 py-4 text-sm text-gray-900">{{ $appointment->notes ?? 'No notes' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @php
@@ -114,124 +121,8 @@
             </table>
         </div>
         @else
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">001</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-10 w-10">
-                                    <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                        <i class="fas fa-user text-gray-600"></i>
-                                    </div>
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">John Smith</div>
-                                    <div class="text-sm text-gray-500">Software Engineer</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Dec 15, 2024</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">09:00 AM</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Pre-Employment</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                Completed
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <div class="flex space-x-2">
-                                <button class="text-blue-600 hover:text-blue-900">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="text-gray-600 hover:text-gray-900">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">002</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-10 w-10">
-                                    <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                        <i class="fas fa-user text-gray-600"></i>
-                                    </div>
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">Sarah Johnson</div>
-                                    <div class="text-sm text-gray-500">Marketing Manager</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Dec 16, 2024</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">10:30 AM</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Annual Physical</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                Pending
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <div class="flex space-x-2">
-                                <button class="text-blue-600 hover:text-blue-900">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="text-gray-600 hover:text-gray-900">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">003</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-10 w-10">
-                                    <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                        <i class="fas fa-user text-gray-600"></i>
-                                    </div>
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">Mike Wilson</div>
-                                    <div class="text-sm text-gray-500">Sales Representative</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Dec 14, 2024</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">02:00 PM</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Pre-Employment</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                Failed
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <div class="flex space-x-2">
-                                <button class="text-blue-600 hover:text-blue-900">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="text-gray-600 hover:text-gray-900">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="p-6 text-center text-sm text-gray-600">
+            No appointments scheduled.
         </div>
         @endif
     </div>
@@ -253,10 +144,10 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applicant</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Exam Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medical Tests</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Blood Tests</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medical Exam</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Price</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -279,14 +170,13 @@
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $record->created_at->format('M d, Y') }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $record->medical_exam_type }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            @if(is_array($record->blood_tests))
-                                {{ implode(', ', $record->blood_tests) }}
-                            @else
-                                {{ $record->blood_tests ?? 'N/A' }}
+                            {{ optional($record->medicalTestCategory)->name }}
+                            @if($record->medicalTest)
+                                - {{ $record->medicalTest->name }}
                             @endif
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₱{{ number_format($record->total_price ?? 0, 2) }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @php
                                 $statusClass = 'bg-gray-100 text-gray-800';

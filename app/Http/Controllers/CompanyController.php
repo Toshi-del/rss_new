@@ -97,8 +97,8 @@ class CompanyController extends Controller
         $user = Auth::user();
         
         // Get annual physical examination results (from appointments)
+        // Note: legacy column 'appointment_type' removed; filter by creator only
         $annualPhysicalResults = Appointment::where('created_by', $user->id)
-            ->where('appointment_type', 'annual_physical')
             ->with(['patients' => function($query) {
                 $query->orderBy('created_at', 'desc');
             }])

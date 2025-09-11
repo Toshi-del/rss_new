@@ -20,18 +20,7 @@
             </div>
         </div>
 
-        <!-- Appointments Card -->
-        <div class="bg-white rounded-lg shadow-sm p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-800">Appointments</h3>
-                    <p class="text-3xl font-bold text-blue-600">{{ $appointmentCount }}</p>
-                </div>
-                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-calendar-check text-blue-600 text-xl"></i>
-                </div>
-            </div>
-        </div>
+
 
         <!-- Pre-Employment Card -->
         <div class="bg-white rounded-lg shadow-sm p-6">
@@ -47,54 +36,13 @@
         </div>
     </div>
 
-    <!-- Patients Section -->
-    <div class="bg-white rounded-lg shadow-sm mb-8">
-        <div class="p-6 border-b border-gray-200">
-            <div class="flex items-center justify-between">
-                <h2 class="text-xl font-semibold text-gray-800">Recent Patients</h2>
-            </div>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PATIENT NAME</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">EMAIL</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PHONE</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AGE</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SEX</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">APPOINTMENT ID</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($patients as $patient)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {{ $patient->first_name }} {{ $patient->last_name }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->email }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->phone }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->age }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->sex }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->appointment_id }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
-                                No patients found
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
+   
 
     <!-- Appointments Section -->
     <div class="bg-white rounded-lg shadow-sm">
         <div class="p-6 border-b border-gray-200">
             <div class="flex items-center justify-between">
-                <h2 class="text-xl font-semibold text-gray-800">Recent Appointments</h2>
+                <h2 class="text-xl font-semibold text-gray-800">Recent Annual Physical Patients</h2>
                 <a href="{{ route('nurse.appointments') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                     View All
                 </a>
@@ -106,11 +54,11 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient Name</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appointment Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medical Test</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                       
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -121,7 +69,16 @@
                                     {{ $patient->first_name }} {{ $patient->last_name }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->email }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $appointment->appointment_type }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    @if($appointment->medicalTestCategory)
+                                        {{ $appointment->medicalTestCategory->name }}
+                                        @if($appointment->medicalTest)
+                                            - {{ $appointment->medicalTest->name }}
+                                        @endif
+                                    @else
+                                        {{ $appointment->appointment_type ?? 'N/A' }}
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $appointment->formatted_date }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $appointment->formatted_time_slot }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -132,11 +89,7 @@
                                         {{ ucfirst($appointment->status ?? 'pending') }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <button class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors">
-                                        Care
-                                    </button>
-                                </td>
+                             
                             </tr>
                         @endforeach
                     @empty

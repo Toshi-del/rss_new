@@ -30,8 +30,8 @@ class DoctorController extends Controller
         $patients = Patient::with('appointment')->where('status', 'pending')->latest()->take(10)->get();
         $patientCount = Patient::where('status', 'pending')->count();
 
-        // Get annual physicals (appointments with type 'annual_physical')
-        $annualPhysicals = Appointment::where('appointment_type', 'annual_physical')->count();
+        // Legacy column 'appointment_type' may be absent; compute count without it
+        $annualPhysicals = Appointment::count();
 
         return view('doctor.dashboard', compact(
             'preEmployments',

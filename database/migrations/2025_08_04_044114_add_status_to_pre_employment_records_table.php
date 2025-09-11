@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('pre_employment_records', function (Blueprint $table) {
-            $table->enum('status', ['Pending', 'Approved', 'Declined',])->default('Pending')->after('uploaded_file');
-        });
+        if (Schema::hasTable('pre_employment_records') && !Schema::hasColumn('pre_employment_records', 'status')) {
+            Schema::table('pre_employment_records', function (Blueprint $table) {
+                $table->enum('status', ['Pending', 'Approved', 'Declined',])->default('Pending');
+            });
+        }
     }
 
     /**
@@ -21,8 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('pre_employment_records', function (Blueprint $table) {
-            $table->dropColumn('status');
-        });
+        if (Schema::hasTable('pre_employment_records') && Schema::hasColumn('pre_employment_records', 'status')) {
+            Schema::table('pre_employment_records', function (Blueprint $table) {
+                $table->dropColumn('status');
+            });
+        }
     }
 };

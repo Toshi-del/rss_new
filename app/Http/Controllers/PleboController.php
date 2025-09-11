@@ -193,7 +193,7 @@ class PleboController extends Controller
         }
         $medicalChecklist->save();
 
-        return redirect()->back()->with('success', 'X-ray information updated successfully.');
+        return redirect()->back()->with('success', 'Medical Checklist is updated.');
     }
 }
 

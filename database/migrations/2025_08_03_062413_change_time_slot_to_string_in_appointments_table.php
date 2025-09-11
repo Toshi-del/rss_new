@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->date('appointment_date');
             $table->string('time_slot');
-            $table->string('appointment_type');
-            $table->json('blood_chemistry')->nullable();
+            $table->foreignId('medical_test_categories_id')->constrained('medical_test_categories');
+            $table->unsignedBigInteger('medical_test_id')->nullable();
             $table->text('notes')->nullable();
             $table->json('patients_data')->nullable();
             $table->string('excel_file_path')->nullable();

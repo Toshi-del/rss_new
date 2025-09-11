@@ -16,7 +16,7 @@ class CompanyAppointmentController extends Controller
 {
     public function index()
     {
-        $appointments = Appointment::with('patients')->where('created_by', Auth::id())
+        $appointments = Appointment::with(['patients','medicalTestCategory','medicalTest'])->where('created_by', Auth::id())
             ->orderBy('appointment_date', 'asc')
             ->orderBy('time_slot', 'asc')
             ->get();
@@ -51,9 +51,8 @@ class CompanyAppointmentController extends Controller
         $request->validate([
             'appointment_date' => 'nullable|date|after_or_equal:today',
             'time_slot' => 'required|string',
-            'appointment_type' => 'required|string',
-            'medical_tests' => 'array',
-            'medical_tests.*' => 'exists:medical_tests,id',
+            'medical_test_categories_id' => 'required|exists:medical_test_categories,id',
+            'medical_test_id' => 'required|exists:medical_tests,id',
             'notes' => 'nullable|string',
             'excel_file' => 'nullable|file|mimes:xlsx,xls',
         ]);
@@ -77,15 +76,18 @@ class CompanyAppointmentController extends Controller
                 return back()->withInput()->with('error', 'An appointment already exists for this date and time slot. Please choose a different time.');
             }
 
-            // Calculate total price from selected medical tests
-            $selectedTests = MedicalTest::whereIn('id', $request->medical_tests ?? [])->get();
-            $totalPrice = $selectedTests->sum('price');
+            // Validate the selected test belongs to the selected category
+            $selectedTest = MedicalTest::find($request->medical_test_id);
+            if (!$selectedTest || (int) $selectedTest->medical_test_category_id !== (int) $request->medical_test_categories_id) {
+                return back()->withInput()->withErrors(['medical_test_id' => 'Selected medical test does not belong to the chosen category.']);
+            }
+            $totalPrice = $selectedTest->price ?? 0;
 
             $appointment = Appointment::create([
                 'appointment_date' => $appointmentDate,
                 'time_slot' => $request->time_slot,
-                'appointment_type' => $request->appointment_type,
-                'blood_chemistry' => $request->medical_tests ?? [], // Store medical test IDs
+                'medical_test_categories_id' => $request->medical_test_categories_id,
+                'medical_test_id' => $request->medical_test_id,
                 'total_price' => $totalPrice,
                 'notes' => $request->notes,
                 'patients_data' => [], // Will be populated when Excel is processed
@@ -292,9 +294,8 @@ class CompanyAppointmentController extends Controller
         $request->validate([
             'appointment_date' => 'required|date',
             'time_slot' => 'required|string',
-            'appointment_type' => 'required|string',
-            'medical_tests' => 'array',
-            'medical_tests.*' => 'exists:medical_tests,id',
+            'medical_test_categories_id' => 'required|exists:medical_test_categories,id',
+            'medical_test_id' => 'required|exists:medical_tests,id',
             'notes' => 'nullable|string',
         ]);
 
@@ -309,15 +310,18 @@ class CompanyAppointmentController extends Controller
             return back()->withInput()->with('error', 'An appointment already exists for this date and time slot. Please choose a different time.');
         }
 
-        // Calculate total price from selected medical tests
-        $selectedTests = MedicalTest::whereIn('id', $request->medical_tests ?? [])->get();
-        $totalPrice = $selectedTests->sum('price');
+        // Validate category/test pairing and get price
+        $selectedTest = MedicalTest::find($request->medical_test_id);
+        if (!$selectedTest || (int) $selectedTest->medical_test_category_id !== (int) $request->medical_test_categories_id) {
+            return back()->withInput()->withErrors(['medical_test_id' => 'Selected medical test does not belong to the chosen category.']);
+        }
+        $totalPrice = $selectedTest->price ?? 0;
 
         $appointment->update([
             'appointment_date' => $request->appointment_date,
             'time_slot' => $request->time_slot,
-            'appointment_type' => $request->appointment_type,
-            'blood_chemistry' => $request->medical_tests ?? [], // Store medical test IDs
+            'medical_test_categories_id' => $request->medical_test_categories_id,
+            'medical_test_id' => $request->medical_test_id,
             'total_price' => $totalPrice,
             'notes' => $request->notes,
         ]);

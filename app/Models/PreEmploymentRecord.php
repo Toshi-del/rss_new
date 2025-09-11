@@ -15,8 +15,9 @@ class PreEmploymentRecord extends Model
         'sex',
         'email',
         'phone_number',
-        'medical_exam_type',
-        'blood_tests',
+        'medical_test_categories_id',
+        'medical_test_id',
+        'total_price',
         'other_exams',
         'billing_type',
         'company_name',
@@ -27,7 +28,7 @@ class PreEmploymentRecord extends Model
     ];
 
     protected $casts = [
-        'blood_tests' => 'array',
+        'total_price' => 'decimal:2',
     ];
 
     public function creator(): BelongsTo
@@ -43,5 +44,15 @@ class PreEmploymentRecord extends Model
     public function preEmploymentExamination(): HasOne
     {
         return $this->hasOne(PreEmploymentExamination::class, 'pre_employment_record_id');
+    }
+
+    public function medicalTestCategory(): BelongsTo
+    {
+        return $this->belongsTo(MedicalTestCategory::class, 'medical_test_categories_id');
+    }
+
+    public function medicalTest(): BelongsTo
+    {
+        return $this->belongsTo(MedicalTest::class, 'medical_test_id');
     }
 }

@@ -11,8 +11,8 @@ class Appointment extends Model
     protected $fillable = [
         'appointment_date',
         'time_slot',
-        'appointment_type',
-        'blood_chemistry',
+        'medical_test_categories_id',
+        'medical_test_id',
         'notes',
         'patients_data',
         'excel_file_path',
@@ -23,10 +23,19 @@ class Appointment extends Model
 
     protected $casts = [
         'appointment_date' => 'date',
-        'blood_chemistry' => 'array',
         'patients_data' => 'array',
         'total_price' => 'decimal:2',
     ];
+
+    public function medicalTestCategory(): BelongsTo
+    {
+        return $this->belongsTo(MedicalTestCategory::class, 'medical_test_categories_id');
+    }
+
+    public function medicalTest(): BelongsTo
+    {
+        return $this->belongsTo(MedicalTest::class, 'medical_test_id');
+    }
 
     public function creator(): BelongsTo
     {

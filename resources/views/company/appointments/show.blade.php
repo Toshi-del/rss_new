@@ -77,8 +77,13 @@
                                     </span>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-500 mb-1">Appointment Type</label>
-                                    <p class="text-lg font-semibold text-gray-900">{{ $appointment->appointment_type }}</p>
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">Exam</label>
+                                    <p class="text-lg font-semibold text-gray-900">
+                                        {{ optional($appointment->medicalTestCategory)->name }}
+                                        @if($appointment->medicalTest)
+                                            - {{ $appointment->medicalTest->name }}
+                                        @endif
+                                    </p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-500 mb-1">Created By</label>
@@ -92,22 +97,17 @@
                     </div>
                 </div>
 
-                <!-- Medical Tests Card -->
-                @if($appointment->blood_chemistry && count($appointment->blood_chemistry) > 0)
+                <!-- Medical Test Card -->
+                @if($appointment->medicalTest)
                 <div class="bg-white shadow rounded-lg overflow-hidden">
                     <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
                         <h2 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">
-                            <i class="fas fa-vial mr-2 text-blue-600"></i>Selected Medical Tests
+                            <i class="fas fa-vial mr-2 text-blue-600"></i>Selected Medical Test
                         </h2>
-                        <p class="text-sm text-gray-600 mt-1">{{ count($appointment->blood_chemistry) }} test(s) selected</p>
                     </div>
                     <div class="p-6">
                         <div class="space-y-3">
-                            @php
-                                $medicalTests = \App\Models\MedicalTest::with('category')->whereIn('id', $appointment->blood_chemistry)->get();
-                                $totalPrice = $medicalTests->sum('price');
-                            @endphp
-                            @foreach($medicalTests as $test)
+                            @php $test = $appointment->medicalTest; @endphp
                             <div class="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
                                 <div class="flex-1">
                                     <h3 class="text-sm font-semibold text-gray-900">{{ $test->name }}</h3>
@@ -124,16 +124,9 @@
                                     <p class="text-lg font-bold text-green-600">₱{{ number_format($test->price, 2) }}</p>
                                 </div>
                             </div>
-                            @endforeach
                         </div>
                         
-                        <!-- Total Price -->
-                        <div class="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                            <div class="flex justify-between items-center">
-                                <span class="text-lg font-semibold text-gray-900">Total Price:</span>
-                                <span class="text-2xl font-bold text-green-600">₱{{ number_format($totalPrice, 2) }}</span>
-                            </div>
-                        </div>
+                        
                     </div>
                 </div>
                 @endif

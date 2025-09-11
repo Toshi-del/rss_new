@@ -44,7 +44,7 @@
                     <div class="flex items-center space-x-4">
                         <div class="text-right">
                             <p class="font-medium text-gray-800">{{ Auth::user()->fname }} {{ Auth::user()->lname }}</p>
-                            <p class="text-sm text-gray-600">Plebotomist</p>
+                            <p class="text-sm text-gray-600">Phlebotomist</p>
                         </div>
                         <div class="relative">
                             <form method="POST" action="{{ route('logout') }}">

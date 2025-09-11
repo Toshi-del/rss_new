@@ -52,55 +52,63 @@
                     @enderror
                 </div>
 
-                <!-- Medical Examination Type -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Medical Examination Type</label>
-                    <select name="medical_exam_type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                        <option value="Pre-Employment Medical Examination">Pre-Employment Medical Examination</option>
-                        <option value="Pre-Employment with Drug Test">Pre-Employment with Drug Test</option>
-                        <option value="Pre-Employment with ECG & Drug Test">Pre-Employment with ECG & Drug Test</option>
-                        <option value="Pre-Employment with Drug Test Audio and Ishihara">Pre-Employment with Drug Test Audio and Ishihara</option>
-                        <option value="X-ray Only">X-ray Only</option>
-                    </select>
-                    @error('medical_exam_type')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
 
                 <!-- Medical Tests by Category -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-4">
                         <i class="fas fa-flask mr-2"></i>Medical Tests
                     </label>
-                    
+
+                    <input type="hidden" name="medical_test_categories_id" id="medical_test_categories_id" value="{{ old('medical_test_categories_id') }}">
+                    <input type="hidden" name="medical_test_id" id="medical_test_id" value="{{ old('medical_test_id') }}">
+                    @error('medical_test_categories_id')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    @error('medical_test_id')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+
                     @foreach($medicalTestCategories as $category)
-                        <div class="mb-6">
-                            <h4 class="text-lg font-medium text-gray-800 mb-3 border-b border-gray-200 pb-2">
+                        @php $categoryName = strtolower(trim($category->name)); @endphp
+                        <div class="mb-8">
+                            <h4 class="text-lg font-semibold mb-3" style="color:#800000;">
                                 {{ $category->name }}
                                 @if($category->description)
                                     <span class="text-sm text-gray-500 font-normal">- {{ $category->description }}</span>
                                 @endif
                             </h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                                 @foreach($category->activeMedicalTests as $test)
-                                    <div class="flex items-center">
-                                        <input type="checkbox" 
-                                               name="blood_tests[]" 
-                                               value="{{ $test->name }}" 
-                                               id="test_{{ $test->id }}" 
-                                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                        <label for="test_{{ $test->id }}" class="ml-2 block text-sm text-gray-900">
-                                            {{ $test->name }}
-                                            @if($test->description)
-                                                <span class="text-xs text-gray-500">({{ $test->description }})</span>
-                                            @endif
-                                        </label>
-                                    </div>
+                                    @if($categoryName === 'appointment')
+                                        @continue
+                                    @endif
+                                    <label for="pe_test_{{ $test->id }}" class="cursor-pointer block border rounded-xl p-5 hover:shadow transition bg-white">
+                                        <div class="flex items-start">
+                                            <input
+                                                id="pe_test_{{ $test->id }}"
+                                                type="checkbox"
+                                                name="pe_selected_test"
+                                                value="{{ $test->id }}"
+                                                data-category-id="{{ $category->id }}"
+                                                data-test-id="{{ $test->id }}"
+                                                class="mt-1 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                            >
+                                            <div class="ml-3">
+                                                <p class="text-base font-semibold text-gray-900">{{ $test->name }}</p>
+                                                @if($test->description)
+                                                    <p class="text-sm text-gray-500">{{ Str::limit($test->description, 50) }}</p>
+                                                @endif
+                                                @if(!is_null($test->price))
+                                                    <p class="mt-2 text-sm font-semibold text-emerald-600">₱{{ number_format((float)$test->price, 2) }}</p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </label>
                                 @endforeach
                             </div>
                         </div>
                     @endforeach
-                    
+
                     @error('blood_tests')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -181,6 +189,63 @@
                 fileLabel.textContent = e.target.files[0].name;
             }
         });
+
+        // Medical test category selection handling
+        const hiddenCategoryInput = document.getElementById('medical_test_categories_id');
+        const hiddenTestInput = document.getElementById('medical_test_id');
+        const testCheckboxes = document.querySelectorAll('input[name="pe_selected_test"][data-category-id]');
+
+        function syncHiddenFromChecked() {
+            const firstChecked = Array.from(testCheckboxes).find(cb => cb.checked);
+            if (firstChecked) {
+                hiddenCategoryInput.value = firstChecked.getAttribute('data-category-id');
+            }
+        }
+
+        function handleTestChange(e) {
+            const current = e.target;
+            const currentCategoryId = current.getAttribute('data-category-id');
+            const currentTestId = current.getAttribute('data-test-id');
+            const selectedCategoryId = hiddenCategoryInput.value;
+
+            // Uncheck other tests when one is selected (single test selection)
+            if (current.checked) {
+                Array.from(testCheckboxes).forEach(cb => {
+                    if (cb !== current) cb.checked = false;
+                });
+            }
+
+            // If none are checked, clear hidden inputs
+            if (!Array.from(testCheckboxes).some(cb => cb.checked)) {
+                hiddenCategoryInput.value = '';
+                hiddenTestInput.value = '';
+                return;
+            }
+
+            // If no category selected yet, set it
+            if (!selectedCategoryId) {
+                hiddenCategoryInput.value = currentCategoryId;
+                hiddenTestInput.value = currentTestId;
+                return;
+            }
+
+            // If different category, prevent mixing and auto-uncheck
+            if (selectedCategoryId !== currentCategoryId) {
+                // Uncheck the box and notify
+                current.checked = false;
+                alert('Please select tests from one category only.');
+                return;
+            }
+
+            // Same category: set test id
+            hiddenTestInput.value = currentTestId;
+        }
+
+        testCheckboxes.forEach(cb => cb.addEventListener('change', handleTestChange));
+        // Initialize on load for old inputs
+        if (!hiddenCategoryInput.value) {
+            syncHiddenFromChecked();
+        }
     });
 </script>
 @endpush

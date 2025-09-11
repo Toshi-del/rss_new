@@ -44,7 +44,12 @@
                             <div class="text-sm text-gray-500">{{ $file->phone_number }}</div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="text-sm text-gray-900">{{ $file->medical_exam_type }}</div>
+                            <div class="text-sm text-gray-900">
+                                {{ optional($file->medicalTestCategory)->name }}
+                                @if($file->medicalTest)
+                                    - {{ $file->medicalTest->name }}
+                                @endif
+                            </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-gray-900">{{ $file->billing_type }}</div>

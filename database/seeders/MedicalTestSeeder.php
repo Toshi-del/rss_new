@@ -17,81 +17,93 @@ class MedicalTestSeeder extends Seeder
         // Create categories
         $categories = [
             [
+                'name' => 'Pre-Employment',
+                'description' => 'Pre-employment packages and options',
+                'sort_order' => 1,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Appointment',
+                'description' => 'Appointment packages',
+                'sort_order' => 2,
+                'is_active' => true,
+            ],
+            [
                 'name' => 'Routine Examinations',
                 'description' => 'Basic routine medical examinations',
-                'sort_order' => 1,
+                'sort_order' => 3,
                 'is_active' => true,
             ],
             [
                 'name' => 'Histology',
                 'description' => 'Histological examinations and tests',
-                'sort_order' => 2,
+                'sort_order' => 3,
                 'is_active' => true,
             ],
             [
                 'name' => 'Special Hematology',
                 'description' => 'Specialized hematological tests',
-                'sort_order' => 3,
+                'sort_order' => 4,
                 'is_active' => true,
             ],
             [
                 'name' => 'Serology',
                 'description' => 'Serological tests and analysis',
-                'sort_order' => 4,
+                'sort_order' => 5,
                 'is_active' => true,
             ],
             [
                 'name' => 'Clinical Microscopy',
                 'description' => 'Clinical microscopy examinations',
-                'sort_order' => 5,
+                'sort_order' => 6,
                 'is_active' => true,
             ],
             [
                 'name' => 'Blood Chemistry',
                 'description' => 'Blood chemistry and biochemical tests',
-                'sort_order' => 6,
+                'sort_order' => 7,
                 'is_active' => true,
             ],
             [
                 'name' => 'Immunology',
                 'description' => 'Immunological tests and markers',
-                'sort_order' => 7,
+                'sort_order' => 8,
                 'is_active' => true,
             ],
             [
                 'name' => 'Tumor Markers',
                 'description' => 'Tumor marker tests for cancer detection',
-                'sort_order' => 8,
+                'sort_order' => 9,
                 'is_active' => true,
             ],
             [
                 'name' => 'Thyroid Function Test',
                 'description' => 'Thyroid function and hormone tests',
-                'sort_order' => 9,
+                'sort_order' => 10,
                 'is_active' => true,
             ],
             [
                 'name' => 'Drug Monitoring Assay',
                 'description' => 'Drug testing and monitoring assays',
-                'sort_order' => 10,
+                'sort_order' => 11,
                 'is_active' => true,
             ],
             [
                 'name' => 'X-RAY',
                 'description' => 'X-ray examinations and imaging',
-                'sort_order' => 11,
+                'sort_order' => 12,
                 'is_active' => true,
             ],
             [
                 'name' => 'Complete Hepa-Profile',
                 'description' => 'Complete hepatitis profile tests',
-                'sort_order' => 12,
+                'sort_order' => 13,
                 'is_active' => true,
             ],
             [
                 'name' => 'Bacteriology',
                 'description' => 'Bacteriological tests and cultures',
-                'sort_order' => 13,
+                'sort_order' => 14,
                 'is_active' => true,
             ],
         ];
@@ -101,12 +113,29 @@ class MedicalTestSeeder extends Seeder
             
             // Add tests for each category
             switch ($category->name) {
+                case 'Pre-Employment':
+                    $tests = [
+                        ['name' => 'AUDIOMETRY AND ISHIHARA ONLY', 'description' => null, 'sort_order' => 0, 'price' => 500.00],
+                        ['name' => 'Pre-Employment Medical Examination', 'description' => null, 'sort_order' => 1, 'price' => 600.00],
+                        ['name' => 'Pre-Employment with Drug Test', 'description' => null, 'sort_order' => 2, 'price' => 750.00],
+                        ['name' => 'Pre-Employment with ECG and Drug test', 'description' => null, 'sort_order' => 3, 'price' => 750.00],
+                        ['name' => 'Pre-Employment with Drug test and AUDIO and ISHIHARA', 'description' => null, 'sort_order' => 4, 'price' => 800.00],
+                        ['name' => 'Drug test only (bring valid I.D)', 'description' => null, 'sort_order' => 5, 'price' => 500.00],
+                    ];
+                    break;
+                case 'Appointment':
+                    $tests = [
+                        ['name' => 'Annual Medical Examination', 'description' => 'Annual medical exam package', 'sort_order' => 1, 'price' => 0],
+                        ['name' => 'Annual Medical with Drug Test', 'description' => 'Annual exam plus drug test', 'sort_order' => 2, 'price' => 0],
+                        ['name' => 'Annual Medical with ECG and Drug test', 'description' => 'Annual exam plus ECG and drug test', 'sort_order' => 3, 'price' => 0],
+                    ];
+                    break;
                 case 'Routine Examinations':
                     $tests = [
-                        ['name' => 'CBC', 'description' => 'Complete Blood Count', 'sort_order' => 1],
-                        ['name' => 'Urinalysis', 'description' => 'Urine Analysis', 'sort_order' => 2],
-                        ['name' => 'Fecalysis', 'description' => 'Stool Analysis', 'sort_order' => 3],
-                        ['name' => 'Pregnancy Test', 'description' => 'Pregnancy Test', 'sort_order' => 4],
+                        ['name' => 'CBC', 'description' => 'Complete Blood Count', 'sort_order' => 1, 'price' => 0],
+                        ['name' => 'Urinalysis', 'description' => 'Urine Analysis', 'sort_order' => 2, 'price' => 0],
+                        ['name' => 'Fecalysis', 'description' => 'Stool Analysis', 'sort_order' => 3, 'price' => 0],
+                        ['name' => 'Pregnancy Test', 'description' => 'Pregnancy Test', 'sort_order' => 4, 'price' => 0],
                     ];
                     break;
                     
@@ -251,6 +280,7 @@ class MedicalTestSeeder extends Seeder
                     'name' => $testData['name'],
                     'description' => $testData['description'],
                     'sort_order' => $testData['sort_order'],
+                    'price' => $testData['price'] ?? 0,
                     'is_active' => true,
                 ]);
             }
