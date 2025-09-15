@@ -67,6 +67,11 @@ class MedicalChecklist extends Model
         return $this->belongsTo(AnnualPhysicalExamination::class);
     }
 
+    public function preEmploymentExamination(): BelongsTo
+    {
+        return $this->belongsTo(PreEmploymentExamination::class, 'pre_employment_record_id', 'pre_employment_record_id');
+    }
+
     public function radtech(): BelongsTo
     {
         return $this->belongsTo(User::class, 'radtech_id');

@@ -21,7 +21,7 @@
                         <th>Appointment Time</th>
                         <th>Exam</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        
                     </tr>
                 </thead>
                 <tbody>
@@ -68,20 +68,7 @@
                                     <span class="badge bg-warning text-dark">Pending</span>
                                 @endif
                             </td>
-                            <td>
-                                @php
-                                    $examId = optional($patient->annualPhysicalExamination)->id ?? \App\Models\AnnualPhysicalExamination::where('patient_id', $patient->id)->value('id');
-                                @endphp
-                                @if($examId)
-                                    <a href="{{ route('admin.view-annual-physical-examination', $examId) }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="View detailed results">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                @else
-                                    <button type="button" class="btn btn-sm btn-primary" disabled data-bs-toggle="tooltip" data-bs-placement="top" title="No examination available">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                @endif
-                            </td>
+                           
                         </tr>
                     @empty
                         <tr>

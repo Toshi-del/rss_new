@@ -1,8 +1,8 @@
-@extends('layouts.plebo')
+@extends('layouts.ecgtech')
 
-@section('title', 'Phlebo Dashboard')
+@section('title', 'ECG Tech Dashboard')
 
-@section('page-title', 'Phlebo Dashboard')
+@section('page-title', 'ECG Tech Dashboard')
 
 @section('content')
 @if(session('success'))
@@ -12,38 +12,42 @@
 @endif
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <!-- Pre-Employment Records Card -->
     <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold text-gray-800">Pre-Employment Records</h3>
             <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $preEmploymentCount }}</span>
         </div>
-        <p class="text-gray-600 text-sm mb-4">Manage medical checklist for pre-employment</p>
+        <p class="text-gray-600 text-sm mb-4">Manage ECG information for pre-employment examinations</p>
         <a href="#pre-employment-section" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Records →</a>
     </div>
 
+    <!-- Annual Physical Patients Card -->
     <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold text-gray-800">Annual Physical Patients</h3>
             <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $patientCount }}</span>
         </div>
-        <p class="text-gray-600 text-sm mb-4">Manage medical checklist for annual physical</p>
+        <p class="text-gray-600 text-sm mb-4">Manage ECG information for annual physical examinations</p>
         <a href="#annual-physical-section" class="text-green-600 hover:text-green-800 text-sm font-medium">View Patients →</a>
     </div>
 
+    <!-- ECG Reports Card -->
     <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-gray-800">Recent Appointments</h3>
-            <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $appointmentCount }}</span>
+            <h3 class="text-lg font-semibold text-gray-800">ECG Reports</h3>
+            <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $ecgReportCount }}</span>
         </div>
-        <p class="text-gray-600 text-sm mb-4">Review recent activities</p>
-        <a href="#appointments-section" class="text-purple-600 hover:text-purple-800 text-sm font-medium">View Appointments →</a>
+        <p class="text-gray-600 text-sm mb-4">Total ECG reports completed today</p>
+        <a href="#ecg-reports-section" class="text-purple-600 hover:text-purple-800 text-sm font-medium">View Reports →</a>
     </div>
 </div>
 
+<!-- Pre-Employment Records Section -->
 <div id="pre-employment-section" class="bg-white rounded-lg shadow-sm mb-8">
     <div class="p-6 border-b border-gray-200">
-        <h2 class="text-xl font-semibold text-gray-800">Pre-Employment Patients</h2>
-        
+        <h2 class="text-xl font-semibold text-gray-800">Pre-Employment Records</h2>
+        <p class="text-gray-600 text-sm mt-1">Click on a record to access the medical checklist and add ECG information</p>
     </div>
     <div class="overflow-x-auto">
         <table class="w-full">
@@ -53,10 +57,8 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AGE</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SEX</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">COMPANY</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MEDICAL CATEGORY</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MEDICAL TEST</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
-                
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -68,20 +70,6 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $preEmployment->age }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $preEmployment->sex }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $preEmployment->company_name }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            @if($preEmployment->medicalTestCategory)
-                                {{ $preEmployment->medicalTestCategory->name }}
-                            @else
-                                {{ $preEmployment->medical_exam_type ?? 'N/A' }}
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            @if($preEmployment->medicalTest)
-                                {{ $preEmployment->medicalTest->name }}
-                            @else
-                                N/A
-                            @endif
-                        </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @php
                                 $statusClass = match($preEmployment->status) {
@@ -95,11 +83,21 @@
                                 {{ ucfirst($preEmployment->status) }}
                             </span>
                         </td>
-                      
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <form action="{{ route('ecgtech.pre-employment.send-to-doctor', $preEmployment->id) }}" method="POST" class="inline">
+                                @csrf
+                                <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Send to Doctor">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </form>
+                            <a href="{{ route('ecgtech.medical-checklist-page.pre-employment', $preEmployment->id) }}" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors inline-block" title="ECG Checklist">
+                                <i class="fas fa-heartbeat"></i> ECG Checklist
+                            </a>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                        <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
                             No pre-employment records found
                         </td>
                     </tr>
@@ -109,10 +107,11 @@
     </div>
 </div>
 
+<!-- Annual Physical Patients Section -->
 <div id="annual-physical-section" class="bg-white rounded-lg shadow-sm mb-8">
     <div class="p-6 border-b border-gray-200">
         <h2 class="text-xl font-semibold text-gray-800">Annual Physical Patients</h2>
-        
+        <p class="text-gray-600 text-sm mt-1">Click on a patient to access the medical checklist and add ECG information</p>
     </div>
     <div class="overflow-x-auto">
         <table class="w-full">
@@ -122,10 +121,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AGE</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SEX</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">EMAIL</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MEDICAL CATEGORY</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MEDICAL TEST</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
-                  
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -138,37 +134,20 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->sex }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->email }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            @if($patient->appointment && $patient->appointment->medicalTestCategory)
-                                {{ $patient->appointment->medicalTestCategory->name }}
-                            @else
-                                N/A
-                            @endif
+                            <form action="{{ route('ecgtech.annual-physical.send-to-doctor', $patient->id) }}" method="POST" class="inline">
+                                @csrf
+                                <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Send to Doctor">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </form>
+                            <a href="{{ route('ecgtech.medical-checklist-page.annual-physical', $patient->id) }}" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors inline-block" title="ECG Checklist">
+                                <i class="fas fa-heartbeat"></i> ECG Checklist
+                            </a>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            @if($patient->appointment && $patient->appointment->medicalTest)
-                                {{ $patient->appointment->medicalTest->name }}
-                            @else
-                                N/A
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @php
-                                $statusClass = match($patient->status) {
-                                    'approved' => 'bg-green-100 text-green-800',
-                                    'declined' => 'bg-red-100 text-red-800',
-                                    'pending' => 'bg-yellow-100 text-yellow-800',
-                                    default => 'bg-gray-100 text-gray-800'
-                                };
-                            @endphp
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
-                                {{ ucfirst($patient->status) }}
-                            </span>
-                        </td>
-                      
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                        <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
                             No annual physical patients found
                         </td>
                     </tr>
@@ -178,61 +157,54 @@
     </div>
 </div>
 
-
-
-<div id="medicalChecklistModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900" id="modalTitle">Medical Checklist</h3>
-                <button onclick="closeMedicalChecklistModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            <div id="modalContent"></div>
-        </div>
+<!-- ECG Reports Section -->
+<div id="ecg-reports-section" class="bg-white rounded-lg shadow-sm mb-8">
+    <div class="p-6 border-b border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-800">Recent ECG Reports</h2>
+        <p class="text-gray-600 text-sm mt-1">View recent ECG examination activities</p>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PATIENT</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DATE</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ECG RESULT</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                @forelse($ecgReports as $report)
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {{ $report->patient_name ?? 'N/A' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $report->date ?? 'N/A' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $report->ecg_result ?? 'Pending' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @php
+                                $statusClass = match($report->status ?? 'pending') {
+                                    'completed' => 'bg-green-100 text-green-800',
+                                    'cancelled' => 'bg-red-100 text-red-800',
+                                    'pending' => 'bg-yellow-100 text-yellow-800',
+                                    default => 'bg-gray-100 text-gray-800'
+                                };
+                            @endphp
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
+                                {{ ucfirst($report->status ?? 'pending') }}
+                            </span>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
+                            No ECG reports found
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 </div>
 
-<script>
-function openMedicalChecklistModal(type, id) {
-    const modal = document.getElementById('medicalChecklistModal');
-    const modalContent = document.getElementById('modalContent');
-    const modalTitle = document.getElementById('modalTitle');
-
-    if (type === 'pre-employment') {
-        modalTitle.textContent = 'Pre-Employment Medical Checklist';
-    } else {
-        modalTitle.textContent = 'Annual Physical Medical Checklist';
-    }
-
-    const url = type === 'pre-employment'
-        ? `/plebo/medical-checklist/pre-employment/${id}`
-        : `/plebo/medical-checklist/annual-physical/${id}`;
-
-    fetch(url)
-        .then(response => response.text())
-        .then(html => {
-            modalContent.innerHTML = html;
-            modal.classList.remove('hidden');
-        })
-        .catch(error => {
-            console.error('Error loading modal content:', error);
-            modalContent.innerHTML = '<p class="text-red-600">Error loading content</p>';
-            modal.classList.remove('hidden');
-        });
-}
-
-function closeMedicalChecklistModal() {
-    document.getElementById('medicalChecklistModal').classList.add('hidden');
-}
-
-document.getElementById('medicalChecklistModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeMedicalChecklistModal();
-    }
-});
-</script>
 @endsection
-
-

@@ -15,6 +15,8 @@ use App\Http\Controllers\RadtechController;
 use App\Http\Controllers\PleboController;
 use App\Http\Controllers\RadiologistController;
 use App\Http\Controllers\PathologistController;
+use App\Http\Controllers\EcgtechController;
+use App\Http\Controllers\OpdController;
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -51,6 +53,12 @@ Route::post('admin/pre-employment/{id}/send-email', [App\Http\Controllers\AdminC
     Route::post('admin/pre-employment/send-all-emails', [AdminController::class, 'sendAllRegistrationEmails'])->name('admin.pre-employment.send-all-emails');
     Route::get('/admin/accounts-and-patients', [AdminController::class, 'companyAccountsAndPatients'])->name('admin.accounts-and-patients');
     Route::delete('/admin/company/{id}', [AdminController::class, 'deleteCompany'])->name('admin.delete-company');
+    
+    // Admin - Medical Staff Management
+    Route::get('/admin/medical-staff', [AdminController::class, 'medicalStaff'])->name('admin.medical-staff');
+    Route::post('/admin/medical-staff', [AdminController::class, 'storeMedicalStaff'])->name('admin.medical-staff.store');
+    Route::put('/admin/medical-staff/{id}', [AdminController::class, 'updateMedicalStaff'])->name('admin.medical-staff.update');
+    Route::delete('/admin/medical-staff/{id}', [AdminController::class, 'destroyMedicalStaff'])->name('admin.medical-staff.destroy');
     
     // Medical Test Management Routes
     Route::resource('admin/medical-test-categories', App\Http\Controllers\Admin\MedicalTestCategoryController::class);
@@ -152,6 +160,19 @@ Route::middleware(['auth', 'role:doctor'])->group(function () {
     Route::get('/doctor/chat-users', [DoctorController::class, 'chatUsers']);
 });
 
+Route::middleware(['auth', 'role:opd'])->group(function () {
+    Route::get('/opd/dashboard', [OpdController::class, 'dashboard'])->name('opd.dashboard');
+    Route::get('/opd/medical-test-categories', [OpdController::class, 'medicalTestCategories'])->name('opd.medical-test-categories');
+    Route::get('/opd/medical-tests', [OpdController::class, 'medicalTests'])->name('opd.medical-tests');
+    Route::get('/opd/incoming-tests', [OpdController::class, 'incomingTests'])->name('opd.incoming-tests');
+    Route::post('/opd/incoming-tests/add/{testId}', [OpdController::class, 'addIncomingTest'])->name('opd.incoming-tests.add');
+    Route::post('/opd/incoming-tests/remove/{testId}', [OpdController::class, 'removeIncomingTest'])->name('opd.incoming-tests.remove');
+    // OPD Result preview (UI only)
+    Route::get('/opd/result', function(){
+        return view('opd.result');
+    })->name('opd.result');
+});
+
 // Debug route to check users (temporary)
 Route::get('/debug-users', function() {
     $users = \App\Models\User::select('id', 'fname', 'lname', 'role', 'company')->get();
@@ -248,10 +269,68 @@ Route::middleware(['auth', 'role:radiologist'])->group(function () {
     // Radiologist "send to doctor" not required; radiologist updates findings only.
 });
 
+Route::middleware(['auth', 'role:ecgtech'])->group(function () {
+    // Dashboard
+    Route::get('/ecgtech/dashboard', [EcgtechController::class, 'dashboard'])->name('ecgtech.dashboard');
+    
+    // Pre-Employment
+    Route::get('/ecgtech/pre-employment', [EcgtechController::class, 'preEmployment'])->name('ecgtech.pre-employment');
+    Route::post('/ecgtech/pre-employment/{recordId}/send-to-doctor', [EcgtechController::class, 'sendPreEmploymentToDoctor'])->name('ecgtech.pre-employment.send-to-doctor');
+    Route::get('/ecgtech/pre-employment/{id}/edit', [EcgtechController::class, 'editPreEmployment'])->name('ecgtech.pre-employment.edit');
+    Route::patch('/ecgtech/pre-employment/{id}', [EcgtechController::class, 'updatePreEmployment'])->name('ecgtech.pre-employment.update');
+    
+    // Annual Physical
+    Route::get('/ecgtech/annual-physical', [EcgtechController::class, 'annualPhysical'])->name('ecgtech.annual-physical');
+    Route::post('/ecgtech/annual-physical/patient/{patientId}/send-to-doctor', [EcgtechController::class, 'sendAnnualPhysicalToDoctor'])->name('ecgtech.annual-physical.send-to-doctor');
+    Route::get('/ecgtech/annual-physical/{id}/edit', [EcgtechController::class, 'editAnnualPhysical'])->name('ecgtech.annual-physical.edit');
+    Route::patch('/ecgtech/annual-physical/{id}', [EcgtechController::class, 'updateAnnualPhysical'])->name('ecgtech.annual-physical.update');
+    
+    // Medical Checklist
+    Route::get('/ecgtech/medical-checklist/pre-employment/{recordId}', [EcgtechController::class, 'showMedicalChecklistPreEmployment'])->name('ecgtech.medical-checklist.pre-employment');
+    Route::get('/ecgtech/medical-checklist/annual-physical/{patientId}', [EcgtechController::class, 'showMedicalChecklistAnnualPhysical'])->name('ecgtech.medical-checklist.annual-physical');
+    Route::get('/ecgtech/medical-checklist-page/pre-employment/{recordId}', [EcgtechController::class, 'showMedicalChecklistPagePreEmployment'])->name('ecgtech.medical-checklist-page.pre-employment');
+    Route::get('/ecgtech/medical-checklist-page/annual-physical/{patientId}', [EcgtechController::class, 'showMedicalChecklistPageAnnualPhysical'])->name('ecgtech.medical-checklist-page.annual-physical');
+    Route::post('/ecgtech/medical-checklist', [EcgtechController::class, 'storeMedicalChecklist'])->name('ecgtech.medical-checklist.store');
+    Route::patch('/ecgtech/medical-checklist/{id}', [EcgtechController::class, 'updateMedicalChecklist'])->name('ecgtech.medical-checklist.update');
+    
+    // Messages
+    Route::get('/ecgtech/messages', [EcgtechController::class, 'messages'])->name('ecgtech.messages');
+    Route::get('/ecgtech/chat-users', [EcgtechController::class, 'chatUsers'])->name('ecgtech.chat-users');
+    Route::get('/ecgtech/fetch-messages', [EcgtechController::class, 'fetchMessages'])->name('ecgtech.fetch-messages');
+    Route::post('/ecgtech/send-message', [EcgtechController::class, 'sendMessage'])->name('ecgtech.send-message');
+    Route::post('/ecgtech/mark-as-read', [EcgtechController::class, 'markAsRead'])->name('ecgtech.mark-as-read');
+    
+    // Test route
+    Route::get('/ecgtech/test-contacts', [EcgtechController::class, 'testContacts']);
+});
+
 Route::middleware(['auth', 'role:pathologist'])->group(function () {
+    // Dashboard
     Route::get('/pathologist/dashboard', [PathologistController::class, 'dashboard'])->name('pathologist.dashboard');
-    Route::post('/pathologist/annual-physical/patient/{patientId}/send', [PathologistController::class, 'sendAnnualPhysicalToDoctor'])->name('pathologist.annual-physical.send-to-doctor');
-    Route::post('/pathologist/pre-employment/{recordId}/send', [PathologistController::class, 'sendPreEmploymentToDoctor'])->name('pathologist.pre-employment.send-to-doctor');
+    
+    // Medical Checklist
+    Route::get('/pathologist/medical-checklist', [PathologistController::class, 'medicalChecklist'])->name('pathologist.medical-checklist');
+    Route::post('/pathologist/medical-checklist', [PathologistController::class, 'storeMedicalChecklist'])->name('pathologist.medical-checklist.store');
+    Route::patch('/pathologist/medical-checklist/{id}', [PathologistController::class, 'updateMedicalChecklist'])->name('pathologist.medical-checklist.update');
+    
+    // Annual Physical
+    Route::get('/pathologist/annual-physical', [PathologistController::class, 'annualPhysical'])->name('pathologist.annual-physical');
+    Route::get('/pathologist/annual-physical/{id}/edit', [PathologistController::class, 'editAnnualPhysical'])->name('pathologist.annual-physical.edit');
+    Route::put('/pathologist/annual-physical/{id}', [PathologistController::class, 'updateAnnualPhysical'])->name('pathologist.annual-physical.update');
+    Route::post('/pathologist/annual-physical/patient/{patientId}/send-to-doctor', [PathologistController::class, 'sendAnnualPhysicalToDoctor'])->name('pathologist.annual-physical.send-to-doctor');
+    
+    // Pre-Employment
+    Route::get('/pathologist/pre-employment', [PathologistController::class, 'preEmployment'])->name('pathologist.pre-employment');
+    Route::get('/pathologist/pre-employment/{id}/edit', [PathologistController::class, 'editPreEmployment'])->name('pathologist.pre-employment.edit');
+    Route::put('/pathologist/pre-employment/{id}', [PathologistController::class, 'updatePreEmployment'])->name('pathologist.pre-employment.update');
+    Route::post('/pathologist/pre-employment/{recordId}/send-to-doctor', [PathologistController::class, 'sendPreEmploymentToDoctor'])->name('pathologist.pre-employment.send-to-doctor');
+    
+    // Messages
+    Route::get('/pathologist/messages', [PathologistController::class, 'messages'])->name('pathologist.messages');
+    Route::get('/pathologist/chat-users', [PathologistController::class, 'chatUsers'])->name('pathologist.chat-users');
+    Route::get('/pathologist/fetch-messages', [PathologistController::class, 'fetchMessages'])->name('pathologist.fetch-messages');
+    Route::post('/pathologist/send-message', [PathologistController::class, 'sendMessage'])->name('pathologist.send-message');
+    Route::post('/pathologist/mark-as-read', [PathologistController::class, 'markAsRead'])->name('pathologist.mark-as-read');
 });
 
 Route::middleware(['auth', 'role:patient'])->group(function () {
@@ -272,6 +351,7 @@ Route::middleware(['auth'])->get('/dashboard', function() {
     if ($user->isRadiologist()) return redirect()->route('radiologist.dashboard');
     if ($user->isPathologist()) return redirect()->route('pathologist.dashboard');
     if ($user->isPlebo()) return redirect()->route('plebo.dashboard');
+    if ($user->isOpd()) return redirect()->route('opd.dashboard');
     return redirect()->route('patient.dashboard');
 });
 

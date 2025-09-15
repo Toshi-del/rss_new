@@ -54,10 +54,14 @@ class AuthController extends Controller
                 return redirect()->route('radtech.dashboard');
             } elseif ($user->isRadiologist()) {
                 return redirect()->route('radiologist.dashboard');
+            } elseif ($user->isEcgTech()) {
+                return redirect()->route('ecgtech.dashboard');
             } elseif ($user->isPlebo()) {
                 return redirect()->route('plebo.dashboard');
             } elseif ($user->isPathologist()) {
                 return redirect()->route('pathologist.dashboard');
+            } elseif ($user->isOpd()) {
+                return redirect()->route('opd.dashboard');
             } else {
                 return redirect()->route('patient.dashboard');
             }

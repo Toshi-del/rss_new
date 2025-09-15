@@ -429,6 +429,18 @@
                     <span>Company Accounts & Patients</span>
                 </a>
             </li>
+            <li class="sidebar-item">
+                <a href="{{ route('opd.dashboard') }}" class="sidebar-link {{ request()->routeIs('opd.*') ? 'active' : '' }}">
+                    <i class="bi bi-hospital"></i>
+                    <span>OPD</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ route('admin.medical-staff') }}" class="sidebar-link {{ request()->routeIs('admin.medical-staff*') ? 'active' : '' }}">
+                    <i class="bi bi-person-badge"></i>
+                    <span>Medical Staff</span>
+                </a>
+            </li>
             
         </ul>
         

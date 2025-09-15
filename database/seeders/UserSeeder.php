@@ -125,6 +125,19 @@ class UserSeeder extends Seeder
                 'role' => 'pathologist',
                 'password' => Hash::make('password123'),
             ],
+
+            [
+                'fname' => 'patient',
+                'lname' => '1',
+                'mname' => 'P',
+                'email' => 'patient@rsshealth.com',
+                'phone' => '09123456719',
+                'birthday' => '1980-02-11',
+                'age' => 44,
+                'company' => null,
+                'role' => 'patient',
+                'password' => Hash::make('password123'),
+            ],
         ];
 
         foreach ($users as $userData) {

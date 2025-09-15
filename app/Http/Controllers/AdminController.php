@@ -349,6 +349,90 @@ class AdminController extends Controller
     }
     
     /**
+     * Medical Staff Management: index
+     */
+    public function medicalStaff(Request $request)
+    {
+        $query = \App\Models\User::query();
+        // Exclude company accounts from staff management
+        $allowedRoles = ['doctor','nurse','plebo','pathologist','ecgtech','radtech','radiologist'];
+        $query->whereIn('role', $allowedRoles);
+        if ($search = $request->get('search')) {
+            $query->where(function($q) use ($search) {
+                $q->where('fname', 'like', "%{$search}%")
+                  ->orWhere('lname', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+        if ($role = $request->get('role')) {
+            $query->where('role', $role);
+        }
+        // Do not filter by status; users table has no status column
+        $staff = $query->orderBy('lname')->paginate(15);
+        $roles = [
+            'doctor' => 'Doctor',
+            'nurse' => 'Nurse (Medtech)',
+            'plebo' => 'Plebo',
+            'pathologist' => 'Pathologist',
+            'ecgtech' => 'ECG Tech',
+            'radtech' => 'Radtech',
+            'radiologist' => 'Radiologist',
+        ];
+        return view('admin.medical-staff', compact('staff', 'roles'));
+    }
+
+    /**
+     * Store medical staff
+     */
+    public function storeMedicalStaff(Request $request)
+    {
+        $data = $request->validate([
+            'fname' => 'required|string|max:255',
+            'lname' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'role' => 'required|string',
+            'company' => 'nullable|string|max:255',
+            'password' => 'required|string|min:6',
+        ]);
+        $data['password'] = bcrypt($data['password']);
+        \App\Models\User::create($data);
+        return redirect()->route('admin.medical-staff')->with('success', 'Staff created.');
+    }
+
+    /**
+     * Update medical staff
+     */
+    public function updateMedicalStaff(Request $request, $id)
+    {
+        $user = \App\Models\User::findOrFail($id);
+        $data = $request->validate([
+            'fname' => 'required|string|max:255',
+            'lname' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'role' => 'required|string',
+            'company' => 'nullable|string|max:255',
+            'password' => 'nullable|string|min:6',
+        ]);
+        if (!empty($data['password'])) {
+            $data['password'] = bcrypt($data['password']);
+        } else {
+            unset($data['password']);
+        }
+        $user->update($data);
+        return redirect()->route('admin.medical-staff')->with('success', 'Staff updated.');
+    }
+
+    /**
+     * Delete medical staff
+     */
+    public function destroyMedicalStaff($id)
+    {
+        $user = \App\Models\User::findOrFail($id);
+        $user->delete();
+        return redirect()->route('admin.medical-staff')->with('success', 'Staff deleted.');
+    }
+    
+    /**
      * Show messages page
      */
     public function messages()

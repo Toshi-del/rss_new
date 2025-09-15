@@ -155,6 +155,14 @@ class User extends Authenticatable
         return $this->hasRole('pathologist');
     }
 
+    /**
+     * Check if user is OPD
+     */
+    public function isOpd()
+    {
+        return $this->hasRole('opd');
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

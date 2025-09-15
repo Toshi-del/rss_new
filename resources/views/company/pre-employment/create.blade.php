@@ -68,8 +68,14 @@
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
 
-                    @foreach($medicalTestCategories as $category)
-                        @php $categoryName = strtolower(trim($category->name)); @endphp
+                    @php
+                        $uniqueCategories = $medicalTestCategories->unique(function($c){ return strtolower($c->name ?? ''); });
+                    @endphp
+                    @foreach($uniqueCategories as $category)
+                        @php 
+                            $categoryName = strtolower(trim($category->name)); 
+                            $uniqueTests = $category->activeMedicalTests->unique(function($t){ return strtolower($t->name ?? ''); });
+                        @endphp
                         <div class="mb-8">
                             <h4 class="text-lg font-semibold mb-3" style="color:#800000;">
                                 {{ $category->name }}
@@ -78,7 +84,7 @@
                                 @endif
                             </h4>
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                                @foreach($category->activeMedicalTests as $test)
+                                @foreach($uniqueTests as $test)
                                     @if($categoryName === 'appointment')
                                         @continue
                                     @endif

@@ -39,56 +39,14 @@
         </div>
         @endif
 
-        <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-users text-blue-600 text-2xl"></i>
-                    </div>
-                    <div class="ml-4">
-                        <h3 class="text-lg font-semibold text-gray-900">Total Records</h3>
-                        <p class="text-2xl font-bold text-blue-600">{{ $preEmployments->total() }}</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-check-circle text-green-600 text-2xl"></i>
-                    </div>
-                    <div class="ml-4">
-                        <h3 class="text-lg font-semibold text-gray-900">Approved</h3>
-                        <p class="text-2xl font-bold text-green-600">{{ $preEmployments->where('status', 'approved')->count() }}</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-500">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-clock text-yellow-600 text-2xl"></i>
-                    </div>
-                    <div class="ml-4">
-                        <h3 class="text-lg font-semibold text-gray-900">Pending</h3>
-                        <p class="text-2xl font-bold text-yellow-600">{{ $preEmployments->where('status', 'pending')->count() }}</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-red-500">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-times-circle text-red-600 text-2xl"></i>
-                    </div>
-                    <div class="ml-4">
-                        <h3 class="text-lg font-semibold text-gray-900">Declined</h3>
-                        <p class="text-2xl font-bold text-red-600">{{ $preEmployments->where('status', 'declined')->count() }}</p>
-                    </div>
-                </div>
+        @if(session('error'))
+        <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                <span class="block sm:inline">{{ session('error') }}</span>
             </div>
         </div>
+        @endif
 
         <!-- Records Table -->
         <div class="bg-white shadow rounded-lg overflow-hidden">
@@ -206,12 +164,15 @@
                                     </button>
                                     
                                     <!-- Send to Doctor Button -->
+                                    @php
+                                        $hasMedicalChecklist = \App\Models\MedicalChecklist::where('pre_employment_record_id', $preEmployment->id)->exists();
+                                    @endphp
                                     <form action="{{ route('plebo.pre-employment.send-to-doctor', $preEmployment->id) }}" method="POST" class="inline">
                                         @csrf
                                         <button type="submit" 
-                                                class="inline-flex items-center px-3 py-2 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-                                                title="Send to Doctor"
-                                                onclick="return confirm('Are you sure you want to send this record to the doctor?')">
+                                                class="inline-flex items-center px-3 py-2 border border-transparent text-xs font-medium rounded-md text-white {{ $hasMedicalChecklist ? 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500' : 'bg-gray-400 cursor-not-allowed' }} focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors"
+                                                title="{{ $hasMedicalChecklist ? 'Send to Doctor' : 'Complete medical checklist first' }}"
+                                                {{ $hasMedicalChecklist ? 'onclick="return confirm(\'Are you sure you want to send this record to the doctor?\')"' : 'disabled' }}>
                                             <i class="fas fa-paper-plane mr-1"></i>
                                             Send
                                         </button>

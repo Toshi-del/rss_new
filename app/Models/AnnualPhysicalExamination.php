@@ -28,6 +28,9 @@ class AnnualPhysicalExamination extends Model
         'physical_findings',
         'lab_findings',
         'ecg',
+        'ecg_date',
+        'ecg_technician',
+        'created_by',
     ];
 
     protected $casts = [

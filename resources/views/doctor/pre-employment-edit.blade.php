@@ -143,9 +143,24 @@
                     @foreach($labFields as $field)
                         <div>
                             <label class="block text-xs capitalize mb-1">{{ str_replace('_', ' ', $field) }}</label>
-                            <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ $lab[$field] ?? 'Not available' }}</div>
+                            <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ data_get($lab, $field, 'Not available') }}</div>
                         </div>
                     @endforeach
+                </div>
+                
+                <!-- Additional Laboratory Tests -->
+                <div class="mt-4">
+                    <label class="block text-xs font-semibold uppercase mb-2">Additional Laboratory Tests</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs capitalize mb-1">HBsAg Screening</label>
+                            <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ data_get($lab, 'hbsag_screening', 'Not available') }}</div>
+                        </div>
+                        <div>
+                            <label class="block text-xs capitalize mb-1">HEPA A IGG & IGM</label>
+                            <div class="bg-white p-2 rounded-lg border border-gray-300 text-sm">{{ data_get($lab, 'hepa_a_igg_igm', 'Not available') }}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -170,7 +185,7 @@
                                 'Abdomen',
                                 'Extremities',
                                 'Anus-Rectum',
-                                'G.U.T',
+                                'GUT',
                                 'Inguinal / Genital',
                             ];
                         @endphp
@@ -215,10 +230,19 @@
                         <tr>
                             <td class="px-4 py-2 border-b text-xs">{{ $row }}</td>
                             <td class="px-4 py-2 border-b text-xs">
-                                <input type="text" name="lab_findings[{{ $row }}][result]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('lab_findings.'.$row.'.result', data_get($preEmployment->lab_findings, $row.'.result', '')) }}">
+                                @php
+                                    $testKey = strtolower(str_replace([' ', '-', '&'], ['_', '_', '_'], $row));
+                                    $testKey = str_replace('chest_x-ray', 'xray', $testKey);
+                                    $testKey = str_replace('hepa_a_igg_&_igm', 'hepa_a_igg_igm', $testKey);
+                                    $testKey = str_replace('hbsag_screening', 'hbsag_screening', $testKey);
+                                @endphp
+                                <input type="text" name="lab_report[{{ $testKey }}]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('lab_report.'.$testKey, data_get($preEmployment->lab_report, $testKey, '')) }}">
                             </td>
                             <td class="px-4 py-2 border-b text-xs">
-                                <input type="text" name="lab_findings[{{ $row }}][findings]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('lab_findings.'.$row.'.findings', data_get($preEmployment->lab_findings, $row.'.findings', '')) }}">
+                                @php
+                                    $findingsKey = $testKey . '_findings';
+                                @endphp
+                                <input type="text" name="lab_report[{{ $findingsKey }}]" class="form-input w-full rounded border-gray-300 text-xs" value="{{ old('lab_report.'.$findingsKey, data_get($preEmployment->lab_report, $findingsKey, '')) }}">
                             </td>
                         </tr>
                         @endforeach

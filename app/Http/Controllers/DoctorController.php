@@ -90,15 +90,29 @@ class DoctorController extends Controller
      */
     public function annualPhysical()
     {
+        // Show patients that have examinations ready for doctor (status 'completed' by pathologist)
+        // Exclude those already sent by the doctor (status 'sent_to_company')
         $patients = Patient::with(['appointment', 'annualPhysicalExamination'])
-            ->where('status', 'pending')
-            ->whereDoesntHave('annualPhysicalExamination', function ($q) {
-                $q->whereIn('status', ['completed', 'sent_to_company']);
+            ->where('status', 'approved')
+            ->whereHas('annualPhysicalExamination', function ($q) {
+                $q->where('status', 'completed');
             })
             ->latest()
             ->get();
+
+        // Compute whether each patient can be sent to admin (must have checklist and results filled)
+        $canSendByPatientId = [];
+        foreach ($patients as $patient) {
+            $exam = $patient->annualPhysicalExamination;
+            $hasPhysicalFindings = !empty($exam?->physical_findings);
+            $hasLabResults = !empty($exam?->lab_findings) || !empty($exam?->lab_report);
+            $hasChecklist = \App\Models\MedicalChecklist::where('patient_id', $patient->id)
+                ->where('examination_type', 'annual_physical')
+                ->exists();
+            $canSendByPatientId[$patient->id] = $hasPhysicalFindings && $hasLabResults && $hasChecklist;
+        }
         
-        return view('doctor.annual-physical', compact('patients'));
+        return view('doctor.annual-physical', compact('patients', 'canSendByPatientId'));
     }
 
     /**
@@ -265,25 +279,73 @@ class DoctorController extends Controller
      */
     public function updateAnnualPhysical(Request $request, $id)
     {
-        $annualPhysical = \App\Models\AnnualPhysicalExamination::findOrFail($id);
-        $data = $request->validate([
-            'illness_history' => 'nullable|string',
-            'accidents_operations' => 'nullable|string',
-            'past_medical_history' => 'nullable|string',
-            'family_history' => 'nullable|array',
-            'personal_habits' => 'nullable|array',
-            'physical_exam' => 'nullable|array',
-            'skin_marks' => 'nullable|string',
-            'visual' => 'nullable|string',
-            'ishihara_test' => 'nullable|string',
-            'findings' => 'nullable|string',
-            'lab_report' => 'nullable|array',
-            'physical_findings' => 'nullable|array',
-            'lab_findings' => 'nullable|array',
-            'ecg' => 'nullable|string',
-        ]);
-        $annualPhysical->update($data);
-        return redirect()->route('doctor.annual-physical.edit', $annualPhysical->id)->with('success', 'Annual Physical Examination updated successfully.');
+        try {
+            $annualPhysical = \App\Models\AnnualPhysicalExamination::findOrFail($id);
+            
+            $data = $request->validate([
+                'illness_history' => 'nullable|string',
+                'accidents_operations' => 'nullable|string',
+                'past_medical_history' => 'nullable|string',
+                'family_history' => 'nullable|array',
+                'personal_habits' => 'nullable|array',
+                'physical_exam' => 'nullable|array',
+                'skin_marks' => 'nullable|string',
+                'visual' => 'nullable|string',
+                'ishihara_test' => 'nullable|string',
+                'findings' => 'nullable|string',
+                'lab_report' => 'nullable|array',
+                'physical_findings' => 'nullable|array',
+                'lab_findings' => 'nullable|array',
+                'ecg' => 'nullable|string',
+            ]);
+            
+            // Recompose lab_findings from flat lab_report inputs so both result and findings persist
+            // Expected keys in lab_report: e.g. xray, xray_findings, drug_test, drug_test_findings, hepa_a_igg_igm, hepa_a_igg_igm_findings, ...
+            if (isset($data['lab_report']) && is_array($data['lab_report'])) {
+                $labReport = $data['lab_report'];
+                $composedLabFindings = $annualPhysical->lab_findings ?? [];
+
+                foreach ($labReport as $key => $value) {
+                    // If this key ends with _findings, pair it with its base key
+                    if (str_ends_with($key, '_findings')) {
+                        $baseKey = substr($key, 0, -9); // remove suffix '_findings'
+                        $composedLabFindings[$baseKey]['findings'] = $value;
+                    } else {
+                        // Treat this as the primary result for the test
+                        $composedLabFindings[$key]['result'] = $value;
+                    }
+                }
+
+                // Store back structured findings and keep raw lab_report for display if needed
+                $data['lab_findings'] = $composedLabFindings;
+            }
+
+            // Ensure physical_findings keeps existing entries when only some rows are updated
+            if (isset($data['physical_findings']) && is_array($data['physical_findings'])) {
+                $mergedPhysical = $annualPhysical->physical_findings ?? [];
+                foreach ($data['physical_findings'] as $area => $values) {
+                    // Normalize values
+                    $values = is_array($values) ? array_map(function($v){ return is_string($v) ? trim($v) : $v; }, $values) : [];
+                    // If findings provided but result missing, set a sensible default result
+                    if ((!isset($values['result']) || $values['result'] === '') && (!empty($values['findings']))) {
+                        $values['result'] = 'Abnormal';
+                    }
+                    $mergedPhysical[$area] = array_merge($mergedPhysical[$area] ?? [], $values ?? []);
+                }
+                $data['physical_findings'] = $mergedPhysical;
+            }
+            
+            $result = $annualPhysical->update($data);
+            
+            if ($result) {
+                return redirect()->route('doctor.annual-physical.edit', $annualPhysical->id)->with('success', 'Annual Physical Examination updated successfully.');
+            } else {
+                return redirect()->back()->with('error', 'Failed to update the examination. Please try again.')->withInput();
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error updating annual physical examination: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while updating the examination. Please try again.')->withInput();
+        }
     }
 
     /**
@@ -324,11 +386,20 @@ class DoctorController extends Controller
             ]
         );
 
-        // Mark as completed
-        $examination->update(['status' => 'completed']);
+        // Guard: Doctor can submit only if checklist and results are present
+        $hasChecklist = \App\Models\MedicalChecklist::where('patient_id', $patientId)
+            ->where('examination_type', 'annual_physical')
+            ->exists();
+        $hasPhysicalFindings = !empty($examination->physical_findings);
+        $hasLabResults = !empty($examination->lab_findings) || !empty($examination->lab_report);
 
-        // Mark patient as approved so it is removed from the pending table in doctor list
-        $patient->update(['status' => 'approved']);
+        if (!($hasChecklist && $hasPhysicalFindings && $hasLabResults)) {
+            return redirect()->route('doctor.annual-physical')
+                ->with('error', 'Please complete the medical checklist and enter both physical and laboratory results before sending to admin.');
+        }
+
+        // Mark as sent to company/admin so it no longer appears in the doctor list
+        $examination->update(['status' => 'sent_to_company']);
 
         return redirect()->route('doctor.annual-physical')->with('success', 'Annual physical submitted to admin.');
     }

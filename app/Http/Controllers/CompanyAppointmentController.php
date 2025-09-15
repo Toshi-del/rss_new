@@ -32,10 +32,10 @@ class CompanyAppointmentController extends Controller
                 ->with('error', 'Please select a date from the calendar.');
         }
 
-        // Get medical tests grouped by category
+        // Get medical tests grouped by category (deduplicated)
         $medicalTestCategories = MedicalTestCategory::with(['medicalTests' => function($query) {
-            $query->where('is_active', true)->orderBy('sort_order');
-        }])->where('is_active', true)->orderBy('sort_order')->get();
+            $query->where('is_active', true)->orderBy('sort_order')->distinct();
+        }])->where('is_active', true)->orderBy('sort_order')->distinct()->get();
 
         $timeSlots = [
             '8:00 AM', '8:30 AM', '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM',
@@ -272,10 +272,10 @@ class CompanyAppointmentController extends Controller
         $appointment = Appointment::where('created_by', Auth::id())
             ->findOrFail($id);
         
-        // Get medical tests grouped by category
+        // Get medical tests grouped by category (deduplicated)
         $medicalTestCategories = MedicalTestCategory::with(['medicalTests' => function($query) {
-            $query->where('is_active', true)->orderBy('sort_order');
-        }])->where('is_active', true)->orderBy('sort_order')->get();
+            $query->where('is_active', true)->orderBy('sort_order')->distinct();
+        }])->where('is_active', true)->orderBy('sort_order')->distinct()->get();
 
         $timeSlots = [
             '8:00 AM', '8:30 AM', '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM',

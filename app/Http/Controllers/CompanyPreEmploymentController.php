@@ -24,9 +24,12 @@ class CompanyPreEmploymentController extends Controller
 
     public function create()
     {
-        $medicalTestCategories = MedicalTestCategory::with('activeMedicalTests')
+        $medicalTestCategories = MedicalTestCategory::with(['activeMedicalTests' => function($query) {
+            $query->distinct();
+        }])
             ->where('is_active', true)
             ->orderBy('sort_order')
+            ->distinct()
             ->get();
 
         return view('company.pre-employment.create', compact('medicalTestCategories'));

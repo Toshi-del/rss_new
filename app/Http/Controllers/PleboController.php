@@ -98,6 +98,14 @@ class PleboController extends Controller
     public function sendAnnualPhysicalToDoctor($patientId)
     {
         $patient = Patient::findOrFail($patientId);
+        
+        // Check if medical checklist exists
+        $hasMedicalChecklist = MedicalChecklist::where('patient_id', $patientId)->exists();
+        
+        if (!$hasMedicalChecklist) {
+            return redirect()->route('plebo.annual-physical')->with('error', 'Please complete the medical checklist before sending to doctor.');
+        }
+        
         $exam = AnnualPhysicalExamination::firstOrCreate(
             ['patient_id' => $patientId],
             [
@@ -114,6 +122,14 @@ class PleboController extends Controller
     public function sendPreEmploymentToDoctor($recordId)
     {
         $record = PreEmploymentRecord::findOrFail($recordId);
+        
+        // Check if medical checklist exists
+        $hasMedicalChecklist = MedicalChecklist::where('pre_employment_record_id', $recordId)->exists();
+        
+        if (!$hasMedicalChecklist) {
+            return redirect()->route('plebo.pre-employment')->with('error', 'Please complete the medical checklist before sending to doctor.');
+        }
+        
         $exam = PreEmploymentExamination::firstOrCreate(
             ['pre_employment_record_id' => $recordId],
             [
@@ -133,39 +149,62 @@ class PleboController extends Controller
      */
     public function storeMedicalChecklist(Request $request)
     {
-        $validated = $request->validate([
-            'examination_type' => 'required|in:pre-employment,annual-physical',
-            'pre_employment_record_id' => 'required_if:examination_type,pre-employment|nullable|exists:pre_employment_records,id',
-            'patient_id' => 'required_if:examination_type,annual-physical|nullable|exists:patients,id',
-            'name' => 'required|string|max:255',
+        $data = $request->validate([
+            'examination_type' => 'required|in:pre_employment,annual_physical',
+            'pre_employment_record_id' => 'nullable|exists:pre_employment_records,id',
+            'patient_id' => 'nullable|exists:patients,id',
+            'annual_physical_examination_id' => 'nullable|exists:annual_physical_examinations,id',
+            'name' => 'required|string',
+            'age' => 'required|integer',
+            'number' => 'nullable|string',
             'date' => 'required|date',
-            'age' => 'required|integer|min:0',
-            'number' => 'nullable|string|max:255',
-            'xray_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:25000',
+            // Individual examination fields - only done_by fields
+            'chest_xray_done_by' => 'nullable|string',
+            'stool_exam_done_by' => 'nullable|string',
+            'urinalysis_done_by' => 'nullable|string',
+            'drug_test_done_by' => 'nullable|string',
+            'blood_extraction_done_by' => 'nullable|string',
+            'ecg_done_by' => 'nullable|string',
+            'physical_exam_done_by' => 'nullable|string',
+            'optional_exam' => 'nullable|string',
+            'special_notes' => 'nullable|string',
+            'phlebotomist_name' => 'nullable|string',
+            'phlebotomist_signature' => 'nullable|string',
         ]);
 
-        $validated['user_id'] = Auth::id();
+        $data['user_id'] = Auth::id();
+        
+        // Debug logging
+        \Log::info('Medical Checklist Data:', $data);
 
-        if ($request->hasFile('xray_image')) {
-            $path = $request->file('xray_image')->store('xray-images', 'public');
-            $validated['xray_image_path'] = $path;
+        // Find existing medical checklist or create new one
+        $medicalChecklist = null;
+        
+        if ($data['examination_type'] === 'pre_employment' && $data['pre_employment_record_id']) {
+            $medicalChecklist = MedicalChecklist::where('pre_employment_record_id', $data['pre_employment_record_id'])->first();
+        } elseif ($data['examination_type'] === 'annual_physical' && $data['patient_id']) {
+            $medicalChecklist = MedicalChecklist::where('patient_id', $data['patient_id'])->first();
         }
 
-        if ($validated['examination_type'] === 'pre-employment' && $request->filled('pre_employment_record_id')) {
-            $validated['pre_employment_record_id'] = (int)$request->input('pre_employment_record_id');
-        }
-        if ($validated['examination_type'] === 'annual-physical') {
-            if ($request->filled('annual_physical_examination_id')) {
-                $validated['annual_physical_examination_id'] = (int)$request->input('annual_physical_examination_id');
+        try {
+            if ($medicalChecklist) {
+                $medicalChecklist->update($data);
+                \Log::info('Medical Checklist Updated:', ['id' => $medicalChecklist->id, 'data' => $data]);
+            } else {
+                $medicalChecklist = MedicalChecklist::create($data);
+                \Log::info('Medical Checklist Created:', ['id' => $medicalChecklist->id, 'data' => $data]);
             }
-            if ($request->filled('patient_id')) {
-                $validated['patient_id'] = (int)$request->input('patient_id');
+
+            // Redirect based on examination type
+            if ($data['examination_type'] === 'pre_employment') {
+                return redirect()->route('plebo.pre-employment')->with('success', 'Medical checklist saved successfully.');
+            } else {
+                return redirect()->route('plebo.annual-physical')->with('success', 'Medical checklist saved successfully.');
             }
+        } catch (\Exception $e) {
+            \Log::error('Medical Checklist Save Error:', ['error' => $e->getMessage(), 'data' => $data]);
+            return redirect()->back()->with('error', 'Failed to save medical checklist: ' . $e->getMessage());
         }
-
-        $medicalChecklist = MedicalChecklist::create($validated);
-
-        return redirect()->back()->with('success', 'Medical checklist created successfully.');
     }
 
     /**
@@ -175,25 +214,37 @@ class PleboController extends Controller
     {
         $medicalChecklist = MedicalChecklist::findOrFail($id);
 
-        $validated = $request->validate([
-            'chest_xray_done_by' => 'nullable|string|max:100',
-            'xray_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:25000',
+        $data = $request->validate([
+            'examination_type' => 'required|in:pre_employment,annual_physical',
+            'pre_employment_record_id' => 'nullable|exists:pre_employment_records,id',
+            'patient_id' => 'nullable|exists:patients,id',
+            'annual_physical_examination_id' => 'nullable|exists:annual_physical_examinations,id',
+            'name' => 'required|string',
+            'age' => 'required|integer',
+            'number' => 'nullable|string',
+            'date' => 'required|date',
+            // Individual examination fields - only done_by fields
+            'chest_xray_done_by' => 'nullable|string',
+            'stool_exam_done_by' => 'nullable|string',
+            'urinalysis_done_by' => 'nullable|string',
+            'drug_test_done_by' => 'nullable|string',
+            'blood_extraction_done_by' => 'nullable|string',
+            'ecg_done_by' => 'nullable|string',
+            'physical_exam_done_by' => 'nullable|string',
+            'optional_exam' => 'nullable|string',
+            'special_notes' => 'nullable|string',
+            'phlebotomist_name' => 'nullable|string',
+            'phlebotomist_signature' => 'nullable|string',
         ]);
 
-        if ($request->hasFile('xray_image') && $request->file('xray_image')->isValid()) {
-            $path = $request->file('xray_image')->store('xray-images', 'public');
-            $validated['xray_image_path'] = $path;
-        }
+        $medicalChecklist->update($data);
 
-        if (array_key_exists('chest_xray_done_by', $validated)) {
-            $medicalChecklist->chest_xray_done_by = $validated['chest_xray_done_by'];
+        // Redirect based on examination type
+        if ($data['examination_type'] === 'pre_employment') {
+            return redirect()->route('plebo.pre-employment')->with('success', 'Medical checklist updated successfully.');
+        } else {
+            return redirect()->route('plebo.annual-physical')->with('success', 'Medical checklist updated successfully.');
         }
-        if (array_key_exists('xray_image_path', $validated)) {
-            $medicalChecklist->xray_image_path = $validated['xray_image_path'];
-        }
-        $medicalChecklist->save();
-
-        return redirect()->back()->with('success', 'Medical Checklist is updated.');
     }
 }
 

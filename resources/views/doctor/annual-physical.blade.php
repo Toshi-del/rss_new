@@ -43,7 +43,8 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 <form action="{{ route('doctor.annual-physical.by-patient.submit', $patient->id) }}" method="POST" class="inline">
                                     @csrf
-                                    <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Send to Admin">
+                                    @php $canSend = $canSendByPatientId[$patient->id] ?? false; @endphp
+                                    <button type="submit" class="px-3 py-1 rounded transition-colors mr-2 {{ $canSend ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed' }}" title="Send to Admin" {{ $canSend ? '' : 'disabled' }}>
                                         <i class="fas fa-paper-plane"></i>
                                     </button>
                                 </form>
