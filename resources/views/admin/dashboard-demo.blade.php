@@ -6,83 +6,83 @@
 @section('content')
 <div class="space-y-8">
     <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- Total Patients Card -->
-        <div class="stat-card content-card rounded-lg p-6 hover:shadow-md transition-all duration-200">
+        <div class="stat-card content-card rounded-3xl p-6 transform hover:scale-105 transition-all duration-300">
             <div class="flex items-center justify-between">
                 <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-600 mb-2 uppercase tracking-wide">Total Patients</p>
+                    <p class="text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wider">Total Patients</p>
                     <div class="flex items-center space-x-3">
-                        <p class="text-2xl font-semibold text-gray-900">2,847</p>
-                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-50 text-green-700">
+                        <p class="text-3xl font-bold text-gray-900">2,847</p>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
                             <i class="fas fa-arrow-up text-xs mr-1"></i>
                             +12.5%
                         </span>
                     </div>
                     <p class="text-xs text-gray-500 mt-1">vs last month</p>
                 </div>
-                <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-users text-white text-lg"></i>
+                <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center floating-icon">
+                    <i class="fas fa-users text-white text-2xl"></i>
                 </div>
             </div>
         </div>
 
         <!-- Appointments Today Card -->
-        <div class="stat-card content-card rounded-lg p-6 hover:shadow-md transition-all duration-200">
+        <div class="stat-card content-card rounded-3xl p-6 transform hover:scale-105 transition-all duration-300">
             <div class="flex items-center justify-between">
                 <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-600 mb-2 uppercase tracking-wide">Today's Appointments</p>
+                    <p class="text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wider">Today's Appointments</p>
                     <div class="flex items-center space-x-3">
-                        <p class="text-2xl font-semibold text-gray-900">67</p>
-                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-50 text-green-700">
+                        <p class="text-3xl font-bold text-gray-900">67</p>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
                             <i class="fas fa-arrow-up text-xs mr-1"></i>
                             +8.2%
                         </span>
                     </div>
                     <p class="text-xs text-gray-500 mt-1">15 pending approval</p>
                 </div>
-                <div class="w-12 h-12 bg-emerald-600 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-calendar-check text-white text-lg"></i>
+                <div class="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center pulse-icon">
+                    <i class="fas fa-calendar-check text-white text-2xl"></i>
                 </div>
             </div>
         </div>
 
         <!-- Pending Tests Card -->
-        <div class="stat-card content-card rounded-lg p-6 hover:shadow-md transition-all duration-200">
+        <div class="stat-card content-card rounded-3xl p-6 transform hover:scale-105 transition-all duration-300">
             <div class="flex items-center justify-between">
                 <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-600 mb-2 uppercase tracking-wide">Pending Tests</p>
+                    <p class="text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wider">Pending Tests</p>
                     <div class="flex items-center space-x-3">
-                        <p class="text-2xl font-semibold text-gray-900">34</p>
-                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-orange-50 text-orange-700">
+                        <p class="text-3xl font-bold text-gray-900">34</p>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-700">
                             <i class="fas fa-arrow-down text-xs mr-1"></i>
                             -5.1%
                         </span>
                     </div>
                     <p class="text-xs text-gray-500 mt-1">awaiting results</p>
                 </div>
-                <div class="w-12 h-12 bg-amber-600 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-vial text-white text-lg"></i>
+                <div class="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center floating-icon">
+                    <i class="fas fa-vial text-white text-2xl"></i>
                 </div>
             </div>
         </div>
 
         <!-- Revenue Card -->
-        <div class="stat-card content-card rounded-lg p-6 hover:shadow-md transition-all duration-200">
+        <div class="stat-card content-card rounded-3xl p-6 transform hover:scale-105 transition-all duration-300">
             <div class="flex items-center justify-between">
                 <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-600 mb-2 uppercase tracking-wide">Monthly Revenue</p>
+                    <p class="text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wider">Monthly Revenue</p>
                     <div class="flex items-center space-x-3">
-                        <p class="text-2xl font-semibold text-gray-900">₱156K</p>
-                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700">
+                        <p class="text-3xl font-bold text-gray-900">₱156K</p>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700">
                             <i class="fas fa-arrow-up text-xs mr-1"></i>
                             +18.7%
                         </span>
                     </div>
                     <p class="text-xs text-gray-500 mt-1">target: ₱180K</p>
                 </div>
-                <div class="w-12 h-12 bg-cyan-600 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-chart-line text-white text-lg"></i>
+                <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center pulse-icon">
+                    <i class="fas fa-chart-line text-white text-2xl"></i>
                 </div>
             </div>
         </div>
@@ -92,15 +92,15 @@
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <!-- Recent Appointments -->
         <div class="xl:col-span-2">
-            <div class="content-card rounded-lg overflow-hidden">
-                <div class="bg-blue-600 px-6 py-4">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-calendar-alt text-white text-lg"></i>
+            <div class="content-card rounded-3xl overflow-hidden">
+                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+                            <i class="fas fa-calendar-alt text-white text-xl"></i>
                         </div>
                         <div>
-                            <h3 class="text-lg font-semibold text-white">Recent Appointments</h3>
-                            <p class="text-blue-100 text-sm">Latest patient bookings and schedules</p>
+                            <h3 class="text-xl font-bold text-white">Recent Appointments</h3>
+                            <p class="text-indigo-100 text-sm">Latest patient bookings and schedules</p>
                         </div>
                     </div>
                 </div>
@@ -220,52 +220,52 @@
         <!-- Sidebar Content -->
         <div class="space-y-8">
             <!-- Quick Actions -->
-            <div class="content-card rounded-lg overflow-hidden">
-                <div class="bg-emerald-600 px-6 py-4">
+            <div class="content-card rounded-3xl overflow-hidden">
+                <div class="bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-5">
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                             <i class="fas fa-bolt text-white text-lg"></i>
                         </div>
                         <div>
-                            <h3 class="text-lg font-semibold text-white">Quick Actions</h3>
-                            <p class="text-emerald-100 text-xs">Frequently used functions</p>
+                            <h3 class="text-lg font-bold text-white">Quick Actions</h3>
+                            <p class="text-purple-100 text-xs">Frequently used functions</p>
                         </div>
                     </div>
                 </div>
                 
-                <div class="p-6 space-y-3">
-                    <button class="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200">
-                        <i class="fas fa-plus-circle mr-2 text-sm"></i>
+                <div class="p-6 space-y-4">
+                    <button class="w-full flex items-center justify-center px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        <i class="fas fa-plus-circle mr-3 text-lg"></i>
                         New Appointment
                     </button>
                     
-                    <button class="w-full flex items-center justify-center px-4 py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors duration-200">
-                        <i class="fas fa-user-plus mr-2 text-sm"></i>
+                    <button class="w-full flex items-center justify-center px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl font-semibold hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        <i class="fas fa-user-plus mr-3 text-lg"></i>
                         Add Patient
                     </button>
                     
-                    <button class="w-full flex items-center justify-center px-4 py-3 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 transition-colors duration-200">
-                        <i class="fas fa-vial mr-2 text-sm"></i>
+                    <button class="w-full flex items-center justify-center px-6 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-2xl font-semibold hover:from-amber-600 hover:to-orange-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        <i class="fas fa-vial mr-3 text-lg"></i>
                         Schedule Test
                     </button>
                     
-                    <button class="w-full flex items-center justify-center px-4 py-3 bg-slate-600 text-white rounded-lg font-medium hover:bg-slate-700 transition-colors duration-200">
-                        <i class="fas fa-file-alt mr-2 text-sm"></i>
+                    <button class="w-full flex items-center justify-center px-6 py-4 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-2xl font-semibold hover:from-gray-700 hover:to-gray-800 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        <i class="fas fa-file-alt mr-3 text-lg"></i>
                         Generate Report
                     </button>
                 </div>
             </div>
 
             <!-- Recent Activity -->
-            <div class="content-card rounded-lg overflow-hidden">
-                <div class="bg-cyan-600 px-6 py-4">
+            <div class="content-card rounded-3xl overflow-hidden">
+                <div class="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-5">
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                             <i class="fas fa-activity text-white text-lg"></i>
                         </div>
                         <div>
-                            <h3 class="text-lg font-semibold text-white">Recent Activity</h3>
-                            <p class="text-cyan-100 text-xs">Latest system updates</p>
+                            <h3 class="text-lg font-bold text-white">Recent Activity</h3>
+                            <p class="text-emerald-100 text-xs">Latest system updates</p>
                         </div>
                     </div>
                 </div>

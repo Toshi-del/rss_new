@@ -148,16 +148,11 @@
                                     <i class="fas fa-edit mr-2"></i>
                                     Edit
                                 </a>
-                                <form action="{{ route('medical-test-categories.destroy', $category) }}" method="POST" 
-                                      onsubmit="return confirm('Are you sure you want to delete this category? This will also delete all associated tests.')" class="flex-1">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" 
-                                            class="w-full inline-flex justify-center items-center px-3 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
-                                        <i class="fas fa-trash mr-2"></i>
-                                        Delete
-                                    </button>
-                                </form>
+                                <button onclick="openDeleteModal({{ $category->id }}, '{{ $category->name }}')" 
+                                        class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+                                    <i class="fas fa-trash mr-2"></i>
+                                    Delete
+                                </button>
                             </div>
                         </div>
 
@@ -196,6 +191,104 @@
         @endif
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300">
+        <div class="bg-red-600 px-6 py-4 rounded-t-xl">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-trash text-white text-lg"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white">Delete Medical Test Category</h3>
+            </div>
+        </div>
+        <div class="p-6">
+            <div class="flex items-start space-x-4 mb-6">
+                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-2">Are you sure?</h4>
+                    <p class="text-gray-600 text-sm mb-3">
+                        You are about to delete the category "<span id="categoryName" class="font-semibold text-gray-900"></span>".
+                    </p>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                        <div class="flex items-start space-x-2">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 text-sm mt-0.5"></i>
+                            <div class="text-sm text-yellow-800">
+                                <p class="font-medium">Warning:</p>
+                                <p>This action will permanently delete the category and all associated medical tests. This cannot be undone.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center justify-end space-x-3">
+                <button type="button" 
+                        onclick="closeDeleteModal()" 
+                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-all duration-150 border border-gray-200">
+                    Cancel
+                </button>
+                <button type="button" 
+                        onclick="confirmDelete()" 
+                        class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-all duration-150 shadow-md">
+                    <i class="fas fa-trash mr-2"></i>
+                    Delete Category
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form for deletion -->
+<form id="deleteForm" method="POST" style="display: none;">
+    @csrf
+    @method('DELETE')
+</form>
+
+<script>
+let currentCategoryId = null;
+
+function openDeleteModal(categoryId, categoryName) {
+    currentCategoryId = categoryId;
+    document.getElementById('categoryName').textContent = categoryName;
+    document.getElementById('deleteModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+    currentCategoryId = null;
+}
+
+function confirmDelete() {
+    if (currentCategoryId) {
+        const form = document.getElementById('deleteForm');
+        form.action = `/admin/medical-test-categories/${currentCategoryId}`;
+        form.submit();
+    }
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('deleteModal');
+    if (event.target === modal) {
+        closeDeleteModal();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modal = document.getElementById('deleteModal');
+        if (!modal.classList.contains('hidden')) {
+            closeDeleteModal();
+        }
+    }
+});
+</script>
 
 <style>
 /* Override browser defaults for consistent text sizing */

@@ -23,6 +23,6 @@ class MedicalTest extends Model
 
     public function category(): BelongsTo
     {
-        return $this->belongsTo(MedicalTestCategory::class);
+        return $this->belongsTo(MedicalTestCategory::class, 'medical_test_category_id');
     }
 }

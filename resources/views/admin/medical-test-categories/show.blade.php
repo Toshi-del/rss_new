@@ -1,149 +1,273 @@
 @extends('layouts.admin')
 
 @section('title', 'View Medical Test Category')
+@section('page-title', 'View Medical Test Category')
 
 @section('content')
-<div class="min-h-screen bg-gray-50" style="font-family: 'Inter', sans-serif;">
-    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
+    <div class="max-w-7xl mx-auto space-y-6">
         
-        <!-- Header Section - Redesigned with card style -->
-        <div class="bg-white shadow rounded-lg mb-6 overflow-hidden">
-            <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-red-50 to-white">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                     <div>
-                         <div class="text-4xl font-bold text-gray-900 mb-1" style="font-family: 'Poppins', sans-serif; color: #800000;">{{ $category->name }}</div>
-                         <div class="text-xs text-gray-600">Category details and associated medical tests</div>
-                     </div>
-                    <div class="mt-4 sm:mt-0 flex space-x-3">
-                        <a href="{{ route('medical-test-categories.edit', $category) }}" 
-                           class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm">
-                            <i class="fas fa-edit mr-2"></i>
-                            Edit Category
-                        </a>
-                        <a href="{{ route('medical-test-categories.index') }}" 
-                           class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm">
-                            <i class="fas fa-arrow-left mr-2"></i>
-                            Back to Categories
-                        </a>
+        <!-- Header Section -->
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <a href="{{ route('medical-test-categories.index') }}" 
+                   class="inline-flex items-center px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg border border-gray-200 transition-all duration-150 shadow-sm">
+                    <i class="fas fa-arrow-left mr-2 text-sm"></i>
+                    Back to Categories
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ $category->name }}</h1>
+                    <p class="text-sm text-gray-600 mt-1">Category details and associated medical tests</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <a href="{{ route('medical-test-categories.edit', $category) }}" 
+                   class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all duration-150 shadow-sm">
+                    <i class="fas fa-edit mr-2"></i>
+                    Edit Category
+                </a>
+            </div>
+        </div>
+
+        <!-- Category Overview Card -->
+        <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
+            <div class="bg-cyan-600 px-8 py-6">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-layer-group text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Category Information</h2>
+                        <p class="text-cyan-100 text-sm mt-1">Detailed information about this medical test category</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Category Details Table - Now part of the same card -->
-            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                 <div class="text-xl font-bold text-gray-500 uppercase tracking-wider" style="font-family: 'Poppins', sans-serif;">Category Information</div>
-            </div>
-            <div class="overflow-hidden">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500 w-1/4">Category Name</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold" style="color: #800000;">{{ $category->name }}</td>
-                        </tr>
-                        <tr class="bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500">Status</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $category->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                    <i class="fas fa-circle mr-1 text-xs"></i>
+            <!-- Category Details Grid -->
+            <div class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Category Name -->
+                    <div class="bg-gray-50 rounded-xl p-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-tag text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Category Name</p>
+                                <p class="text-lg font-bold text-gray-900">{{ $category->name }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="bg-gray-50 rounded-xl p-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-{{ $category->is_active ? 'green' : 'red' }}-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-{{ $category->is_active ? 'check-circle' : 'times-circle' }} text-{{ $category->is_active ? 'green' : 'red' }}-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Status</p>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold {{ $category->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                    <i class="fas fa-circle mr-1.5 text-xs"></i>
                                     {{ $category->is_active ? 'Active' : 'Inactive' }}
                                 </span>
-                            </td>
-                        </tr>
-                        @if($category->description)
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500">Description</td>
-                            <td class="px-6 py-4 text-sm text-gray-900">{{ $category->description }}</td>
-                        </tr>
-                        @endif
-                        <tr class="bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500">Sort Order</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $category->sort_order }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500">Total Tests</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{{ $category->medical_tests_count }}</td>
-                        </tr>
-                        <tr class="bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500">Created Date</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $category->created_at->format('M d, Y \a\t g:i A') }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500">Last Updated</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $category->updated_at->format('M d, Y \a\t g:i A') }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Tests -->
+                    <div class="bg-gray-50 rounded-xl p-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-vial text-purple-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Total Tests</p>
+                                <p class="text-lg font-bold text-gray-900">{{ $category->medical_tests_count ?? 0 }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sort Order -->
+                    <div class="bg-gray-50 rounded-xl p-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-sort-numeric-up text-indigo-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Sort Order</p>
+                                <p class="text-lg font-bold text-gray-900">{{ $category->sort_order }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Created Date -->
+                    <div class="bg-gray-50 rounded-xl p-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-calendar-plus text-yellow-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Created Date</p>
+                                <p class="text-lg font-bold text-gray-900">{{ $category->created_at->format('M d, Y') }}</p>
+                                <p class="text-xs text-gray-500">{{ $category->created_at->format('g:i A') }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Last Updated -->
+                    <div class="bg-gray-50 rounded-xl p-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-sync-alt text-orange-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Last Updated</p>
+                                <p class="text-lg font-bold text-gray-900">{{ $category->updated_at->format('M d, Y') }}</p>
+                                <p class="text-xs text-gray-500">{{ $category->updated_at->format('g:i A') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description Section -->
+                @if($category->description)
+                <div class="mt-8 p-6 bg-blue-50 rounded-xl border border-blue-100">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-align-left text-blue-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-semibold text-gray-900 mb-2">Description</h3>
+                            <p class="text-gray-700 leading-relaxed">{{ $category->description }}</p>
+                        </div>
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
 
-        <!-- Medical Tests Table - Redesigned with better spacing and visual hierarchy -->
-        <div class="bg-white shadow rounded-lg">
-            <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white">
+        <!-- Medical Tests Section -->
+        <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
+            <div class="bg-blue-600 px-8 py-6">
                 <div class="flex items-center justify-between">
-                    <div class="text-xl font-bold text-gray-500 uppercase tracking-wider" style="font-family: 'Poppins', sans-serif;">Medical Tests ({{ $category->medical_tests_count }})</div>
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-vial text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-white">Medical Tests</h2>
+                            <p class="text-blue-100 text-sm mt-1">{{ $category->medical_tests_count ?? 0 }} tests in this category</p>
+                        </div>
+                    </div>
                     <a href="{{ route('medical-tests.create', ['category_id' => $category->id]) }}" 
-                       class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm">
-                        <i class="fas fa-plus mr-1"></i>
-                        Create Medical Test
+                       class="inline-flex items-center px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg font-medium transition-all duration-150 border border-white/20">
+                        <i class="fas fa-plus mr-2"></i>
+                        Add Test
                     </a>
                 </div>
             </div>
             
             @if($category->medicalTests && $category->medicalTests->count() > 0)
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Test Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sort Order</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200 bg-gray-50/50">
+                                <th class="px-8 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-flask text-gray-500"></i>
+                                        <span>Test Name</span>
+                                    </div>
+                                </th>
+                                <th class="px-8 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-align-left text-gray-500"></i>
+                                        <span>Description</span>
+                                    </div>
+                                </th>
+                                <th class="px-8 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-toggle-on text-gray-500"></i>
+                                        <span>Status</span>
+                                    </div>
+                                </th>
+                                <th class="px-8 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-sort-numeric-down text-gray-500"></i>
+                                        <span>Order</span>
+                                    </div>
+                                </th>
+                                <th class="px-8 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-calendar text-gray-500"></i>
+                                        <span>Created</span>
+                                    </div>
+                                </th>
+                                <th class="px-8 py-4 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center justify-center space-x-2">
+                                        <i class="fas fa-cog text-gray-500"></i>
+                                        <span>Actions</span>
+                                    </div>
+                                </th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody class="divide-y divide-gray-100">
                             @foreach($category->medicalTests as $test)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">{{ $test->name }}</div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm text-gray-900">
-                                            @if($test->description)
-                                                {{ Str::limit($test->description, 50) }}
-                                            @else
-                                                <span class="text-gray-400 italic">No description</span>
-                                            @endif
+                                <tr class="hover:bg-blue-50/30 transition-colors duration-150">
+                                    <td class="px-8 py-6">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-vial text-blue-600"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-semibold text-gray-900">{{ $test->name }}</div>
+                                                <div class="text-xs text-gray-500">ID: {{ $test->id }}</div>
+                                            </div>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-semibold text-gray-900">
-                                            ₱{{ number_format($test->price, 2) }}
+                                    <td class="px-8 py-6">
+                                        <div class="text-sm text-gray-700 leading-relaxed max-w-xs">
+                                            {{ Str::limit($test->description, 80) }}
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $test->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                            <i class="fas fa-circle mr-1 text-xs"></i>
-                                            {{ $test->is_active ? 'Active' : 'Inactive' }}
-                                        </span>
+                                    <td class="px-8 py-6">
+                                        @if($test->is_active)
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
+                                                <i class="fas fa-check-circle mr-1.5 text-xs"></i>
+                                                Active
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800">
+                                                <i class="fas fa-times-circle mr-1.5 text-xs"></i>
+                                                Inactive
+                                            </span>
+                                        @endif
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $test->sort_order }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $test->created_at->format('M d, Y') }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <div class="flex space-x-3">
-                                            <a href="{{ route('medical-tests.edit', $test) }}" 
-                                               class="text-blue-600 hover:text-blue-900" title="Edit">
-                                                <i class="fas fa-edit"></i>
+                                    <td class="px-8 py-6">
+                                        <div class="flex items-center space-x-2">
+                                            <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                                <span class="text-sm font-semibold text-gray-700">{{ $test->sort_order }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-8 py-6">
+                                        <div class="text-sm text-gray-600">
+                                            <div class="font-medium">{{ $test->created_at->format('M d, Y') }}</div>
+                                            <div class="text-xs text-gray-500">{{ $test->created_at->format('g:i A') }}</div>
+                                        </div>
+                                    </td>
+                                    <td class="px-8 py-6">
+                                        <div class="flex items-center justify-center space-x-3">
+                                            <a href="{{ route('medical-tests.edit', $test->id) }}" 
+                                               class="w-8 h-8 bg-indigo-100 hover:bg-indigo-200 text-indigo-600 rounded-lg flex items-center justify-center transition-colors duration-150"
+                                               title="Edit Test">
+                                                <i class="fas fa-edit text-sm"></i>
                                             </a>
-                                            <a href="{{ route('medical-tests.show', $test) }}" 
-                                               class="text-gray-600 hover:text-gray-900" title="View">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <button onclick="openDeleteModal({{ $test->id }}, '{{ addslashes($test->name) }}')" 
-                                                    class="text-red-600 hover:text-red-900" title="Delete">
-                                                <i class="fas fa-trash"></i>
+                                            <button type="button" 
+                                                    onclick="openDeleteModal({{ $test->id }}, '{{ $test->name }}')"
+                                                    class="w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg flex items-center justify-center transition-colors duration-150"
+                                                    title="Delete Test">
+                                                <i class="fas fa-trash text-sm"></i>
                                             </button>
                                         </div>
                                     </td>
@@ -153,16 +277,16 @@
                     </table>
                 </div>
             @else
-                <div class="px-6 py-12 text-center">
-                    <div class="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                        <i class="fas fa-vial text-2xl text-gray-400"></i>
+                <div class="px-8 py-16 text-center">
+                    <div class="w-20 h-20 mx-auto bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fas fa-vial text-3xl text-blue-600"></i>
                     </div>
-                    <h3 class="text-sm font-medium text-gray-900 mb-2">No Medical Tests Found</h3>
-                    <p class="text-sm text-gray-500 mb-4">This category doesn't have any medical tests yet.</p>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">No Medical Tests Found</h3>
+                    <p class="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">This category doesn't have any medical tests yet. Create your first test to get started with organizing medical examinations.</p>
                     <a href="{{ route('medical-tests.create', ['category_id' => $category->id]) }}" 
-                       class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm">
+                       class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors duration-150 shadow-lg hover:shadow-xl">
                         <i class="fas fa-plus mr-2"></i>
-                        Create Medical Test
+                        Create First Medical Test
                     </a>
                 </div>
             @endif

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Analytics & Reports - RSS Citi Health Services')
+@section('title', 'Analytics & Reports')
 @section('page-title', 'Analytics & Reports')
 
 @section('content')
@@ -34,79 +34,169 @@
       ->take(10)
       ->values();
 @endphp
-<div class="container-fluid mt-3">
-    <style>
-        html { scroll-behavior: auto !important; }
-        .card-body canvas { max-height: 220px; }
-    </style>
-    <div class="row g-3">
-        <div class="col-12 col-xl-8">
-            <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Medical Test Volume (Last 12 Months)</h5>
-                    <span class="text-muted small">All sources</span>
-                </div>
-                <div class="card-body">
-                    <canvas id="medicalTestsTrend" height="80" tabindex="-1"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-xl-4">
-            <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Top Categories (Last 90 Days)</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="topCategoriesChart" height="80" tabindex="-1"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="row g-3 mt-1">
-        <div class="col-12 col-xl-5">
-            <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Top Medical Tests (Last 90 Days)</h5>
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 p-6">
+    <div class="max-w-7xl mx-auto space-y-8">
+        
+        <!-- Enhanced Header Section -->
+        <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Analytics & Reports</h1>
+                        <p class="text-sm text-gray-600 mt-1">Comprehensive insights into medical test performance and revenue trends</p>
+                    </div>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-sm table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th class="text-muted">Test</th>
-                                    <th class="text-muted">Category</th>
-                                    <th class="text-end text-muted">Count</th>
-                                    <th class="text-end text-muted">Revenue</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($testData as $row)
-                                    <tr>
-                                        <td>{{ $row['test'] }}</td>
-                                        <td>{{ $row['category'] }}</td>
-                                        <td class="text-end">{{ $row['count'] }}</td>
-                                        <td class="text-end">₱{{ number_format($row['revenue'], 2) }}</td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="4" class="text-center text-muted">No data</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                <div class="hidden md:flex items-center space-x-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-purple-600">{{ $testData->sum('count') }}</div>
+                        <div class="text-xs text-gray-500">Total Tests (90d)</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-600">₱{{ number_format($testData->sum('revenue'), 0) }}</div>
+                        <div class="text-xs text-gray-500">Total Revenue (90d)</div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-12 col-xl-7">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Financial Trend (Revenue by Month)</h5>
-                    <span class="text-muted small">Sum of Pre-employment and Appointments</span>
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <!-- Medical Test Volume Chart -->
+            <div class="xl:col-span-2">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 h-full">
+                    <div class="p-6 border-b border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-chart-area text-blue-600 text-sm"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900">Medical Test Volume</h3>
+                                    <p class="text-sm text-gray-500">Last 12 months trend</p>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full">All sources</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <canvas id="medicalTestsTrend" height="80" tabindex="-1"></canvas>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <canvas id="revenueTrend" height="90" tabindex="-1"></canvas>
+            </div>
+
+            <!-- Top Categories Chart -->
+            <div class="xl:col-span-1">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 h-full">
+                    <div class="p-6 border-b border-gray-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-pie text-green-600 text-sm"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Top Categories</h3>
+                                <p class="text-sm text-gray-500">Last 90 days</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <canvas id="topCategoriesChart" height="80" tabindex="-1"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Tables and Revenue Chart Section -->
+        <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
+            <!-- Top Medical Tests Table -->
+            <div class="xl:col-span-2">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 h-full">
+                    <div class="p-6 border-b border-gray-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-trophy text-orange-600 text-sm"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Top Medical Tests</h3>
+                                <p class="text-sm text-gray-500">Performance over last 90 days</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50/50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Test</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Count</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    @forelse($testData as $index => $row)
+                                        <tr class="hover:bg-gray-50/50 transition-colors duration-150">
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="w-6 h-6 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">
+                                                        {{ $index + 1 }}
+                                                    </div>
+                                                    <div class="text-sm font-medium text-gray-900">{{ $row['test'] }}</div>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    {{ $row['category'] }}
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 text-right">
+                                                <div class="text-sm font-semibold text-gray-900">{{ $row['count'] }}</div>
+                                            </td>
+                                            <td class="px-6 py-4 text-right">
+                                                <div class="text-sm font-semibold text-green-600">₱{{ number_format($row['revenue'], 2) }}</div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="4" class="px-6 py-12 text-center">
+                                                <div class="flex flex-col items-center">
+                                                    <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-3">
+                                                        <i class="fas fa-chart-bar text-gray-400 text-lg"></i>
+                                                    </div>
+                                                    <p class="text-gray-500 text-sm">No test data available</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue Trend Chart -->
+            <div class="xl:col-span-3">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 h-full">
+                    <div class="p-6 border-b border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-chart-line text-green-600 text-sm"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900">Financial Trend</h3>
+                                    <p class="text-sm text-gray-500">Revenue by month</p>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 bg-green-50 text-green-700 text-xs font-medium rounded-full">Pre-employment + Appointments</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <canvas id="revenueTrend" height="90" tabindex="-1"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
