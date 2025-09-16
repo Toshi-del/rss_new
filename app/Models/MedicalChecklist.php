@@ -23,10 +23,14 @@ class MedicalChecklist extends Model
         'patient_id',
         'pre_employment_record_id',
         'annual_physical_examination_id',
+        'opd_test_id',
         'name',
         'age',
         'number',
         'date',
+        'customer_name',
+        'customer_email',
+        'medical_test',
         // Individual examination fields - only done_by fields
         'chest_xray_done_by',
         'stool_exam_done_by',
@@ -40,6 +44,9 @@ class MedicalChecklist extends Model
         'examination_type',
         // X-ray image
         'xray_image_path',
+        // OPD specific fields
+        'test_results',
+        'recommendations',
     ];
 
     protected $casts = [
@@ -75,5 +82,10 @@ class MedicalChecklist extends Model
     public function radtech(): BelongsTo
     {
         return $this->belongsTo(User::class, 'radtech_id');
+    }
+
+    public function opdTest(): BelongsTo
+    {
+        return $this->belongsTo(OpdTest::class);
     }
 }

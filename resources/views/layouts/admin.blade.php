@@ -172,11 +172,24 @@
                     <span>Test Categories</span>
                     <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
                 </a>
+<<<<<<< Updated upstream
                 
                 <div class="text-white/40 text-xs font-semibold uppercase tracking-wider px-4 mt-8 mb-4">Communication</div>
                 
                 <a href="{{ route('admin.messages') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('admin.messages*') ? 'active' : '' }}">
                     <i class="fas fa-comments text-lg mr-4"></i>
+=======
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ route('inventory.index') }}" class="sidebar-link {{ request()->routeIs('inventory*') ? 'active' : '' }}">
+                    <i class="bi bi-boxes"></i>
+                    <span>Inventory</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ route('admin.messages') }}" class="sidebar-link {{ request()->routeIs('admin.messages*') ? 'active' : '' }}">
+                    <i class="bi bi-chat-dots"></i>
+>>>>>>> Stashed changes
                     <span>Messages</span>
                     <div class="ml-auto flex items-center space-x-2">
                         <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">3</span>

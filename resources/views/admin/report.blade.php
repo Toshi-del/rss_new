@@ -35,6 +35,7 @@
       ->values();
 @endphp
 
+<<<<<<< Updated upstream
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 p-6">
     <div class="max-w-7xl mx-auto space-y-8">
         
@@ -196,6 +197,148 @@
                     </div>
                     <div class="p-6">
                         <canvas id="revenueTrend" height="90" tabindex="-1"></canvas>
+=======
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50" style="font-family: 'Inter', sans-serif;">
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        
+        <!-- Modern Header Section -->
+        <div class="mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2" style="font-family: 'Poppins', sans-serif;">Analytics & Reports</h1>
+                    <p class="text-lg text-gray-600">Comprehensive insights into medical tests, revenue, and performance metrics</p>
+                </div>
+                <div class="mt-4 sm:mt-0 flex items-center space-x-2">
+                    <div class="flex items-center px-3 py-2 bg-white rounded-lg border border-gray-200">
+                        <i class="fas fa-calendar-alt text-gray-400 mr-2"></i>
+                        <span class="text-sm text-gray-600">Last updated: {{ now()->format('M d, Y H:i') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Medical Test Volume Chart -->
+            <div class="lg:col-span-2 bg-white rounded-2xl shadow-lg border border-gray-100">
+                <div class="p-6 border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">Medical Test Volume</h3>
+                            <p class="text-sm text-gray-600 mt-1">Test volume trends over the last 12 months</p>
+                        </div>
+                        <div class="flex items-center px-3 py-1 bg-blue-50 rounded-lg">
+                            <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                            <span class="text-xs font-medium text-blue-800">All sources</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div style="height: 280px;">
+                        <canvas id="medicalTestsTrend" tabindex="-1"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Categories Chart -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100">
+                <div class="p-6 border-b border-gray-100">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">Top Categories</h3>
+                        <p class="text-sm text-gray-600 mt-1">Most popular test categories (90 days)</p>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div style="height: 280px;">
+                        <canvas id="topCategoriesChart" tabindex="-1"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <!-- Top Medical Tests Table -->
+            <div class="lg:col-span-2 bg-white rounded-2xl shadow-lg border border-gray-100">
+                <div class="p-6 border-b border-gray-100">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">Top Medical Tests</h3>
+                        <p class="text-sm text-gray-600 mt-1">Performance metrics for the last 90 days</p>
+                    </div>
+                </div>
+                <div class="overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Test</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Count</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @forelse($testData as $index => $row)
+                                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-8 w-8 mr-3">
+                                                    <div class="h-8 w-8 rounded-full {{ $index < 3 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' : 'bg-gradient-to-r from-blue-400 to-purple-500' }} flex items-center justify-center text-white font-bold text-xs">
+                                                        {{ $index + 1 }}
+                                                    </div>
+                                                </div>
+                                                <div class="text-sm font-medium text-gray-900">{{ $row['test'] }}</div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                {{ $row['category'] }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                                            <div class="text-sm font-semibold text-gray-900">{{ $row['count'] }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                                            <div class="text-sm font-semibold text-green-600">₱{{ number_format($row['revenue'], 2) }}</div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="px-6 py-12 text-center">
+                                            <div class="flex flex-col items-center">
+                                                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                                    <i class="fas fa-chart-bar text-2xl text-gray-400"></i>
+                                                </div>
+                                                <h3 class="text-lg font-medium text-gray-900 mb-2">No data available</h3>
+                                                <p class="text-gray-500">Test data will appear here once records are available.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue Trend Chart -->
+            <div class="lg:col-span-3 bg-white rounded-2xl shadow-lg border border-gray-100">
+                <div class="p-6 border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">Financial Trend</h3>
+                            <p class="text-sm text-gray-600 mt-1">Revenue by month from all sources</p>
+                        </div>
+                        <div class="flex items-center px-3 py-1 bg-green-50 rounded-lg">
+                            <i class="fas fa-peso-sign text-green-600 mr-2"></i>
+                            <span class="text-xs font-medium text-green-800">Pre-employment + Appointments</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div style="height: 320px;">
+                        <canvas id="revenueTrend" tabindex="-1"></canvas>
+>>>>>>> Stashed changes
                     </div>
                 </div>
             </div>

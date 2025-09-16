@@ -4,6 +4,7 @@
 @section('page-title', 'Patient Management')
 
 @section('content')
+<<<<<<< Updated upstream
 <div class="space-y-8">
     <!-- Stats Overview Cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -254,6 +255,128 @@
                     @endforelse
                 </tbody>
             </table>
+=======
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50" style="font-family: 'Inter', sans-serif;">
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        
+        <!-- Modern Header Section -->
+        <div class="mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2" style="font-family: 'Poppins', sans-serif;">Patients</h1>
+                    <p class="text-lg text-gray-600">Annual Physical Examination patient records and information</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patients Table -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100">
+            <div class="p-6 border-b border-gray-100">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">Annual Physical Examination Patients</h3>
+                        <p class="text-sm text-gray-600 mt-1">Patient records for annual physical examinations</p>
+                    </div>
+                </div>
+            </div>
+            <div class="overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appointment</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Exam Type</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse($patients as $patient)
+                                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">#{{ $patient->id }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                                                    {{ substr($patient->first_name, 0, 1) }}{{ substr($patient->last_name, 0, 1) }}
+                                                </div>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">{{ $patient->first_name }} {{ $patient->last_name }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            @if($patient->appointment && $patient->appointment->creator)
+                                                {{ $patient->appointment->creator->company ?? 'N/A' }}
+                                            @else
+                                                N/A
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">{{ $patient->email }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            @if($patient->appointment)
+                                                {{ \Carbon\Carbon::parse($patient->appointment->appointment_date)->format('M d, Y') }}
+                                                @if($patient->appointment->time_slot)
+                                                    <div class="text-xs text-gray-500">{{ $patient->appointment->time_slot }}</div>
+                                                @endif
+                                            @else
+                                                N/A
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            @if($patient->appointment)
+                                                {{ optional($patient->appointment->medicalTestCategory)->name }}
+                                                @if($patient->appointment->medicalTest)
+                                                    <div class="text-xs text-gray-500">{{ $patient->appointment->medicalTest->name }}</div>
+                                                @endif
+                                            @else
+                                                N/A
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($patient->appointment && $patient->appointment->status === 'approved')
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                <i class="fas fa-check-circle mr-1"></i>Approved
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                <i class="fas fa-clock mr-1"></i>Pending
+                                            </span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="px-6 py-12 text-center">
+                                        <div class="flex flex-col items-center">
+                                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                                <i class="fas fa-user-injured text-2xl text-gray-400"></i>
+                                            </div>
+                                            <h3 class="text-lg font-medium text-gray-900 mb-2">No patients found</h3>
+                                            <p class="text-gray-500">Patient records will appear here once appointments are scheduled.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+>>>>>>> Stashed changes
         </div>
     </div>
 </div>

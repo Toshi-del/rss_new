@@ -481,4 +481,131 @@ class NurseController extends Controller
 
         return redirect()->route('nurse.annual-physical')->with('success', 'Annual physical examination created successfully.');
     }
+
+    /**
+     * Show OPD examinations
+     */
+    public function opdExaminations()
+    {
+        $opdTests = \App\Models\OpdTest::where('status', 'approved')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('nurse.opd-examinations', compact('opdTests'));
+    }
+
+    /**
+     * Show create OPD examination form
+     */
+    public function createOpdExamination(Request $request)
+    {
+        $opdTestId = $request->query('opd_test_id');
+        $opdTest = \App\Models\OpdTest::findOrFail($opdTestId);
+        
+        return view('nurse.opd-examination-create', compact('opdTest'));
+    }
+
+    /**
+     * Store new OPD examination
+     */
+    public function storeOpdExamination(Request $request)
+    {
+        $validated = $request->validate([
+            'opd_test_id' => 'required|exists:opd_tests,id',
+            'physical_exam' => 'required|array',
+            'physical_exam.temp' => 'required|string',
+            'physical_exam.height' => 'required|string',
+            'physical_exam.heart_rate' => 'required|string',
+            'physical_exam.weight' => 'required|string',
+            'skin_marks' => 'required|string',
+            'visual' => 'required|string',
+            'ishihara_test' => 'required|string',
+            'findings' => 'required|string',
+            'test_results' => 'nullable|string',
+            'recommendations' => 'nullable|string',
+        ], [
+            'physical_exam.required' => 'Physical examination data is required.',
+            'physical_exam.temp.required' => 'Temperature is required.',
+            'physical_exam.height.required' => 'Height is required.',
+            'physical_exam.heart_rate.required' => 'Heart rate is required.',
+            'physical_exam.weight.required' => 'Weight is required.',
+            'skin_marks.required' => 'Skin identification marks are required.',
+            'visual.required' => 'Visual examination is required.',
+            'ishihara_test.required' => 'Ishihara test is required.',
+            'findings.required' => 'Findings are required.',
+        ]);
+
+        // Get OPD test details
+        $opdTest = \App\Models\OpdTest::findOrFail($validated['opd_test_id']);
+        
+        // Create OPD examination
+        $validated['customer_name'] = $opdTest->customer_name;
+        $validated['customer_email'] = $opdTest->customer_email;
+        $validated['medical_test'] = $opdTest->medical_test;
+        $validated['date'] = now()->toDateString();
+        $validated['status'] = 'Pending';
+        $validated['nurse_id'] = Auth::id();
+        
+        \App\Models\OpdExamination::create($validated);
+
+        return redirect()->route('nurse.opd-examinations')->with('success', 'OPD examination created successfully.');
+    }
+
+    /**
+     * Show edit OPD examination form
+     */
+    public function editOpdExamination($id)
+    {
+        $opdExamination = \App\Models\OpdExamination::findOrFail($id);
+        return view('nurse.opd-examination-edit', compact('opdExamination'));
+    }
+
+    /**
+     * Update OPD examination
+     */
+    public function updateOpdExamination(Request $request, $id)
+    {
+        $opdExamination = \App\Models\OpdExamination::findOrFail($id);
+        
+        $validated = $request->validate([
+            'physical_exam' => 'required|array',
+            'skin_marks' => 'required|string',
+            'visual' => 'required|string',
+            'ishihara_test' => 'required|string',
+            'findings' => 'required|string',
+            'test_results' => 'nullable|string',
+            'recommendations' => 'nullable|string',
+        ]);
+
+        $opdExamination->update($validated);
+
+        return redirect()->route('nurse.opd-examinations')->with('success', 'OPD examination updated successfully.');
+    }
+
+    /**
+     * Show OPD medical checklist
+     */
+    public function showOpdMedicalChecklist($opdTestId)
+    {
+        $opdTest = \App\Models\OpdTest::findOrFail($opdTestId);
+        $medicalChecklist = \App\Models\MedicalChecklist::where('opd_test_id', $opdTestId)->first();
+        
+        return view('nurse.opd-medical-checklist', compact('opdTest', 'medicalChecklist'));
+    }
+
+    /**
+     * Send OPD examination to doctor
+     */
+    public function sendOpdExaminationToDoctor($opdTestId)
+    {
+        $opdTest = \App\Models\OpdTest::findOrFail($opdTestId);
+        $opdExamination = \App\Models\OpdExamination::where('opd_test_id', $opdTestId)->first();
+        
+        if ($opdExamination) {
+            $opdExamination->update(['status' => 'Sent to Doctor']);
+            return back()->with('success', 'OPD examination sent to doctor successfully.');
+        }
+        
+        return back()->with('error', 'No examination found to send.');
+    }
 }

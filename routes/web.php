@@ -63,6 +63,9 @@ Route::post('admin/pre-employment/{id}/send-email', [App\Http\Controllers\AdminC
     // Medical Test Management Routes
     Route::resource('admin/medical-test-categories', App\Http\Controllers\Admin\MedicalTestCategoryController::class);
     Route::resource('admin/medical-tests', App\Http\Controllers\Admin\MedicalTestController::class)->except(['index']);
+    
+    // Inventory Management Routes
+    Route::resource('admin/inventory', App\Http\Controllers\Admin\InventoryController::class);
 
     // Admin OPD entries
     Route::get('/admin/opd', [AdminController::class, 'opd'])->name('admin.opd');
@@ -233,6 +236,15 @@ Route::middleware(['auth', 'role:nurse'])->group(function () {
     Route::get('/nurse/medical-checklist/annual-physical/{patientId}', [NurseController::class, 'showMedicalChecklistAnnualPhysical'])->name('nurse.medical-checklist.annual-physical');
     Route::post('/nurse/medical-checklist', [NurseController::class, 'storeMedicalChecklist'])->name('nurse.medical-checklist.store');
     Route::patch('/nurse/medical-checklist/{id}', [NurseController::class, 'updateMedicalChecklist'])->name('nurse.medical-checklist.update');
+
+    // Nurse OPD Routes
+    Route::get('/nurse/opd-examinations', [NurseController::class, 'opdExaminations'])->name('nurse.opd-examinations');
+    Route::get('/nurse/opd-examinations/create', [NurseController::class, 'createOpdExamination'])->name('nurse.opd-examinations.create');
+    Route::post('/nurse/opd-examinations', [NurseController::class, 'storeOpdExamination'])->name('nurse.opd-examinations.store');
+    Route::get('/nurse/opd-examinations/{id}/edit', [NurseController::class, 'editOpdExamination'])->name('nurse.opd-examinations.edit');
+    Route::patch('/nurse/opd-examinations/{id}', [NurseController::class, 'updateOpdExamination'])->name('nurse.opd-examinations.update');
+    Route::get('/nurse/opd-medical-checklist/{opdTestId}', [NurseController::class, 'showOpdMedicalChecklist'])->name('nurse.opd-medical-checklist');
+    Route::post('/nurse/opd-examinations/{opdTestId}/send', [NurseController::class, 'sendOpdExaminationToDoctor'])->name('nurse.opd-examinations.send-to-doctor');
 
     // Nurse Messaging Routes
     Route::get('/nurse/messages', [NurseController::class, 'messages'])->name('nurse.messages');

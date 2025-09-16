@@ -4,6 +4,7 @@
 @section('page-title', 'Admin Messages')
 
 @section('content')
+<<<<<<< Updated upstream
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
     <div class="max-w-7xl mx-auto space-y-8">
         
@@ -22,10 +23,22 @@
                 <div class="hidden md:flex items-center space-x-2 text-sm text-gray-500">
                     <i class="fas fa-bell"></i>
                     <span>Real-time notifications enabled</span>
+=======
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50" style="font-family: 'Inter', sans-serif;">
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        
+        <!-- Modern Header Section -->
+        <div class="mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2" style="font-family: 'Poppins', sans-serif;">Messages</h1>
+                    <p class="text-lg text-gray-600">Communicate with users and manage conversations</p>
+>>>>>>> Stashed changes
                 </div>
             </div>
         </div>
 
+<<<<<<< Updated upstream
         <!-- Enhanced Chat Layout -->
         <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
             <div class="chat-layout">
@@ -45,10 +58,23 @@
                                 <i class="fas fa-search text-gray-400 text-sm"></i>
                             </div>
                             <input id="user-search" type="text" class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150" placeholder="Search users..." autocomplete="off">
+=======
+        <!-- Chat Interface -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="chat-layout">
+                <div class="chat-sidebar">
+                    <div class="p-4 border-b border-gray-200">
+                        <div class="relative">
+                            <input id="user-search" type="text" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Search users..." autocomplete="off">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+>>>>>>> Stashed changes
                         </div>
                     </div>
                     <ul id="user-list" class="chat-user-list"></ul>
                 </div>
+<<<<<<< Updated upstream
 
                 <!-- Enhanced Main Chat -->
                 <div class="chat-main">
@@ -67,28 +93,55 @@
                                 <button class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors duration-150" title="More options">
                                     <i class="fas fa-ellipsis-v text-gray-500 text-sm"></i>
                                 </button>
+=======
+                <div class="chat-main">
+                    <div class="chat-header">
+                        <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                            <div class="chat-header-title" id="chat-title">Select a conversation</div>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+                                <span class="text-sm text-gray-500">Online</span>
+>>>>>>> Stashed changes
                             </div>
                         </div>
                     </div>
                     <div id="chat-box" class="chat-messages">
                         <div class="chat-empty" id="chat-empty">
+<<<<<<< Updated upstream
                             <div class="text-center py-12">
                                 <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                                     <i class="fas fa-comment-dots text-blue-600 text-2xl"></i>
                                 </div>
                                 <h3 class="text-lg font-semibold text-gray-900 mb-2">Start a conversation</h3>
                                 <p class="text-gray-600">Select a user from the sidebar to begin messaging</p>
+=======
+                            <div class="flex flex-col items-center justify-center h-full">
+                                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                    <i class="fas fa-comments text-2xl text-gray-400"></i>
+                                </div>
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">Start a conversation</h3>
+                                <p class="text-gray-500">Pick a user on the left to start chatting.</p>
+>>>>>>> Stashed changes
                             </div>
                         </div>
                     </div>
                     <form id="chat-form" class="chat-input" autocomplete="off">
                         <input type="hidden" id="receiver_id" name="receiver_id">
+<<<<<<< Updated upstream
                         <div class="flex items-end space-x-3">
                             <div class="flex-1 relative">
                                 <textarea id="message" name="message" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150 resize-none" rows="1" placeholder="Type a message..." required></textarea>
                             </div>
                             <button type="submit" class="inline-flex items-center px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-all duration-150 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" id="send-btn" disabled>
                                 <i class="fas fa-paper-plane text-sm"></i>
+=======
+                        <div class="flex items-end space-x-3 p-4 border-t border-gray-200">
+                            <div class="flex-1">
+                                <textarea id="message" name="message" class="w-full px-4 py-2 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="1" placeholder="Type a message..." required></textarea>
+                            </div>
+                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed" id="send-btn" disabled>
+                                <i class="fas fa-paper-plane mr-2"></i>Send
+>>>>>>> Stashed changes
                             </button>
                         </div>
                     </form>
@@ -111,13 +164,23 @@
 		border-right: 1px solid #e5e7eb;
 		height: 100%;
 		overflow: hidden;
+		border-right: 1px solid #e5e7eb;
 	}
+<<<<<<< Updated upstream
 	
 	.chat-sidebar-header {
 		padding: 20px;
 		border-bottom: 1px solid #e5e7eb;
 		background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
 		flex-shrink: 0;
+=======
+	.chat-user-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		overflow-y: auto;
+		flex: 1;
+>>>>>>> Stashed changes
 	}
 	
 	.chat-search {
@@ -167,6 +230,7 @@
 		display: flex;
 		align-items: center;
 		gap: 12px;
+<<<<<<< Updated upstream
 		position: relative;
 	}
 	
@@ -196,11 +260,34 @@
 		height: 44px;
 		border-radius: 12px;
 		background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+=======
+		padding: 16px;
+		cursor: pointer;
+		border-bottom: 1px solid #f3f4f6;
+		transition: all 0.2s ease-in-out;
+	}
+	.chat-user-item:hover { 
+		background: #f8fafc; 
+		border-left: 3px solid #3b82f6;
+	}
+	.chat-user-item.active { 
+		background: #eff6ff; 
+		border-left: 3px solid #3b82f6;
+	}
+	.chat-user-item .avatar {
+		flex: 0 0 40px;
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		color: #ffffff;
+>>>>>>> Stashed changes
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		color: white;
 		font-weight: 600;
+<<<<<<< Updated upstream
 		font-size: 16px;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 	}
@@ -391,6 +478,88 @@
 		.chat-messages {
 			padding: 16px;
 		}
+=======
+		font-size: 14px;
+	}
+	.chat-user-item .meta { 
+		display: flex; 
+		flex-direction: column; 
+		min-width: 0; 
+		flex: 1;
+	}
+	.chat-user-item .name { 
+		font-weight: 600; 
+		white-space: nowrap; 
+		overflow: hidden; 
+		text-overflow: ellipsis;
+		color: #1f2937;
+		font-size: 14px;
+	}
+	.chat-user-item .role { 
+		font-size: 12px; 
+		color: #6b7280; 
+		white-space: nowrap; 
+		overflow: hidden; 
+		text-overflow: ellipsis;
+		margin-top: 2px;
+	}
+
+	.chat-main {
+		display: grid;
+		grid-template-rows: auto 1fr auto;
+		flex: 1;
+	}
+	.chat-header-title { 
+		font-weight: 600; 
+		color: #1f2937;
+		font-size: 16px;
+	}
+	.chat-messages { 
+		padding: 20px; 
+		overflow-y: auto; 
+		background: #f8fafc;
+		flex: 1;
+	}
+	.chat-empty { 
+		color: #6b7280; 
+		text-align: center; 
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.message-row { 
+		display: flex; 
+		margin-bottom: 16px; 
+		align-items: flex-end;
+	}
+	.message-row.me { justify-content: flex-end; }
+	.message-row.them { justify-content: flex-start; }
+	.message-bubble {
+		max-width: 70%;
+		padding: 12px 16px;
+		border-radius: 18px;
+		position: relative;
+		background: #ffffff;
+		border: 1px solid #e5e7eb;
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	}
+	.message-row.me .message-bubble { 
+		background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); 
+		color: #ffffff; 
+		border-color: #3b82f6; 
+	}
+	.message-text { 
+		white-space: pre-wrap; 
+		word-wrap: break-word; 
+		line-height: 1.4;
+	}
+	.message-time { 
+		font-size: 11px; 
+		opacity: 0.75; 
+		margin-top: 6px; 
+		text-align: right; 
+>>>>>>> Stashed changes
 	}
 </style>
 

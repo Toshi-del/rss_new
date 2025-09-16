@@ -29,6 +29,10 @@
                     <i class="fas fa-file-medical mr-3"></i>
                     <span class="{{ request()->routeIs('nurse.annual-physical') ? 'text-green-300' : '' }}">Annual Physical</span>
                 </a>
+                <a href="{{ route('nurse.opd-examinations') }}" class="flex items-center px-6 py-3 text-green-100 hover:bg-green-800 transition-colors {{ request()->routeIs('nurse.opd-examinations*') ? 'bg-green-800' : '' }}">
+                    <i class="fas fa-stethoscope mr-3"></i>
+                    <span class="{{ request()->routeIs('nurse.opd-examinations*') ? 'text-green-300' : '' }}">OPD Examinations</span>
+                </a>
                 <a href="{{ route('nurse.messages') }}" class="flex items-center px-6 py-3 text-green-100 hover:bg-green-800 transition-colors {{ request()->routeIs('nurse.messages') ? 'bg-green-800' : '' }}">
                     <i class="fas fa-comments mr-3"></i>
                     <span class="{{ request()->routeIs('nurse.messages') ? 'text-green-300' : '' }}">Messages</span>

@@ -199,8 +199,36 @@
       form.querySelector('input[name="customer_email"]').value = email;
     }
 
+    // Validate required fields before submission
+    function validateRequiredFields() {
+      const date = document.getElementById('opdAppointmentDate')?.value || '';
+      const time = document.getElementById('opdAppointmentTime')?.value || '';
+      const name = document.getElementById('opdCustomerName')?.value || '';
+      const email = document.getElementById('opdCustomerEmail')?.value || '';
+      
+      if (!date || !time || !name || !email) {
+        alert('Please fill in all required fields: Date, Time, Full Name, and Email before selecting a medical test.');
+        return false;
+      }
+      
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        alert('Please enter a valid email address.');
+        return false;
+      }
+      
+      return true;
+    }
+
     document.querySelectorAll('form.opd-add-form').forEach(f => {
-      f.addEventListener('submit', function(){ syncHiddenFields(this); });
+      f.addEventListener('submit', function(e){ 
+        if (!validateRequiredFields()) {
+          e.preventDefault();
+          return false;
+        }
+        syncHiddenFields(this); 
+      });
     });
   })();
 </script>

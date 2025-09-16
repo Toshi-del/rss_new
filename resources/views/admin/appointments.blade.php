@@ -4,6 +4,7 @@
 @section('page-title', 'Appointment Management')
 
 @section('content')
+<<<<<<< Updated upstream
 <div class="space-y-8">
     <!-- Header Section -->
     <div class="content-card rounded-xl overflow-hidden shadow-lg border border-gray-200">
@@ -168,6 +169,126 @@
                     @endforelse
                 </tbody>
             </table>
+=======
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50" style="font-family: 'Inter', sans-serif;">
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        
+        <!-- Modern Header Section -->
+        <div class="mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2" style="font-family: 'Poppins', sans-serif;">Appointments</h1>
+                    <p class="text-lg text-gray-600">Manage and review appointment requests from companies</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointments Table -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100">
+            <div class="p-6 border-b border-gray-100">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">All Appointments</h3>
+                        <p class="text-sm text-gray-600 mt-1">Review and manage appointment requests</p>
+                    </div>
+                </div>
+            </div>
+            <div class="overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse($appointments as $appointment)
+                                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">#{{ $appointment->id }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            {{ \Carbon\Carbon::parse($appointment->appointment_date)->format('M d, Y') }}
+                                            @if($appointment->time_slot)
+                                                <div class="text-xs text-gray-500">{{ $appointment->time_slot }}</div>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            @if($appointment->medicalTestCategory)
+                                                {{ $appointment->medicalTestCategory->name }}
+                                                @if($appointment->medicalTest)
+                                                    <div class="text-xs text-gray-500">{{ $appointment->medicalTest->name }}</div>
+                                                @endif
+                                            @else
+                                                {{ $appointment->appointment_type ?? 'N/A' }}
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">{{ $appointment->creator->email ?? 'N/A' }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($appointment->status === 'approved')
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                <i class="fas fa-check-circle mr-1"></i>Approved
+                                            </span>
+                                        @elseif($appointment->status === 'declined')
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                <i class="fas fa-times-circle mr-1"></i>Declined
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                <i class="fas fa-clock mr-1"></i>Pending
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        @if($appointment->status === 'pending')
+                                            <div class="flex justify-end space-x-2">
+                                                <form action="{{ route('admin.approve-appointment', $appointment->id) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    <button type="submit" class="inline-flex items-center px-3 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200" title="Approve">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                                <form action="{{ route('admin.decline-appointment', $appointment->id) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    <button type="submit" class="inline-flex items-center px-3 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200" title="Decline">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        @else
+                                            <span class="text-gray-400 text-sm">No actions</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="px-6 py-12 text-center">
+                                        <div class="flex flex-col items-center">
+                                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                                <i class="fas fa-calendar-alt text-2xl text-gray-400"></i>
+                                            </div>
+                                            <h3 class="text-lg font-medium text-gray-900 mb-2">No appointments found</h3>
+                                            <p class="text-gray-500">Appointment requests will appear here when submitted.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+>>>>>>> Stashed changes
         </div>
     </div>
 </div>
