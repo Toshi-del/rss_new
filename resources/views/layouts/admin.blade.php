@@ -430,9 +430,9 @@
                 </a>
             </li>
             <li class="sidebar-item">
-                <a href="{{ route('opd.dashboard') }}" class="sidebar-link {{ request()->routeIs('opd.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.opd', ['filter' => request('filter','pending')]) }}" class="sidebar-link {{ request()->routeIs('admin.opd*') ? 'active' : '' }}">
                     <i class="bi bi-hospital"></i>
-                    <span>OPD</span>
+                    <span>OPD Entries</span>
                 </a>
             </li>
             <li class="sidebar-item">

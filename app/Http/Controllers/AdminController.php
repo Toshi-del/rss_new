@@ -767,4 +767,64 @@ class AdminController extends Controller
         $company->delete();
         return redirect()->route('admin.dashboard')->with('success', 'Company account and all related data deleted successfully.');
     }
+
+    /**
+     * OPD admin listing with status filters.
+     */
+    public function opd(Request $request)
+    {
+        $filter = $request->get('filter', 'pending');
+        $query = DB::table('opd_tests');
+        switch ($filter) {
+            case 'pending':
+                $query->where('status', 'pending');
+                break;
+            case 'approved':
+                $query->where('status', 'approved');
+                break;
+            case 'declined':
+                $query->where('status', 'declined');
+                break;
+            case 'done':
+                $query->where('status', 'done');
+                break;
+            case 'opd':
+            default:
+                // show all
+                break;
+        }
+        $entries = $query->orderByDesc('created_at')->paginate(15);
+        return view('admin.opd', compact('entries', 'filter'));
+    }
+
+    /** Approve OPD entry */
+    public function approveOpd($id)
+    {
+        DB::table('opd_tests')->where('id', $id)->update(['status' => 'approved', 'updated_at' => now()]);
+        return redirect()->back()->with('success', 'OPD entry approved.');
+    }
+
+    /** Decline OPD entry */
+    public function declineOpd($id)
+    {
+        DB::table('opd_tests')->where('id', $id)->update(['status' => 'declined', 'updated_at' => now()]);
+        return redirect()->back()->with('success', 'OPD entry declined.');
+    }
+
+    /** Mark OPD entry as done */
+    public function markOpdDone($id)
+    {
+        DB::table('opd_tests')->where('id', $id)->update(['status' => 'done', 'updated_at' => now()]);
+        return redirect()->back()->with('success', 'OPD entry marked as done.');
+    }
+
+    /** Send OPD results (placeholder) */
+    public function sendOpdResults($id)
+    {
+        $entry = DB::table('opd_tests')->find($id);
+        if (!$entry) {
+            return redirect()->back()->with('error', 'OPD entry not found.');
+        }
+        return redirect()->back()->with('success', 'Results sent to ' . ($entry->customer_email ?? 'patient') . '.');
+    }
 }

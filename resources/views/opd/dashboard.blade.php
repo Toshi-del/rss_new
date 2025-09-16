@@ -19,84 +19,80 @@
         <div class="text-muted small">Walk‑in patient portal</div>
       </div>
     </div>
-    <div>
+    <div class="d-flex gap-2">
       <a href="{{ route('opd.medical-test-categories') }}" class="btn btn-sm btn-primary">
         <i class="fa-solid fa-compass me-1"></i> Start browsing
+      </a>
+      <a href="{{ route('opd.incoming-tests') }}" class="btn btn-sm btn-outline-primary">
+        <i class="fa-solid fa-inbox me-1"></i> View Incoming
       </a>
     </div>
   </div>
 </div>
 
 <div class="row g-3 align-items-stretch">
-  <div class="col-md-6 d-flex">
-    <div class="card border-0 shadow-sm h-100 card-tile tile-modern tile-primary">
-      <div class="card-body d-flex align-items-center justify-content-between">
-        <div>
+  <div class="col-lg-4 col-md-6 d-flex">
+    <div class="card border-0 shadow-sm h-100 feature-card">
+      <a href="{{ route('opd.medical-test-categories') }}" class="stretched-link text-decoration-none"></a>
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="feature-icon bg-primary-subtle text-primary">
+          <i class="fa-solid fa-folder-tree"></i>
+        </div>
+        <div class="flex-grow-1">
           <div class="text-muted small">Browse</div>
-          <h6 class="mb-1">Medical Test Categories</h6>
-          <div class="text-muted small mb-2">Explore tests available for walk‑in patients</div>
-          <a href="{{ route('opd.medical-test-categories') }}" class="stretched-link text-decoration-none"></a>
-          <a href="{{ route('opd.medical-test-categories') }}" class="btn btn-sm btn-primary position-relative">
-            <i class="fa-solid fa-list me-1"></i> View Categories
-          </a>
+          <h5 class="mb-1">Medical Test Categories</h5>
+          <div class="text-muted small">Explore tests available for walk‑in patients</div>
         </div>
-        <div class="text-primary opacity-75">
-          <div class="rounded-circle bg-primary-subtle d-flex align-items-center justify-content-center tile-icon" style="width:48px;height:48px;">
-            <i class="fa-solid fa-folder-tree"></i>
-          </div>
-        </div>
+       
       </div>
     </div>
   </div>
   
-  <div class="col-md-6 d-flex">
-    <div class="card border-0 shadow-sm h-100 card-tile tile-modern tile-info">
-      <div class="card-body d-flex align-items-center justify-content-between">
-        <div>
-          <div class="text-muted small">Queue</div>
-          <h6 class="mb-1">Incoming Tests</h6>
-          <div class="text-muted small mb-2">Review and manage tests you added</div>
-          <a href="{{ route('opd.incoming-tests') }}" class="stretched-link text-decoration-none"></a>
-          <a href="{{ route('opd.incoming-tests') }}" class="btn btn-sm btn-outline-primary">
-            <i class="fa-solid fa-inbox me-1"></i>
-            View Incoming
-            <span class="badge bg-primary-subtle text-primary ms-2">{{ is_countable($incoming ?? []) ? count($incoming ?? []) : 0 }}</span>
-          </a>
+  <div class="col-lg-4 col-md-6 d-flex">
+    <div class="card border-0 shadow-sm h-100 feature-card">
+      <a href="{{ route('opd.incoming-tests') }}" class="stretched-link text-decoration-none"></a>
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="feature-icon bg-info-subtle text-info">
+          <i class="fa-solid fa-inbox"></i>
         </div>
-        <div class="text-primary opacity-75 text-end">
-          <div class="rounded-circle bg-primary-subtle d-flex align-items-center justify-content-center ms-auto mb-1 tile-icon" style="width:48px;height:48px;">
-            <i class="fa-solid fa-inbox"></i>
+        <div class="flex-grow-1">
+          <div class="text-muted small">Queue</div>
+          <h5 class="mb-1">Incoming Tests</h5>
+          <div class="text-muted small">Review and manage tests you added</div>
+          <div class="mt-2 d-flex align-items-center gap-2">
+            <span class="badge rounded-pill text-bg-primary">{{ is_countable($incoming ?? []) ? count($incoming ?? []) : 0 }}</span>
+            <span class="small text-muted">Items</span>
           </div>
+        </div>
+        <div class="text-end">
           <div class="small text-muted">Estimated Total</div>
           <div class="fw-semibold">₱{{ number_format($total ?? 0, 2) }}</div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="row g-3 mt-1">
-  <div class="col-md-6 d-flex">
-    <div class="card border-0 shadow-sm h-100 card-tile tile-modern tile-neutral">
-      <div class="card-body d-flex align-items-center justify-content-between">
-        <div>
-          <div class="text-muted small">Preview</div>
-          <h6 class="mb-1">Result Template</h6>
-          <div class="text-muted small mb-2">UI-only sample of result card</div>
-          <a href="{{ route('opd.result') }}" class="stretched-link text-decoration-none"></a>
-          <a href="{{ route('opd.result') }}" class="btn btn-sm btn-outline-secondary">
-            <i class="fa-solid fa-file-lines me-1"></i> Open Preview
-          </a>
+  <div class="col-lg-4 col-md-6 d-flex">
+    <div class="card border-0 shadow-sm h-100 feature-card">
+      <a href="{{ route('opd.result') }}" class="stretched-link text-decoration-none"></a>
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="feature-icon bg-secondary-subtle text-secondary">
+          <i class="fa-solid fa-file-medical"></i>
         </div>
-        <div class="text-primary opacity-75">
-          <div class="rounded-circle bg-primary-subtle d-flex align-items-center justify-content-center tile-icon" style="width:48px;height:48px;">
-            <i class="fa-solid fa-file-medical"></i>
-          </div>
+        <div class="flex-grow-1">
+          <div class="text-muted small">Preview</div>
+          <h5 class="mb-1">Result Template</h5>
+          <div class="text-muted small">UI-only sample of result card</div>
+        </div>
+        <div>
+          <span class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-file-lines me-1"></i> Open</span>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+
 
 <style>
   .card-tile { transition: box-shadow .2s ease, transform .15s ease; min-height: 112px; }
@@ -122,6 +118,13 @@
   .tile-modern .btn { border-radius: .5rem; }
   .tile-modern:hover { box-shadow: 0 .75rem 1.75rem rgba(16,24,40,.08); }
   .hero-modern { background: linear-gradient(180deg, rgba(13,110,253,.06), rgba(255,255,255,1)); border: 1px solid rgba(13,110,253,.08); }
+
+  /* Feature cards */
+  .feature-card { position: relative; border-radius: .75rem; overflow: hidden; border: 1px solid rgba(33,37,41,.06); }
+  .feature-card .card-body { padding: 1rem 1.125rem; }
+  .feature-card::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(13,110,253,.04), rgba(255,255,255,0)); pointer-events: none; }
+  .feature-icon { width: 56px; height: 56px; border-radius: .75rem; display: inline-flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+  .feature-card:hover { box-shadow: 0 .5rem 1.25rem rgba(31,45,61,.08); }
 </style>
 @endsection
 

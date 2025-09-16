@@ -63,6 +63,13 @@ Route::post('admin/pre-employment/{id}/send-email', [App\Http\Controllers\AdminC
     // Medical Test Management Routes
     Route::resource('admin/medical-test-categories', App\Http\Controllers\Admin\MedicalTestCategoryController::class);
     Route::resource('admin/medical-tests', App\Http\Controllers\Admin\MedicalTestController::class)->except(['index']);
+
+    // Admin OPD entries
+    Route::get('/admin/opd', [AdminController::class, 'opd'])->name('admin.opd');
+    Route::post('/admin/opd/{id}/approve', [AdminController::class, 'approveOpd'])->name('admin.opd.approve');
+    Route::post('/admin/opd/{id}/decline', [AdminController::class, 'declineOpd'])->name('admin.opd.decline');
+    Route::post('/admin/opd/{id}/done', [AdminController::class, 'markOpdDone'])->name('admin.opd.mark-done');
+    Route::post('/admin/opd/{id}/send-results', [AdminController::class, 'sendOpdResults'])->name('admin.opd.send-results');
 });
 
 Route::middleware(['auth', 'role:company'])->group(function () {

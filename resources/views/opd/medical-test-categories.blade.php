@@ -11,11 +11,39 @@
     </div>
   </div>
   <div class="card-body">
-    <div class="row mb-3">
-      <div class="col-sm-6">
+    <div class="row g-2 mb-3">
+      <div class="col-md-4">
         <div class="input-group input-group-sm">
           <span class="input-group-text"><i class="fa-solid fa-search"></i></span>
           <input id="categoryFilter" type="text" class="form-control" placeholder="Filter categories and tests...">
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="row g-2">
+          <div class="col-sm-3">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="fa-solid fa-calendar-day"></i></span>
+              <input type="date" id="opdAppointmentDate" class="form-control" placeholder="Date">
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="fa-solid fa-clock"></i></span>
+              <input type="time" id="opdAppointmentTime" class="form-control" placeholder="Time">
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
+              <input type="text" id="opdCustomerName" class="form-control" placeholder="Full name">
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="fa-solid fa-envelope"></i></span>
+              <input type="email" id="opdCustomerEmail" class="form-control" placeholder="Email">
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -77,8 +105,12 @@
                     @endif
                   </div>
                   <div class="mt-auto pt-2 text-end">
-                    <form method="POST" action="{{ route('opd.incoming-tests.add', $test->id) }}">
+                    <form method="POST" action="{{ route('opd.incoming-tests.add', $test->id) }}" class="opd-add-form">
                       @csrf
+                      <input type="hidden" name="appointment_date" value="">
+                      <input type="hidden" name="appointment_time" value="">
+                      <input type="hidden" name="customer_name" value="">
+                      <input type="hidden" name="customer_email" value="">
                       <button class="btn btn-sm btn-outline-primary">
                         <i class="fa-solid fa-plus me-1"></i>Add to Incoming
                       </button>
@@ -111,6 +143,9 @@
   </div>
 </div>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <script>
   (function(){
     const input = document.getElementById('categoryFilter');
@@ -132,6 +167,40 @@
         }
         card.style.display = match ? '' : 'none';
       });
+    });
+
+    // Init calendar pickers
+    if (window.flatpickr) {
+      flatpickr('#opdAppointmentDate', {
+        dateFormat: 'Y-m-d',
+        altInput: true,
+        altFormat: 'M j, Y',
+        allowInput: true
+      });
+      flatpickr('#opdAppointmentTime', {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: 'h:i K',
+        time_24hr: false,
+        minuteIncrement: 5,
+        allowInput: true
+      });
+    }
+
+    // Sync appointment details into each form before submit
+    function syncHiddenFields(form){
+      const date = document.getElementById('opdAppointmentDate')?.value || '';
+      const time = document.getElementById('opdAppointmentTime')?.value || '';
+      const name = document.getElementById('opdCustomerName')?.value || '';
+      const email = document.getElementById('opdCustomerEmail')?.value || '';
+      form.querySelector('input[name="appointment_date"]').value = date;
+      form.querySelector('input[name="appointment_time"]').value = time;
+      form.querySelector('input[name="customer_name"]').value = name;
+      form.querySelector('input[name="customer_email"]').value = email;
+    }
+
+    document.querySelectorAll('form.opd-add-form').forEach(f => {
+      f.addEventListener('submit', function(){ syncHiddenFields(this); });
     });
   })();
 </script>

@@ -22,7 +22,11 @@
           <thead>
             <tr>
               <th>Name</th>
-              <th>Category</th>
+              <th>Medical Test</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Customer</th>
+              <th>Email</th>
               <th class="text-end">Price</th>
               <th class="text-end">Action</th>
             </tr>
@@ -31,7 +35,11 @@
             @foreach($incoming as $test)
               <tr>
                 <td>{{ $test['name'] }}</td>
-                <td>{{ $test['category'] }}</td>
+                <td>{{ $test['name'] }}</td>
+                <td>{{ $test['appointment_date'] ?? '—' }}</td>
+                <td>{{ $test['appointment_time'] ?? '—' }}</td>
+                <td>{{ $test['customer_name'] ?? '—' }}</td>
+                <td>{{ $test['customer_email'] ?? '—' }}</td>
                 <td class="text-end">₱{{ number_format($test['price'], 2) }}</td>
                 <td class="text-end">
                   <form method="POST" action="{{ route('opd.incoming-tests.remove', $test['id']) }}">
@@ -44,7 +52,7 @@
           </tbody>
           <tfoot>
             <tr>
-              <th colspan="2" class="text-end">Total</th>
+              <th colspan="6" class="text-end">Total</th>
               <th class="text-end">₱{{ number_format($total, 2) }}</th>
               <th></th>
             </tr>

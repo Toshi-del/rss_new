@@ -30,75 +30,109 @@
     </div>
 
     <div class="p-3">
+      @php
+        $hasHistory = !empty($illness_history ?? null) || !empty($accidents_operations ?? null) || !empty($past_medical_history ?? null);
+        $hasPhysicalSummary = !empty($visual ?? null) || !empty($ishihara_test ?? null) || !empty($skin_marks ?? null);
+      @endphp
+
+      @if($hasHistory || $hasPhysicalSummary)
       <div class="row g-3">
+        @if($hasHistory)
         <!-- Medical History -->
         <div class="col-lg-6">
           <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-white"><strong>Medical History</strong></div>
             <div class="card-body">
+              @if(!empty($illness_history))
               <div class="mb-3">
                 <div class="text-muted small">Illness History</div>
-                <div>{{ $illness_history ?? 'Not specified' }}</div>
+                <div>{{ $illness_history }}</div>
               </div>
+              @endif
+              @if(!empty($accidents_operations))
               <div class="mb-3">
                 <div class="text-muted small">Accidents/Operations</div>
-                <div>{{ $accidents_operations ?? 'None reported' }}</div>
+                <div>{{ $accidents_operations }}</div>
               </div>
+              @endif
+              @if(!empty($past_medical_history))
               <div>
                 <div class="text-muted small">Past Medical History</div>
-                <div>{{ $past_medical_history ?? 'No major medical issues' }}</div>
+                <div>{{ $past_medical_history }}</div>
               </div>
+              @endif
             </div>
           </div>
         </div>
+        @endif
 
+        @if($hasPhysicalSummary)
         <!-- Physical Examination -->
         <div class="col-lg-6">
           <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-white"><strong>Physical Examination</strong></div>
             <div class="card-body">
               <div class="row g-3">
+                @if(!empty($visual))
                 <div class="col-sm-6">
                   <div class="text-muted small">Visual Acuity</div>
-                  <div>{{ $visual ?? 'Not tested' }}</div>
+                  <div>{{ $visual }}</div>
                 </div>
+                @endif
+                @if(!empty($ishihara_test))
                 <div class="col-sm-6">
                   <div class="text-muted small">Ishihara Test</div>
-                  <div>{{ $ishihara_test ?? 'Not tested' }}</div>
+                  <div>{{ $ishihara_test }}</div>
                 </div>
+                @endif
+                @if(!empty($skin_marks))
                 <div class="col-sm-6">
                   <div class="text-muted small">Skin Marks</div>
-                  <div>{{ $skin_marks ?? 'None' }}</div>
+                  <div>{{ $skin_marks }}</div>
                 </div>
+                @endif
               </div>
             </div>
           </div>
         </div>
+        @endif
       </div>
+      @endif
 
       <!-- Laboratory Results + Final Findings -->
+      @php
+        $hasLabResults = !empty($ecg ?? null);
+        $hasFinalFindings = !empty($final_findings ?? null);
+      @endphp
+      @if($hasLabResults || $hasFinalFindings)
       <div class="row g-3 mt-1">
+        @if($hasLabResults)
         <div class="col-lg-6">
           <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-white"><strong>Laboratory Results</strong></div>
             <div class="card-body">
+              @if(!empty($ecg))
               <div class="mb-2 d-flex justify-content-between align-items-center">
                 <div>ECG</div>
-                <span class="text-muted small">{{ $ecg ?? 'Not performed' }}</span>
+                <span class="text-muted small">{{ $ecg }}</span>
               </div>
-              <!-- Add more lab rows as needed -->
+              @endif
             </div>
           </div>
         </div>
+        @endif
+        @if($hasFinalFindings)
         <div class="col-lg-6">
           <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-white"><strong>Final Findings</strong></div>
             <div class="card-body">
-              <div class="bg-light rounded p-3">{{ $final_findings ?? 'No findings recorded' }}</div>
+              <div class="bg-light rounded p-3">{{ $final_findings }}</div>
             </div>
           </div>
         </div>
+        @endif
       </div>
+      @endif
 
       <!-- Physical Findings Grid -->
       @if(!empty($physical_findings ?? []))
@@ -157,5 +191,9 @@
 }
 </style>
 @endsection
+
+
+
+
 
 
