@@ -69,17 +69,23 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $preEmployment->sex }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $preEmployment->company_name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            @if($preEmployment->medicalTestCategory)
-                                {{ $preEmployment->medicalTestCategory->name }}
+    @if($preEmployment->medicalTests && $preEmployment->medicalTests->count() > 0)
+        @foreach($preEmployment->medicalTests as $index => $test)
+            @if($index > 0), @endif
+            {{ $test->name }}
+        @endforeach
+    @else
+        {{ $preEmployment->medical_exam_type ?? 'N/A' }}
+    @endif
+</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            @if($preEmployment->medicalTests && $preEmployment->medicalTests->count() > 0)
+                                @foreach($preEmployment->medicalTests as $index => $test)
+                                    @if($index > 0), @endif
+                                    {{ $test->name }}
+                                @endforeach
                             @else
                                 {{ $preEmployment->medical_exam_type ?? 'N/A' }}
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            @if($preEmployment->medicalTest)
-                                {{ $preEmployment->medicalTest->name }}
-                            @else
-                                N/A
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -234,5 +240,3 @@ document.getElementById('medicalChecklistModal').addEventListener('click', funct
 });
 </script>
 @endsection
-
-

@@ -19,7 +19,8 @@ class RadtechController extends Controller
     public function dashboard()
     {
         // Get pre-employment records not yet submitted
-        $preEmployments = PreEmploymentRecord::where('status', 'approved')
+        $preEmployments = PreEmploymentRecord::with(['medicalTests', 'medicalTestCategories', 'preEmploymentMedicalTests.medicalTestCategory'])
+            ->where('status', 'approved')
             ->whereDoesntHave('preEmploymentExamination', function ($q) {
                 $q->whereIn('status', ['Approved', 'sent_to_company']);
             })

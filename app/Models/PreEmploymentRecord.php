@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PreEmploymentRecord extends Model
 {
@@ -15,8 +17,6 @@ class PreEmploymentRecord extends Model
         'sex',
         'email',
         'phone_number',
-        'medical_test_categories_id',
-        'medical_test_id',
         'total_price',
         'other_exams',
         'billing_type',
@@ -46,13 +46,31 @@ class PreEmploymentRecord extends Model
         return $this->hasOne(PreEmploymentExamination::class, 'pre_employment_record_id');
     }
 
-    public function medicalTestCategory(): BelongsTo
+    /**
+     * Get all medical tests for this pre-employment record
+     */
+    public function medicalTests(): BelongsToMany
     {
-        return $this->belongsTo(MedicalTestCategory::class, 'medical_test_categories_id');
+        return $this->belongsToMany(MedicalTest::class, 'pre_employment_medical_tests')
+            ->withPivot(['medical_test_category_id', 'test_price'])
+            ->withTimestamps();
     }
 
-    public function medicalTest(): BelongsTo
+    /**
+     * Get all medical test categories for this pre-employment record
+     */
+    public function medicalTestCategories(): BelongsToMany
     {
-        return $this->belongsTo(MedicalTest::class, 'medical_test_id');
+        return $this->belongsToMany(MedicalTestCategory::class, 'pre_employment_medical_tests')
+            ->withPivot(['medical_test_id', 'test_price'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the pivot records for medical tests
+     */
+    public function preEmploymentMedicalTests(): HasMany
+    {
+        return $this->hasMany(PreEmploymentMedicalTest::class);
     }
 }

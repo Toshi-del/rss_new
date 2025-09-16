@@ -55,7 +55,7 @@ class PathologistController extends Controller
      */
     public function preEmployment(Request $request)
     {
-        $query = PreEmploymentRecord::with(['medicalTestCategory', 'medicalTest', 'preEmploymentExamination'])
+        $query = PreEmploymentRecord::with(['medicalTests', 'medicalTestCategories', 'preEmploymentMedicalTests.medicalTestCategory', 'preEmploymentExamination'])
             ->whereIn('status', ['Approved', 'approved']);
 
         // Apply filters

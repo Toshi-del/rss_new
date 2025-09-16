@@ -57,10 +57,11 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-4">
                         <i class="fas fa-flask mr-2"></i>Medical Tests
+                        <span class="text-sm text-gray-500 font-normal">(Select one test per category)</span>
                     </label>
 
-                    <input type="hidden" name="medical_test_categories_id" id="medical_test_categories_id" value="{{ old('medical_test_categories_id') }}">
-                    <input type="hidden" name="medical_test_id" id="medical_test_id" value="{{ old('medical_test_id') }}">
+                    <input type="hidden" name="medical_test_categories_id" id="medical_test_categories_id" value="{{ is_array(old('medical_test_categories_id')) ? json_encode(old('medical_test_categories_id')) : old('medical_test_categories_id') }}">
+                    <input type="hidden" name="medical_test_id" id="medical_test_id" value="{{ is_array(old('medical_test_id')) ? json_encode(old('medical_test_id')) : old('medical_test_id') }}">
                     @error('medical_test_categories_id')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -82,32 +83,46 @@
                                 @if($category->description)
                                     <span class="text-sm text-gray-500 font-normal">- {{ $category->description }}</span>
                                 @endif
+                                <span class="text-xs text-blue-600 font-normal">(Select one)</span>
                             </h4>
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                                 @foreach($uniqueTests as $test)
                                     @if($categoryName === 'appointment')
                                         @continue
                                     @endif
-                                    <label for="pe_test_{{ $test->id }}" class="cursor-pointer block border rounded-xl p-5 hover:shadow transition bg-white">
-                                        <div class="flex items-start">
+                                    <label for="test_{{ $test->id }}" class="cursor-pointer block border rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-white hover:border-blue-300 h-40 flex flex-col test-card">
+                                        <div class="flex items-start mb-3">
                                             <input
-                                                id="pe_test_{{ $test->id }}"
-                                                type="checkbox"
-                                                name="pe_selected_test"
+                                                id="test_{{ $test->id }}"
+                                                type="radio"
+                                                name="category_{{ $category->id }}_test"
                                                 value="{{ $test->id }}"
                                                 data-category-id="{{ $category->id }}"
+                                                data-category-name="{{ $category->name }}"
                                                 data-test-id="{{ $test->id }}"
-                                                class="mt-1 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                                data-test-name="{{ $test->name }}"
+                                                data-test-price="{{ $test->price ?? 0 }}"
+                                                class="mt-1 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 test-radio flex-shrink-0"
                                             >
-                                            <div class="ml-3">
-                                                <p class="text-base font-semibold text-gray-900">{{ $test->name }}</p>
-                                                @if($test->description)
-                                                    <p class="text-sm text-gray-500">{{ Str::limit($test->description, 50) }}</p>
-                                                @endif
-                                                @if(!is_null($test->price))
-                                                    <p class="mt-2 text-sm font-semibold text-emerald-600">₱{{ number_format((float)$test->price, 2) }}</p>
-                                                @endif
+                                            <div class="ml-3 flex-1 min-w-0">
+                                                <p class="text-base font-semibold text-gray-900 line-clamp-2 leading-tight">{{ $test->name }}</p>
                                             </div>
+                                        </div>
+                                        <div class="flex-1 flex flex-col justify-between">
+                                            @if($test->description)
+                                                <p class="text-sm text-gray-500 line-clamp-3 mb-2">{{ $test->description }}</p>
+                                            @else
+                                                <div class="flex-1"></div>
+                                            @endif
+                                            @if(!is_null($test->price))
+                                                <div class="mt-auto">
+                                                    <p class="text-lg font-bold text-emerald-600">₱{{ number_format((float)$test->price, 2) }}</p>
+                                                </div>
+                                            @else
+                                                <div class="mt-auto">
+                                                    <p class="text-sm text-gray-400 italic">Price not set</p>
+                                                </div>
+                                            @endif
                                         </div>
                                     </label>
                                 @endforeach
@@ -115,9 +130,16 @@
                         </div>
                     @endforeach
 
-                    @error('blood_tests')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                    <!-- Selected Tests Summary -->
+                    <div id="selectedTestsSummary" class="mt-6 p-4 bg-gray-50 rounded-lg hidden">
+                        <h5 class="text-sm font-semibold text-gray-700 mb-2">Selected Tests:</h5>
+                        <div id="selectedTestsList" class="space-y-1"></div>
+                        <div class="mt-3 pt-3 border-t border-gray-200">
+                            <p class="text-sm font-semibold text-gray-700">
+                                Total Cost: <span id="totalCost" class="text-emerald-600">₱0.00</span>
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Package and Other Exams -->
@@ -188,7 +210,7 @@
 
         // Handle file input display
         const fileInput = document.getElementById('excel_file');
-        const fileLabel = fileInput.nextElementSibling;
+        const fileLabel = fileInput.parentElement.querySelector('span');
 
         fileInput.addEventListener('change', function(e) {
             if (e.target.files.length > 0) {
@@ -196,62 +218,99 @@
             }
         });
 
-        // Medical test category selection handling
-        const hiddenCategoryInput = document.getElementById('medical_test_categories_id');
-        const hiddenTestInput = document.getElementById('medical_test_id');
-        const testCheckboxes = document.querySelectorAll('input[name="pe_selected_test"][data-category-id]');
+        // Medical test selection handling (multiple tests, one per category)
+        const testRadios = document.querySelectorAll('.test-radio');
+        const selectedTestsSummary = document.getElementById('selectedTestsSummary');
+        const selectedTestsList = document.getElementById('selectedTestsList');
+        const totalCostElement = document.getElementById('totalCost');
+        const medicalTestCategoriesInput = document.getElementById('medical_test_categories_id');
+        const medicalTestIdInput = document.getElementById('medical_test_id');
 
-        function syncHiddenFromChecked() {
-            const firstChecked = Array.from(testCheckboxes).find(cb => cb.checked);
-            if (firstChecked) {
-                hiddenCategoryInput.value = firstChecked.getAttribute('data-category-id');
+        let selectedTests = [];
+
+        function updateSelectedTestsSummary() {
+            // Clear the list
+            selectedTestsList.innerHTML = '';
+            
+            // Add each selected test
+            let totalCost = 0;
+            selectedTests.forEach(test => {
+                const testElement = document.createElement('div');
+                testElement.className = 'flex justify-between items-center text-sm';
+                testElement.innerHTML = `
+                    <span class="text-gray-700">${test.categoryName}: <strong>${test.testName}</strong></span>
+                    <span class="text-emerald-600 font-semibold">₱${parseFloat(test.price).toFixed(2)}</span>
+                `;
+                selectedTestsList.appendChild(testElement);
+                totalCost += parseFloat(test.price);
+            });
+
+            // Update total cost
+            totalCostElement.textContent = `₱${totalCost.toFixed(2)}`;
+            
+            // Show/hide summary
+            selectedTestsSummary.classList.toggle('hidden', selectedTests.length === 0);
+            
+            // Update hidden inputs with arrays of selected category and test IDs
+            if (selectedTests.length > 0) {
+                const categoryIds = selectedTests.map(test => test.categoryId);
+                const testIds = selectedTests.map(test => test.testId);
+                medicalTestCategoriesInput.value = JSON.stringify(categoryIds);
+                medicalTestIdInput.value = JSON.stringify(testIds);
+            } else {
+                medicalTestCategoriesInput.value = '';
+                medicalTestIdInput.value = '';
             }
         }
 
-        function handleTestChange(e) {
+        function handleTestSelection(e) {
             const current = e.target;
-            const currentCategoryId = current.getAttribute('data-category-id');
-            const currentTestId = current.getAttribute('data-test-id');
-            const selectedCategoryId = hiddenCategoryInput.value;
+            if (!current.checked) return;
 
-            // Uncheck other tests when one is selected (single test selection)
-            if (current.checked) {
-                Array.from(testCheckboxes).forEach(cb => {
-                    if (cb !== current) cb.checked = false;
-                });
-            }
+            const categoryId = current.getAttribute('data-category-id');
+            const categoryName = current.getAttribute('data-category-name');
+            const testId = current.getAttribute('data-test-id');
+            const testName = current.getAttribute('data-test-name');
+            const testPrice = current.getAttribute('data-test-price') || '0';
 
-            // If none are checked, clear hidden inputs
-            if (!Array.from(testCheckboxes).some(cb => cb.checked)) {
-                hiddenCategoryInput.value = '';
-                hiddenTestInput.value = '';
-                return;
-            }
+            // Remove any existing test from the same category
+            selectedTests = selectedTests.filter(test => test.categoryId !== categoryId);
 
-            // If no category selected yet, set it
-            if (!selectedCategoryId) {
-                hiddenCategoryInput.value = currentCategoryId;
-                hiddenTestInput.value = currentTestId;
-                return;
-            }
+            // Add the new test
+            selectedTests.push({
+                categoryId: categoryId,
+                categoryName: categoryName,
+                testId: testId,
+                testName: testName,
+                price: testPrice
+            });
 
-            // If different category, prevent mixing and auto-uncheck
-            if (selectedCategoryId !== currentCategoryId) {
-                // Uncheck the box and notify
-                current.checked = false;
-                alert('Please select tests from one category only.');
-                return;
-            }
-
-            // Same category: set test id
-            hiddenTestInput.value = currentTestId;
+            // Update visual selection state
+            updateCardSelectionState();
+            updateSelectedTestsSummary();
         }
 
-        testCheckboxes.forEach(cb => cb.addEventListener('change', handleTestChange));
-        // Initialize on load for old inputs
-        if (!hiddenCategoryInput.value) {
-            syncHiddenFromChecked();
+        function updateCardSelectionState() {
+            // Remove selected class from all cards
+            document.querySelectorAll('.test-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Add selected class to checked cards
+            testRadios.forEach(radio => {
+                if (radio.checked) {
+                    const card = radio.closest('.test-card');
+                    if (card) {
+                        card.classList.add('selected');
+                    }
+                }
+            });
         }
+
+        // Add event listeners to all test radio buttons
+        testRadios.forEach(radio => {
+            radio.addEventListener('change', handleTestSelection);
+        });
     });
 </script>
 @endpush

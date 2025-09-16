@@ -1,156 +1,305 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Med Tech Dashboard') - RSS Health Services Corp</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    @yield('styles')
+    <title>@yield('title', 'Med Tech Dashboard') - RSS Citi Health Services</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <style>
+        :root {
+            --primary-color: #064e3b;
+            --secondary-color: #047857;
+            --accent-color: #059669;
+            --info-color: #0891b2;
+            --warning-color: #ca8a04;
+            --danger-color: #dc2626;
+            --success-color: #10b981;
+            --dark-color: #1f2937;
+            --light-color: #f8fafc;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #064e3b;
+            min-height: 100vh;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .sidebar-glass {
+            background: rgba(6, 78, 59, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+        
+        .nav-item:hover {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-item.active {
+            background: var(--secondary-color);
+            box-shadow: 0 2px 8px rgba(6, 78, 59, 0.3);
+        }
+        
+        .stat-card {
+            transition: all 0.2s ease;
+        }
+        
+        .content-card {
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+        
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .gradient-text {
+            color: var(--accent-color);
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: var(--secondary-color);
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-color);
+        }
+        
+        .floating-icon {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .pulse-icon {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+    @stack('styles')
 </head>
-<body class="bg-gray-50">
-    <div class="flex h-screen">
+<body class="h-full overflow-hidden">
+    <div class="flex h-full">
+        <!-- Mobile sidebar overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-all duration-500 opacity-0 pointer-events-none lg:hidden"></div>
+        
         <!-- Sidebar -->
-        <div class="w-64 bg-green-900 text-white">
-            <div class="p-6">
-                <h1 class="text-xl font-bold mb-2">Med Tech</h1>
-                <p class="text-green-200 text-sm">Dashboard</p>
+        <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 sidebar-glass transform -translate-x-full transition-all duration-500 ease-out lg:translate-x-0 lg:static lg:inset-0 flex flex-col custom-scrollbar">
+            <!-- Sidebar header -->
+            <div class="flex items-center justify-between h-20 px-6 border-b border-white/10">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-2xl glass-morphism flex items-center justify-center floating-icon">
+                        <i class="fas fa-user-nurse text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-white font-bold text-lg gradient-text">RSS Citi Health</span>
+                        <p class="text-white/60 text-xs font-medium">Med Tech Portal</p>
+                    </div>
+                </div>
+                <button id="sidebar-close" class="lg:hidden text-white/80 hover:text-white glass-morphism p-2 rounded-xl transition-all duration-300 hover:scale-110">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
             </div>
-            <nav class="mt-8">
-                <a href="{{ route('nurse.dashboard') }}" class="flex items-center px-6 py-3 text-green-100 hover:bg-green-800 transition-colors {{ request()->routeIs('nurse.dashboard') ? 'bg-green-800' : '' }}">
-                    <i class="fas fa-th-large mr-3"></i>
-                    <span class="{{ request()->routeIs('nurse.dashboard') ? 'text-green-300' : '' }}">Overview</span>
+            
+            <!-- Navigation -->
+            <nav class="flex-1 px-4 py-6 space-y-3 overflow-y-auto custom-scrollbar">
+                <div class="text-white/40 text-xs font-semibold uppercase tracking-wider px-4 mb-4">Main Menu</div>
+                
+                <a href="{{ route('nurse.dashboard') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('nurse.dashboard') ? 'active' : '' }}">
+                    <i class="fas fa-th-large text-lg mr-4 floating-icon"></i>
+                    <span>Overview</span>
+                    <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
                 </a>
-                <a href="{{ route('nurse.pre-employment') }}" class="flex items-center px-6 py-3 text-green-100 hover:bg-green-800 transition-colors {{ request()->routeIs('nurse.pre-employment') ? 'bg-green-800' : '' }}">
-                    <i class="fas fa-user-md mr-3"></i>
-                    <span class="{{ request()->routeIs('nurse.pre-employment') ? 'text-green-300' : '' }}">Pre-Employment</span>
+                
+                <div class="text-white/40 text-xs font-semibold uppercase tracking-wider px-4 mt-8 mb-4">Medical Services</div>
+                
+                <a href="{{ route('nurse.pre-employment') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('nurse.pre-employment') ? 'active' : '' }}">
+                    <i class="fas fa-user-md text-lg mr-4"></i>
+                    <span>Pre-Employment</span>
+                    <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
                 </a>
-                <a href="{{ route('nurse.annual-physical') }}" class="flex items-center px-6 py-3 text-green-100 hover:bg-green-800 transition-colors {{ request()->routeIs('nurse.annual-physical') ? 'bg-green-800' : '' }}">
-                    <i class="fas fa-file-medical mr-3"></i>
-                    <span class="{{ request()->routeIs('nurse.annual-physical') ? 'text-green-300' : '' }}">Annual Physical</span>
+                
+                <a href="{{ route('nurse.annual-physical') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('nurse.annual-physical') ? 'active' : '' }}">
+                    <i class="fas fa-file-medical text-lg mr-4"></i>
+                    <span>Annual Physical</span>
+                    <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
                 </a>
-                <a href="{{ route('nurse.messages') }}" class="flex items-center px-6 py-3 text-green-100 hover:bg-green-800 transition-colors {{ request()->routeIs('nurse.messages') ? 'bg-green-800' : '' }}">
-                    <i class="fas fa-comments mr-3"></i>
-                    <span class="{{ request()->routeIs('nurse.messages') ? 'text-green-300' : '' }}">Messages</span>
+                
+                <div class="text-white/40 text-xs font-semibold uppercase tracking-wider px-4 mt-8 mb-4">Communication</div>
+                
+                <a href="{{ route('nurse.messages') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('nurse.messages') ? 'active' : '' }}">
+                    <i class="fas fa-comments text-lg mr-4"></i>
+                    <span>Messages</span>
+                    <div class="ml-auto flex items-center space-x-2">
+                        <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">3</span>
+                        <i class="fas fa-chevron-right text-xs opacity-60"></i>
+                    </div>
                 </a>
             </nav>
+            
+            <!-- User profile section -->
+            <div class="p-6 border-t border-white/10">
+                <div class="glass-morphism rounded-2xl p-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-600 flex items-center justify-center text-white font-bold text-lg pulse-icon">
+                            {{ substr(Auth::user()->fname ?? 'M', 0, 1) }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-white font-semibold text-sm truncate">
+                                {{ Auth::user()->fname ?? 'Med' }} {{ Auth::user()->lname ?? 'Tech' }}
+                            </p>
+                            <p class="text-white/60 text-xs">Medical Technologist</p>
+                        </div>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="text-white/80 hover:text-white glass-morphism p-2 rounded-xl transition-all duration-300 hover:scale-110">
+                                <i class="fas fa-sign-out-alt text-lg"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <!-- Main Content -->
+        
+        <!-- Main content -->
         <div class="flex-1 flex flex-col overflow-hidden">
-            <!-- Header -->
-            <header class="bg-white shadow-sm border-b">
-                <div class="flex items-center justify-between px-6 py-4">
+            <!-- Top header -->
+            <header class="glass-morphism border-b border-white/20 backdrop-blur-xl">
+                <div class="flex items-center justify-between px-6 py-5">
                     <div class="flex items-center space-x-4">
-                        <h1 class="text-2xl font-semibold text-gray-800">@yield('page-title', 'Overview')</h1>
-                        <div class="relative">
-                            <input type="text" placeholder="Search" class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
-                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        <button id="sidebar-toggle" class="lg:hidden text-white/80 hover:text-white glass-morphism p-3 rounded-2xl transition-all duration-300 hover:scale-110">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                        <div>
+                            <h1 class="text-2xl font-bold text-white">
+                                @yield('page-title', 'Overview')
+                            </h1>
+                            <p class="text-white/60 text-sm font-medium">@yield('page-description', 'Welcome back, ' . (Auth::user()->fname ?? 'Med Tech') . '!')</p>
                         </div>
                     </div>
+                    
+                    <!-- Header actions -->
                     <div class="flex items-center space-x-4">
-                        <div class="text-right">
-                            <p class="font-medium text-gray-800">{{ Auth::user()->fname }} {{ Auth::user()->lname }}</p>
-                            <p class="text-sm text-gray-600">Med Tech</p>
+                        <!-- Search bar -->
+                        <div class="hidden md:block">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-white/60"></i>
+                                </div>
+                                <input type="text" 
+                                       class="glass-morphism pl-12 pr-4 py-3 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all duration-300 w-80" 
+                                       placeholder="Search patients, tests...">
+                            </div>
                         </div>
-                        <div class="relative">
-                            <button id="profileButton" class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors">
-                                <i class="fas fa-user-nurse text-white"></i>
-                            </button>
-                        </div>
+                        
+                        <!-- Notifications -->
+                        <button class="relative glass-morphism p-3 rounded-2xl text-white/80 hover:text-white transition-all duration-300 hover:scale-110">
+                            <i class="fas fa-bell text-lg"></i>
+                            <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white font-bold">2</span>
+                        </button>
+                        
+                        <!-- Settings -->
+                        <button class="glass-morphism p-3 rounded-2xl text-white/80 hover:text-white transition-all duration-300 hover:scale-110">
+                            <i class="fas fa-cog text-lg"></i>
+                        </button>
                     </div>
                 </div>
             </header>
-
-            <!-- Main Content Area -->
-            <main class="flex-1 overflow-y-auto p-6">
+            
+            <!-- Page content -->
+            <main class="flex-1 overflow-y-auto custom-scrollbar p-6 bg-gray-50">
                 @yield('content')
             </main>
         </div>
     </div>
 
-    <!-- Profile Modal -->
-    <div id="profileModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3">
-                <!-- Header -->
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-900">Profile</h3>
-                    <button id="closeModal" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                
-                <!-- Profile Info -->
-                <div class="flex items-center space-x-4 mb-6">
-                    <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
-                        <i class="fas fa-user-nurse text-white text-xl"></i>
-                    </div>
-                    <div>
-                        <h4 class="text-lg font-semibold text-gray-900"> {{ Auth::user()->fname }} {{ Auth::user()->lname }}</h4>
-                        <p class="text-sm text-gray-600">{{ Auth::user()->email }}</p>
-                        <p class="text-sm text-gray-500">Med Tech</p>
-                    </div>
-                </div>
-
-                <!-- Menu Items -->
-                <div class="space-y-2">
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-                        <i class="fas fa-user-edit mr-3 text-gray-500"></i>
-                        <span>Edit Profile</span>
-                    </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-                        <i class="fas fa-cog mr-3 text-gray-500"></i>
-                        <span>Settings</span>
-                    </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-                        <i class="fas fa-question-circle mr-3 text-gray-500"></i>
-                        <span>Help & Support</span>
-                    </a>
-                    <hr class="my-2">
-                    <form method="POST" action="{{ route('logout') }}" class="block">
-                        @csrf
-                        <button type="submit" class="flex items-center w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                            <i class="fas fa-sign-out-alt mr-3"></i>
-                            <span>Logout</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    @yield('scripts')
-    
     <script>
-        // Profile Modal Functionality
-        const profileButton = document.getElementById('profileButton');
-        const profileModal = document.getElementById('profileModal');
-        const closeModal = document.getElementById('closeModal');
-
-        // Open modal
-        profileButton.addEventListener('click', function() {
-            profileModal.classList.remove('hidden');
-        });
-
-        // Close modal
-        closeModal.addEventListener('click', function() {
-            profileModal.classList.add('hidden');
-        });
-
-        // Close modal when clicking outside
-        profileModal.addEventListener('click', function(e) {
-            if (e.target === profileModal) {
-                profileModal.classList.add('hidden');
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebarClose = document.getElementById('sidebar-close');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            function openSidebar() {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+                overlay.classList.add('opacity-100');
+                document.body.classList.add('overflow-hidden');
             }
-        });
-
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && !profileModal.classList.contains('hidden')) {
-                profileModal.classList.add('hidden');
+            
+            function closeSidebar() {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                overlay.classList.remove('opacity-100');
+                document.body.classList.remove('overflow-hidden');
             }
+            
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', openSidebar);
+            }
+            
+            if (sidebarClose) {
+                sidebarClose.addEventListener('click', closeSidebar);
+            }
+            
+            if (overlay) {
+                overlay.addEventListener('click', closeSidebar);
+            }
+            
+            // Close sidebar on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && window.innerWidth < 1024) {
+                    closeSidebar();
+                }
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1024) {
+                    closeSidebar();
+                }
+            });
         });
     </script>
+    @stack('scripts')
 </body>
-</html> 
+</html>

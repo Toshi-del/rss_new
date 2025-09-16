@@ -7,6 +7,9 @@ use App\Models\Message;
 use App\Models\Patient;
 use App\Models\PreEmploymentRecord;
 use App\Models\User;
+use App\Models\PreEmploymentExamination;
+use App\Models\AnnualPhysicalExamination;
+use App\Models\MedicalChecklist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,7 +29,7 @@ class NurseController extends Controller
         $appointmentCount = Appointment::count();
 
         // Get pre-employment records
-        $preEmployments = PreEmploymentRecord::with(['medicalTestCategory','medicalTest'])
+        $preEmployments = PreEmploymentRecord::with(['medicalTests', 'medicalTestCategories', 'preEmploymentMedicalTests.medicalTestCategory'])
             ->where('status', 'approved')->latest()->take(5)->get();
         $preEmploymentCount = PreEmploymentRecord::where('status', 'approved')->count();
 
@@ -40,16 +43,12 @@ class NurseController extends Controller
         ));
     }
 
-
-
-
-
     /**
      * Show pre-employment records
      */
     public function preEmployment()
     {
-        $preEmployments = PreEmploymentRecord::with(['medicalTestCategory','medicalTest'])
+        $preEmployments = PreEmploymentRecord::with(['medicalTests', 'medicalTestCategories', 'preEmploymentMedicalTests.medicalTestCategory'])
             ->whereIn('status', ['Approved', 'approved'])
             ->whereDoesntHave('preEmploymentExamination', function ($q) {
                 $q->whereIn('status', ['Approved', 'sent_to_company']);
@@ -386,8 +385,8 @@ class NurseController extends Controller
             'physical_exam' => 'required|array',
             'physical_exam.temp' => 'required|string',
             'physical_exam.height' => 'required|string',
-            'physical_exam.weight' => 'required|string',
             'physical_exam.heart_rate' => 'required|string',
+            'physical_exam.weight' => 'required|string',
             'skin_marks' => 'required|string',
             'visual' => 'required|string',
             'ishihara_test' => 'required|string',
@@ -400,8 +399,8 @@ class NurseController extends Controller
             'physical_exam.required' => 'Physical examination data is required.',
             'physical_exam.temp.required' => 'Temperature is required.',
             'physical_exam.height.required' => 'Height is required.',
-            'physical_exam.weight.required' => 'Weight is required.',
             'physical_exam.heart_rate.required' => 'Heart rate is required.',
+            'physical_exam.weight.required' => 'Weight is required.',
             'skin_marks.required' => 'Skin marks/tattoos are required.',
             'visual.required' => 'Visual acuity is required.',
             'ishihara_test.required' => 'Ishihara test is required.',
@@ -439,12 +438,6 @@ class NurseController extends Controller
     public function storeAnnualPhysical(Request $request)
     {
         $validated = $request->validate([
-            'patient_id' => 'required|exists:patients,id',
-            'illness_history' => 'nullable|string',
-            'accidents_operations' => 'nullable|string',
-            'past_medical_history' => 'nullable|string',
-            'family_history' => 'nullable|array',
-            'personal_habits' => 'nullable|array',
             'physical_exam' => 'required|array',
             'physical_exam.temp' => 'required|string',
             'physical_exam.height' => 'required|string',
@@ -453,32 +446,38 @@ class NurseController extends Controller
             'skin_marks' => 'required|string',
             'visual' => 'required|string',
             'ishihara_test' => 'required|string',
-            'findings' => 'required|string',
-            'lab_report' => 'nullable|array',
-            'physical_findings' => 'nullable|array',
-            'lab_findings' => 'nullable|array',
-            'ecg' => 'nullable|string',
+            'hearing' => 'required|string',
+            'dental' => 'required|string',
         ], [
             'physical_exam.required' => 'Physical examination data is required.',
             'physical_exam.temp.required' => 'Temperature is required.',
             'physical_exam.height.required' => 'Height is required.',
             'physical_exam.heart_rate.required' => 'Heart rate is required.',
             'physical_exam.weight.required' => 'Weight is required.',
-            'skin_marks.required' => 'Skin identification marks are required.',
-            'visual.required' => 'Visual examination is required.',
+            'skin_marks.required' => 'Skin marks/tattoos are required.',
+            'visual.required' => 'Visual acuity is required.',
             'ishihara_test.required' => 'Ishihara test is required.',
-            'findings.required' => 'Findings are required.',
+            'hearing.required' => 'Hearing test is required.',
+            'dental.required' => 'Dental examination is required.',
         ]);
 
-        // Auto-populate linkage fields from the patient
-        $patient = Patient::findOrFail($validated['patient_id']);
-        $validated['user_id'] = Auth::id();
-        $validated['name'] = $patient->full_name;
-        $validated['date'] = now()->toDateString();
-        $validated['status'] = 'Pending';
+        $patientId = $request->input('patient_id');
         
-        \App\Models\AnnualPhysicalExamination::create($validated);
+        $examination = AnnualPhysicalExamination::updateOrCreate(
+            ['patient_id' => $patientId],
+            [
+                'physical_exam' => json_encode($validated['physical_exam']),
+                'skin_marks' => $validated['skin_marks'],
+                'visual' => $validated['visual'],
+                'ishihara_test' => $validated['ishihara_test'],
+                'hearing' => $validated['hearing'],
+                'dental' => $validated['dental'],
+                'user_id' => Auth::id(),
+                'status' => 'completed'
+            ]
+        );
 
-        return redirect()->route('nurse.annual-physical')->with('success', 'Annual physical examination created successfully.');
+        return redirect()->route('nurse.annual-physical')
+            ->with('success', 'Annual physical examination saved successfully.');
     }
 }

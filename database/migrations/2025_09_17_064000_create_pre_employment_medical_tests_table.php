@@ -1,0 +1,34 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('pre_employment_medical_tests', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('pre_employment_record_id')->constrained('pre_employment_records')->onDelete('cascade');
+            $table->foreignId('medical_test_category_id')->constrained('medical_test_categories')->onDelete('cascade');
+            $table->foreignId('medical_test_id')->constrained('medical_tests')->onDelete('cascade');
+            $table->decimal('test_price', 10, 2)->default(0);
+            $table->timestamps();
+            
+            // Ensure one test per category per record
+            $table->unique(['pre_employment_record_id', 'medical_test_category_id'], 'unique_test_per_category');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('pre_employment_medical_tests');
+    }
+};

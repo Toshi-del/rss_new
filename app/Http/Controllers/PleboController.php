@@ -18,7 +18,8 @@ class PleboController extends Controller
      */
     public function dashboard()
     {
-        $preEmployments = PreEmploymentRecord::where('status', 'approved')->latest()->take(5)->get();
+        $preEmployments = PreEmploymentRecord::with(['medicalTests', 'medicalTestCategories', 'preEmploymentMedicalTests.medicalTestCategory'])
+            ->where('status', 'approved')->latest()->take(5)->get();
         $preEmploymentCount = PreEmploymentRecord::where('status', 'approved')->count();
 
         $patients = Patient::where('status', 'approved')->latest()->take(5)->get();
@@ -247,5 +248,3 @@ class PleboController extends Controller
         }
     }
 }
-
-

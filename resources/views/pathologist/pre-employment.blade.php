@@ -126,10 +126,12 @@
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            @if($preEmployment->medicalTestCategory)
-                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
-                                    {{ $preEmployment->medicalTestCategory->name }}
-                                </span>
+                            @if($preEmployment->medicalTests && $preEmployment->medicalTests->count() > 0)
+                                @foreach($preEmployment->medicalTests as $index => $test)
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800 mr-1">
+                                        {{ $test->name }}
+                                    </span>
+                                @endforeach
                             @else
                                 <span class="text-gray-400">N/A</span>
                             @endif

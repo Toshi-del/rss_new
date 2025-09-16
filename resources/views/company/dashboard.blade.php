@@ -171,9 +171,13 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $record->created_at->format('M d, Y') }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ optional($record->medicalTestCategory)->name }}
-                            @if($record->medicalTest)
-                                - {{ $record->medicalTest->name }}
+                            @if($record->medicalTests && $record->medicalTests->count() > 0)
+                                @foreach($record->medicalTests as $index => $test)
+                                    @if($index > 0), @endif
+                                    {{ $test->name }}
+                                @endforeach
+                            @else
+                                N/A
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₱{{ number_format($record->total_price ?? 0, 2) }}</td>

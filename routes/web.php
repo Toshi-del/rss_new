@@ -70,6 +70,27 @@ Route::post('admin/pre-employment/{id}/send-email', [App\Http\Controllers\AdminC
     Route::post('/admin/opd/{id}/decline', [AdminController::class, 'declineOpd'])->name('admin.opd.decline');
     Route::post('/admin/opd/{id}/done', [AdminController::class, 'markOpdDone'])->name('admin.opd.mark-done');
     Route::post('/admin/opd/{id}/send-results', [AdminController::class, 'sendOpdResults'])->name('admin.opd.send-results');
+    
+    // Admin - Inventory Management
+    Route::prefix('admin/inventory')->name('admin.inventory.')->group(function () {
+        // Main inventory CRUD routes
+        Route::get('/', [App\Http\Controllers\Admin\InventoryController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\Admin\InventoryController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\Admin\InventoryController::class, 'store'])->name('store');
+        Route::get('/{inventory}', [App\Http\Controllers\Admin\InventoryController::class, 'show'])->name('show');
+        Route::get('/{inventory}/edit', [App\Http\Controllers\Admin\InventoryController::class, 'edit'])->name('edit');
+        Route::put('/{inventory}', [App\Http\Controllers\Admin\InventoryController::class, 'update'])->name('update');
+        Route::delete('/{inventory}', [App\Http\Controllers\Admin\InventoryController::class, 'destroy'])->name('destroy');
+        
+        // Stock management routes
+        Route::post('/{inventory}/add-stock', [App\Http\Controllers\Admin\InventoryController::class, 'addStock'])->name('add-stock');
+        Route::post('/{inventory}/remove-stock', [App\Http\Controllers\Admin\InventoryController::class, 'removeStock'])->name('remove-stock');
+        
+        // Reporting and alerts routes
+        Route::get('/alerts/low-stock', [App\Http\Controllers\Admin\InventoryController::class, 'lowStockAlerts'])->name('alerts.low-stock');
+        Route::get('/alerts/expiry', [App\Http\Controllers\Admin\InventoryController::class, 'expiryAlerts'])->name('alerts.expiry');
+        Route::get('/export', [App\Http\Controllers\Admin\InventoryController::class, 'export'])->name('export');
+    });
 });
 
 Route::middleware(['auth', 'role:company'])->group(function () {
@@ -93,6 +114,10 @@ Route::middleware(['auth', 'role:company'])->group(function () {
     Route::get('/company/pre-employment/create', [CompanyPreEmploymentController::class, 'create'])->name('company.pre-employment.create');
     Route::post('/company/pre-employment', [CompanyPreEmploymentController::class, 'store'])->name('company.pre-employment.store');
     Route::get('/company/pre-employment/{id}', [CompanyPreEmploymentController::class, 'show'])->name('company.pre-employment.show');
+    Route::get('/company/pre-employment/{id}/edit', [CompanyPreEmploymentController::class, 'edit'])->name('company.pre-employment.edit');
+    Route::put('/company/pre-employment/{id}', [CompanyPreEmploymentController::class, 'update'])->name('company.pre-employment.update');
+    Route::delete('/company/pre-employment/{id}', [CompanyPreEmploymentController::class, 'destroy'])->name('company.pre-employment.destroy');
+    Route::get('/company/pre-employment/{id}/download', [CompanyPreEmploymentController::class, 'download'])->name('company.pre-employment.download');
     
     // Appointment Routes
     Route::get('/company/appointments', [CompanyAppointmentController::class, 'index'])->name('company.appointments.index');
@@ -223,6 +248,16 @@ Route::middleware(['auth', 'role:nurse'])->group(function () {
     Route::patch('/nurse/pre-employment/{id}', [NurseController::class, 'updatePreEmployment'])->name('nurse.pre-employment.update');
     Route::post('/nurse/pre-employment/{recordId}/send', [NurseController::class, 'sendPreEmploymentToDoctor'])->name('nurse.pre-employment.send-to-doctor');
     
+    // Equipment Request Routes
+    Route::get('/nurse/equipment-requests', [\App\Http\Controllers\Nurse\EquipmentRequestController::class, 'index'])->name('nurse.equipment-requests.index');
+    Route::get('/nurse/equipment-requests/create', [\App\Http\Controllers\Nurse\EquipmentRequestController::class, 'create'])->name('nurse.equipment-requests.create');
+    Route::post('/nurse/equipment-requests', [\App\Http\Controllers\Nurse\EquipmentRequestController::class, 'store'])->name('nurse.equipment-requests.store');
+    Route::get('/nurse/equipment-requests/{equipmentRequest}', [\App\Http\Controllers\Nurse\EquipmentRequestController::class, 'show'])->name('nurse.equipment-requests.show');
+    Route::get('/nurse/equipment-requests/{equipmentRequest}/edit', [\App\Http\Controllers\Nurse\EquipmentRequestController::class, 'edit'])->name('nurse.equipment-requests.edit');
+    Route::put('/nurse/equipment-requests/{equipmentRequest}', [\App\Http\Controllers\Nurse\EquipmentRequestController::class, 'update'])->name('nurse.equipment-requests.update');
+    Route::delete('/nurse/equipment-requests/{equipmentRequest}/cancel', [\App\Http\Controllers\Nurse\EquipmentRequestController::class, 'cancel'])->name('nurse.equipment-requests.cancel');
+    Route::get('/nurse/equipment-requests/inventory/data', [\App\Http\Controllers\Nurse\EquipmentRequestController::class, 'getInventory'])->name('nurse.equipment-requests.inventory');
+    
     // Nurse Annual Physical Edit Routes
     Route::get('/nurse/annual-physical/{id}/edit', [NurseController::class, 'editAnnualPhysical'])->name('nurse.annual-physical.edit');
     Route::patch('/nurse/annual-physical/{id}', [NurseController::class, 'updateAnnualPhysical'])->name('nurse.annual-physical.update');
@@ -240,6 +275,16 @@ Route::middleware(['auth', 'role:nurse'])->group(function () {
     Route::post('/nurse/messages/send', [NurseController::class, 'sendMessage']);
     Route::post('/nurse/messages/mark-read', [NurseController::class, 'markAsRead']);
     Route::get('/nurse/chat-users', [NurseController::class, 'chatUsers']);
+    
+    // Nurse Equipment Request Routes
+    Route::get('/nurse/equipment-requests', [\App\Http\Controllers\Nurse\EquipmentRequestController::class, 'index'])->name('nurse.equipment-requests.index');
+    Route::get('/nurse/equipment-requests/create', [\App\Http\Controllers\Nurse\EquipmentRequestController::class, 'create'])->name('nurse.equipment-requests.create');
+    Route::post('/nurse/equipment-request/store', [\App\Http\Controllers\Nurse\EquipmentRequestController::class, 'store'])->name('nurse.equipment-request.store');
+    Route::get('/nurse/equipment-requests/{equipmentRequest}', [\App\Http\Controllers\Nurse\EquipmentRequestController::class, 'show'])->name('nurse.equipment-requests.show');
+    Route::get('/nurse/equipment-requests/{equipmentRequest}/edit', [\App\Http\Controllers\Nurse\EquipmentRequestController::class, 'edit'])->name('nurse.equipment-requests.edit');
+    Route::patch('/nurse/equipment-requests/{equipmentRequest}', [\App\Http\Controllers\Nurse\EquipmentRequestController::class, 'update'])->name('nurse.equipment-requests.update');
+    Route::post('/nurse/equipment-requests/{equipmentRequest}/cancel', [\App\Http\Controllers\Nurse\EquipmentRequestController::class, 'cancel'])->name('nurse.equipment-requests.cancel');
+    Route::get('/nurse/equipment-request/inventory', [\App\Http\Controllers\Nurse\EquipmentRequestController::class, 'getInventory'])->name('nurse.equipment-request.inventory');
 });
 
 Route::middleware(['auth', 'role:radtech'])->group(function () {
@@ -389,5 +434,3 @@ Route::get('/location', function () {
 Route::get('/', function () {
     return redirect()->route('login');
 });
-
-
