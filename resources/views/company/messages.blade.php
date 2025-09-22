@@ -1,111 +1,397 @@
 @extends('layouts.company')
 
+@section('title', 'Messages')
+
 @section('content')
-<div class="container py-4">
-	<h2 class="mb-3">Messages</h2>
-	<div class="chat-layout">
-		<div class="chat-sidebar">
-			<div class="chat-search">
-				<input id="user-search" type="text" class="form-control" placeholder="Search users..." autocomplete="off">
-			</div>
-			<ul id="user-list" class="chat-user-list"></ul>
-		</div>
-		<div class="chat-main">
-			<div class="chat-header">
-				<div class="chat-header-title" id="chat-title">Select a conversation</div>
-			</div>
-			<div id="chat-box" class="chat-messages">
-				<div class="chat-empty" id="chat-empty">Pick a user on the left to start chatting.</div>
-			</div>
-			<form id="chat-form" class="chat-input" autocomplete="off">
-				<input type="hidden" id="receiver_id" name="receiver_id">
-				<textarea id="message" name="message" class="form-control" rows="1" placeholder="Type a message..." required></textarea>
-				<button type="submit" class="btn btn-primary" id="send-btn" disabled>Send</button>
-			</form>
-		</div>
-	</div>
+<div class="min-h-screen" style="font-family: 'Poppins', sans-serif;">
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
+        
+        <!-- Enhanced Header Section -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-700">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-comments text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">Company Messages</h1>
+                            <p class="text-blue-100 mt-1">Communicate with patients and staff members</p>
+                        </div>
+                    </div>
+                    <div class="hidden md:flex items-center space-x-2 text-sm text-blue-100">
+                        <i class="fas fa-bell"></i>
+                        <span>Real-time notifications enabled</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Chat Layout -->
+        <div class="bg-white rounded-xl shadow-xl overflow-hidden">
+            <div class="chat-layout">
+                <!-- Enhanced Sidebar -->
+                <div class="chat-sidebar">
+                    <div class="chat-sidebar-header">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-blue-600 text-sm"></i>
+                            </div>
+                            <h3 class="font-semibold text-gray-900">Conversations</h3>
+                        </div>
+                    </div>
+                    <div class="chat-search">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400 text-sm"></i>
+                            </div>
+                            <input id="user-search" type="text" class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150" placeholder="Search users..." autocomplete="off">
+                        </div>
+                    </div>
+                    <ul id="user-list" class="chat-user-list"></ul>
+                </div>
+
+                <!-- Enhanced Main Chat -->
+                <div class="chat-main">
+                    <div class="chat-header">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-gray-500"></i>
+                                </div>
+                                <div>
+                                    <div class="chat-header-title font-semibold text-gray-900" id="chat-title">Select a conversation</div>
+                                    <div class="text-sm text-gray-500">Click on a user to start messaging</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors duration-150" title="More options">
+                                    <i class="fas fa-ellipsis-v text-gray-500 text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="chat-box" class="chat-messages">
+                        <div class="chat-empty" id="chat-empty">
+                            <div class="text-center py-12">
+                                <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-comment-dots text-blue-600 text-2xl"></i>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-2">Start a conversation</h3>
+                                <p class="text-gray-600">Select a user from the sidebar to begin messaging</p>
+                            </div>
+                        </div>
+                    </div>
+                    <form id="chat-form" class="chat-input" autocomplete="off">
+                        <input type="hidden" id="receiver_id" name="receiver_id">
+                        <div class="flex items-end space-x-3">
+                            <div class="flex-1 relative">
+                                <textarea id="message" name="message" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150 resize-none" rows="1" placeholder="Type a message..." required></textarea>
+                            </div>
+                            <button type="submit" class="inline-flex items-center px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-all duration-150 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" id="send-btn" disabled>
+                                <i class="fas fa-paper-plane text-sm"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
 	.chat-layout {
 		display: grid;
 		grid-template-columns: 320px 1fr;
-		gap: 16px;
 		height: 70vh;
 	}
+	
 	.chat-sidebar {
-		background: #ffffff;
-		border: 1px solid #e5e7eb;
-		border-radius: 8px;
 		display: flex;
 		flex-direction: column;
+		border-right: 1px solid #e5e7eb;
+		height: 100%;
 		overflow: hidden;
 	}
-	.chat-search { padding: 12px; border-bottom: 1px solid #e5e7eb; }
-	.chat-user-list {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		overflow-y: auto;
+	
+	.chat-sidebar-header {
+		padding: 20px;
+		border-bottom: 1px solid #e5e7eb;
+		background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+		flex-shrink: 0;
 	}
+	
+	.chat-search {
+		padding: 16px 20px;
+		border-bottom: 1px solid #e5e7eb;
+		background-color: #fafbfc;
+		flex-shrink: 0;
+	}
+	
+	.chat-user-list {
+		flex: 1;
+		overflow-y: auto;
+		overflow-x: hidden;
+		padding: 0;
+		margin: 0;
+		list-style: none;
+		background-color: #ffffff;
+		min-height: 0;
+		scrollbar-width: thin;
+		scrollbar-color: #cbd5e1 #f8fafc;
+	}
+	
+	.chat-user-list::-webkit-scrollbar {
+		width: 6px;
+	}
+	
+	.chat-user-list::-webkit-scrollbar-track {
+		background: #f8fafc;
+		border-radius: 3px;
+	}
+	
+	.chat-user-list::-webkit-scrollbar-thumb {
+		background: #cbd5e1;
+		border-radius: 3px;
+		transition: background-color 0.2s ease;
+	}
+	
+	.chat-user-list::-webkit-scrollbar-thumb:hover {
+		background: #94a3b8;
+	}
+	
 	.chat-user-item {
+		padding: 16px 20px;
+		border-bottom: 1px solid #f3f4f6;
+		cursor: pointer;
+		transition: all 0.2s ease;
 		display: flex;
 		align-items: center;
 		gap: 12px;
-		padding: 12px;
-		cursor: pointer;
-		border-bottom: 1px solid #f3f4f6;
-		transition: background 0.15s ease-in-out;
+		position: relative;
 	}
-	.chat-user-item:hover { background: #f9fafb; }
-	.chat-user-item.active { background: #eef2ff; }
-	.chat-user-item .avatar {
-		flex: 0 0 36px;
-		width: 36px;
-		height: 36px;
-		border-radius: 9999px;
-		background: #6366f1;
-		color: #ffffff;
+	
+	.chat-user-item:hover {
+		background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+		transform: translateX(2px);
+	}
+	
+	.chat-user-item.active {
+		background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+		color: white;
+		box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+	}
+	
+	.chat-user-item.active::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		width: 4px;
+		background: #1d4ed8;
+	}
+	
+	.chat-user-avatar {
+		width: 44px;
+		height: 44px;
+		border-radius: 12px;
+		background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		color: white;
 		font-weight: 600;
+		font-size: 16px;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 	}
-	.chat-user-item .meta { display: flex; flex-direction: column; min-width: 0; }
-	.chat-user-item .name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-	.chat-user-item .role { font-size: 12px; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
+	
+	.chat-user-item.active .chat-user-avatar {
+		background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+		color: #3b82f6;
+		box-shadow: 0 2px 12px rgba(255, 255, 255, 0.3);
+	}
+	
+	.chat-user-info {
+		flex: 1;
+		min-width: 0;
+	}
+	
+	.chat-user-name {
+		font-weight: 600;
+		margin: 0;
+		font-size: 15px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		color: #1f2937;
+	}
+	
+	.chat-user-item.active .chat-user-name {
+		color: white;
+	}
+	
+	.chat-user-last-message {
+		font-size: 13px;
+		color: #6b7280;
+		margin: 4px 0 0 0;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	
+	.chat-user-item.active .chat-user-last-message {
+		color: rgba(255, 255, 255, 0.8);
+	}
+	
+	.chat-user-time {
+		font-size: 12px;
+		color: #9ca3af;
+		white-space: nowrap;
+		font-weight: 500;
+	}
+	
+	.chat-user-item.active .chat-user-time {
+		color: rgba(255, 255, 255, 0.9);
+	}
+	
 	.chat-main {
-		background: #ffffff;
-		border: 1px solid #e5e7eb;
-		border-radius: 8px;
-		display: grid;
-		grid-template-rows: auto 1fr auto;
+		display: flex;
+		flex-direction: column;
+		background-color: #ffffff;
 	}
-	.chat-header { padding: 12px 16px; border-bottom: 1px solid #e5e7eb; }
-	.chat-header-title { font-weight: 600; }
-	.chat-messages { padding: 16px; overflow-y: auto; background: #f9fafb; }
-	.chat-empty { color: #6b7280; text-align: center; margin-top: 24px; }
-	.message-row { display: flex; margin-bottom: 10px; }
-	.message-row.me { justify-content: flex-end; }
-	.message-row.them { justify-content: flex-start; }
-	.message-bubble {
-		max-width: 70%;
-		padding: 10px 12px;
-		border-radius: 14px;
+	
+	.chat-header {
+		padding: 20px 24px;
+		border-bottom: 1px solid #e5e7eb;
+		background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+	}
+	
+	.chat-messages {
+		flex: 1;
+		overflow-y: auto;
+		padding: 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+		background: linear-gradient(135deg, #fafbfc 0%, #f8fafc 100%);
+	}
+	
+	.chat-empty {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
+	}
+	
+	.chat-message {
+		display: flex;
+		gap: 12px;
+		max-width: 75%;
+		animation: fadeInUp 0.3s ease;
+	}
+	
+	@keyframes fadeInUp {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+	
+	.chat-message.sent {
+		align-self: flex-end;
+		flex-direction: row-reverse;
+	}
+	
+	.chat-message-avatar {
+		width: 36px;
+		height: 36px;
+		border-radius: 10px;
+		background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: white;
+		font-weight: 600;
+		font-size: 14px;
+		flex-shrink: 0;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	}
+	
+	.chat-message.sent .chat-message-avatar {
+		background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+	}
+	
+	.chat-message-content {
+		flex: 1;
+	}
+	
+	.chat-message-bubble {
+		background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+		padding: 12px 16px;
+		border-radius: 16px;
+		word-wrap: break-word;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+		border: 1px solid #e5e7eb;
 		position: relative;
-		background: #ffffff;
-		border: 1px solid #e5e7eb;
 	}
-	.message-row.me .message-bubble { background: #4f46e5; color: #ffffff; border-color: #4f46e5; }
-	.message-text { white-space: pre-wrap; word-wrap: break-word; }
-	.message-time { font-size: 11px; opacity: 0.75; margin-top: 6px; text-align: right; }
+	
+	.chat-message.sent .chat-message-bubble {
+		background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+		color: white;
+		border: 1px solid #2563eb;
+		box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+	}
+	
+	.chat-message-time {
+		font-size: 11px;
+		color: #9ca3af;
+		margin-top: 6px;
+		font-weight: 500;
+	}
+	
+	.chat-message.sent .chat-message-time {
+		text-align: right;
+		color: #cbd5e1;
+	}
+	
 	.chat-input {
-		display: grid; 
-		grid-template-columns: 1fr auto;
-		gap: 8px;
-		padding: 12px;
+		padding: 20px 24px;
 		border-top: 1px solid #e5e7eb;
+		background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+	}
+	
+	@media (max-width: 768px) {
+		.chat-layout {
+			grid-template-columns: 1fr;
+			height: auto;
+		}
+		.chat-sidebar {
+			height: 300px;
+			border-right: none;
+			border-bottom: 1px solid #e5e7eb;
+		}
+		.chat-main {
+			height: 400px;
+		}
+		.chat-user-item {
+			padding: 12px 16px;
+		}
+		.chat-sidebar-header,
+		.chat-search {
+			padding: 16px;
+		}
+		.chat-header,
+		.chat-input {
+			padding: 16px;
+		}
+		.chat-messages {
+			padding: 16px;
+		}
 	}
 </style>
 
@@ -117,41 +403,71 @@
 	let notificationSound = null;
 
 	function renderUserList(users) {
+		console.log('Rendering user list with', users.length, 'users');
 		const list = document.getElementById('user-list');
 		list.innerHTML = '';
 		users.forEach(user => {
+			console.log('Processing user:', user);
 			const li = document.createElement('li');
 			li.className = 'chat-user-item';
 			li.id = 'user-' + user.id;
+			
 			const initials = `${(user.fname?.[0]||'').toUpperCase()}${(user.lname?.[0]||'').toUpperCase()}`;
+			console.log('User initials:', initials);
+			
+			// Create avatar
 			const avatar = document.createElement('div');
-			avatar.className = 'avatar';
+			avatar.className = 'chat-user-avatar';
 			avatar.textContent = initials || 'U';
-			const meta = document.createElement('div');
-			meta.className = 'meta';
+			
+			// Create user info container
+			const userInfo = document.createElement('div');
+			userInfo.className = 'chat-user-info';
+			
+			// Create name element
 			const name = document.createElement('div');
-			name.className = 'name';
+			name.className = 'chat-user-name';
 			name.textContent = `${user.fname} ${user.lname}`.trim();
-			const role = document.createElement('div');
-			role.className = 'role';
-			role.textContent = `${user.role || ''}${user.company ? ' • ' + user.company : ''}`.trim();
-			meta.appendChild(name);
-			meta.appendChild(role);
+			
+			// Create last message element
+			const lastMessage = document.createElement('div');
+			lastMessage.className = 'chat-user-last-message';
+			lastMessage.textContent = user.last_message || 'No messages yet';
+			
+			userInfo.appendChild(name);
+			userInfo.appendChild(lastMessage);
+			
+			// Create time element
+			const time = document.createElement('div');
+			time.className = 'chat-user-time';
+			time.textContent = user.last_message_time || '';
+			
 			li.appendChild(avatar);
-			li.appendChild(meta);
+			li.appendChild(userInfo);
+			li.appendChild(time);
 			li.onclick = function() { selectUser(user.id); };
+			
 			if (selectedUserId === user.id) li.classList.add('active');
 			list.appendChild(li);
 		});
+		console.log('User list rendered, total items:', list.children.length);
 	}
 
 	function loadUsers() {
+		console.log('Loading users...');
 		fetch('/company/chat-users')
-			.then(response => response.json())
+			.then(response => {
+				console.log('Response status:', response.status);
+				return response.json();
+			})
 			.then(users => {
+				console.log('Users received:', users);
 				allUsers = users;
 				userIndex = new Map(users.map(u => [u.id, u]));
 				renderUserList(users);
+			})
+			.catch(error => {
+				console.error('Error loading users:', error);
 			});
 	}
 
@@ -209,57 +525,48 @@
 			.then(data => {
 				const chatBox = document.getElementById('chat-box');
 				const empty = document.getElementById('chat-empty');
-				chatBox.innerHTML = '';
 				
 				// Check for new messages and show notifications
 				checkForNewMessages(data);
 				
-				const filtered = data.filter(msg => (msg.sender_id == selectedUserId || msg.receiver_id == selectedUserId));
-				if (filtered.length === 0) {
-					const blank = document.createElement('div');
-					blank.className = 'chat-empty';
-					blank.textContent = 'No messages yet. Say hello!';
-					chatBox.appendChild(blank);
-				} else {
-					filtered.forEach(msg => {
-						const isMe = msg.sender_id == {{ auth()->id() }};
-						const row = document.createElement('div');
-						row.className = 'message-row ' + (isMe ? 'me' : 'them');
+				if (data.messages && data.messages.length > 0) {
+					empty.style.display = 'none';
+					chatBox.innerHTML = '';
+					data.messages.forEach(msg => {
+						const messageDiv = document.createElement('div');
+						messageDiv.className = 'chat-message' + (msg.sender_id == {{ auth()->id() }} ? ' sent' : '');
+						
+						const avatar = document.createElement('div');
+						avatar.className = 'chat-message-avatar';
+						const senderUser = userIndex.get(msg.sender_id) || {};
+						const initials = `${(senderUser.fname?.[0]||'').toUpperCase()}${(senderUser.lname?.[0]||'').toUpperCase()}`;
+						avatar.textContent = initials || 'U';
+						
+						const content = document.createElement('div');
+						content.className = 'chat-message-content';
+						
 						const bubble = document.createElement('div');
-						bubble.className = 'message-bubble';
-						const text = document.createElement('div');
-						text.className = 'message-text';
-						text.textContent = msg.message || '';
+						bubble.className = 'chat-message-bubble';
+						bubble.textContent = msg.message;
+						
 						const time = document.createElement('div');
-						time.className = 'message-time';
+						time.className = 'chat-message-time';
+						time.textContent = formatTime(msg.created_at);
 						
-						// Improved status display
-						let status = '';
-						if (isMe) {
-							if (msg.read_at) {
-								status = ' • Read ' + formatTime(msg.read_at);
-							} else if (msg.delivered_at) {
-								status = ' • Delivered ' + formatTime(msg.delivered_at);
-							} else {
-								status = ' • Sent';
-							}
-						} else {
-							if (msg.read_at) {
-								status = ' • Seen ' + formatTime(msg.read_at);
-							} else if (msg.delivered_at) {
-								status = ' • Delivered';
-							}
-						}
-						
-						time.textContent = formatTime(msg.created_at) + status;
-						bubble.appendChild(text);
-						bubble.appendChild(time);
-						row.appendChild(bubble);
-						chatBox.appendChild(row);
+						content.appendChild(bubble);
+						content.appendChild(time);
+						messageDiv.appendChild(avatar);
+						messageDiv.appendChild(content);
+						chatBox.appendChild(messageDiv);
 					});
-				}
-				if (forceScroll) {
-					chatBox.scrollTop = chatBox.scrollHeight;
+					
+					if (forceScroll || chatBox.scrollTop + chatBox.clientHeight >= chatBox.scrollHeight - 50) {
+						chatBox.scrollTop = chatBox.scrollHeight;
+					}
+				} else {
+					empty.style.display = 'flex';
+					chatBox.innerHTML = '';
+					chatBox.appendChild(empty);
 				}
 			});
 	}
@@ -341,7 +648,6 @@
 		}
 	}
 
-	// Mark messages as read shortly after viewing
 	function markAsRead() {
 		if (!selectedUserId) return;
 		fetch('/company/messages/mark-read', {

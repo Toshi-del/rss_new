@@ -1,218 +1,339 @@
 @extends('layouts.company')
 
-@section('title', 'Medical Examination Dashboard')
+@section('title', 'Company Dashboard - RSS Citi Health Services')
+@section('page-title', 'Company Dashboard')
+@section('page-description', 'Comprehensive overview of your company\'s medical examination activities and employee health records')
 
 @section('content')
-<!-- Statistics Cards -->
-<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-    <!-- Pending Appointments -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-medium text-gray-900">Pending Appointments</h3>
-            <div class="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-clock text-yellow-600 text-xl"></i>
+<div class="space-y-8">
+    <!-- Welcome Section -->
+    <div class="content-card rounded-xl overflow-hidden shadow-lg border border-gray-200">
+        <div class="bg-blue-600 px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20">
+                        <i class="fas fa-building text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Welcome to Your Dashboard</h2>
+                        <p class="text-blue-100 text-sm">Monitor and manage your company's medical examination activities</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-white/90 text-sm">Today's Date</div>
+                    <div class="text-white font-bold text-lg">{{ now()->format('M d, Y') }}</div>
+                </div>
             </div>
         </div>
-        <p class="text-3xl font-bold text-gray-900">{{ $pendingAppointmentsCount ?? 156 }}</p>
     </div>
 
-    <!-- Approved Appointments -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-medium text-gray-900">Approved Appointments</h3>
-            <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <!-- Pending Appointments -->
+        <div class="content-card rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Pending Appointments</h3>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ $pendingAppointmentsCount ?? 156 }}</p>
+                </div>
+                <div class="w-16 h-16 bg-amber-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-clock text-amber-600 text-2xl"></i>
+                </div>
+            </div>
+            <div class="flex items-center text-sm">
+                <span class="text-amber-600 font-medium">⏳ Awaiting approval</span>
             </div>
         </div>
-        <p class="text-3xl font-bold text-gray-900">{{ $approvedAppointmentsCount ?? 892 }}</p>
-    </div>
 
-    <!-- Total Appointments -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-medium text-gray-900">Total Appointments</h3>
-            <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-calendar-check text-blue-600 text-xl"></i>
+        <!-- Approved Appointments -->
+        <div class="content-card rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Approved Appointments</h3>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ $approvedAppointmentsCount ?? 892 }}</p>
+                </div>
+                <div class="w-16 h-16 bg-emerald-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-check-circle text-emerald-600 text-2xl"></i>
+                </div>
+            </div>
+            <div class="flex items-center text-sm">
+                <span class="text-emerald-600 font-medium">✅ Ready for examination</span>
             </div>
         </div>
-        <p class="text-3xl font-bold text-gray-900">{{ $totalAppointmentsCount ?? 1247 }}</p>
-    </div>
 
-    <!-- Pre-Employment Records -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-medium text-gray-900">Pre-Employment Records</h3>
-            <div class="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-user-md text-purple-600 text-xl"></i>
+        <!-- Total Appointments -->
+        <div class="content-card rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Total Appointments</h3>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ $totalAppointmentsCount ?? 1247 }}</p>
+                </div>
+                <div class="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-calendar-check text-blue-600 text-2xl"></i>
+                </div>
+            </div>
+            <div class="flex items-center text-sm">
+                <span class="text-blue-600 font-medium">📅 All time appointments</span>
             </div>
         </div>
-        <p class="text-3xl font-bold text-gray-900">{{ $totalPreEmploymentCount ?? 45 }}</p>
-    </div>
-</div>
 
-<!-- Scheduled Appointments -->
-<div class="mt-8">
-    <div class="bg-white rounded-lg shadow">
-        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h2 class="text-lg font-medium text-gray-900">Scheduled Appointments</h2>
-            <a href="{{ route('company.appointments.create') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                Schedule New
+        <!-- Pre-Employment Records -->
+        <div class="content-card rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Pre-Employment Records</h3>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ $totalPreEmploymentCount ?? 45 }}</p>
+                </div>
+                <div class="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-user-tie text-purple-600 text-2xl"></i>
+                </div>
+            </div>
+            <div class="flex items-center text-sm">
+                <span class="text-purple-600 font-medium">👔 New employee screenings</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">
+        <div class="flex items-center space-x-3 mb-6">
+            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-bolt text-blue-600"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-gray-900">Quick Actions</h3>
+                <p class="text-gray-600 text-sm">Frequently used actions for efficient management</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="{{ route('company.appointments.create') }}" class="group bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl p-6 transition-all duration-300 hover:shadow-md">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-calendar-plus text-white"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-900 group-hover:text-blue-700">Schedule Appointment</h4>
+                        <p class="text-sm text-gray-600">Book new medical examination</p>
+                    </div>
+                </div>
+            </a>
+
+            <a href="{{ route('company.pre-employment.create') }}" class="group bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl p-6 transition-all duration-300 hover:shadow-md">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-user-plus text-white"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-900 group-hover:text-purple-700">New Pre-Employment</h4>
+                        <p class="text-sm text-gray-600">Create employee screening record</p>
+                    </div>
+                </div>
+            </a>
+
+            <a href="{{ route('company.medical-results') }}" class="group bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl p-6 transition-all duration-300 hover:shadow-md">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-emerald-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas fa-file-medical text-white"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-900 group-hover:text-emerald-700">View Medical Results</h4>
+                        <p class="text-sm text-gray-600">Access examination reports</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Appointments -->
+    <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-calendar-check text-blue-600"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Recent Appointments</h3>
+                    <p class="text-gray-600 text-sm">Latest scheduled medical examinations</p>
+                </div>
+            </div>
+            <a href="{{ route('company.appointments.index') }}" class="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center space-x-1">
+                <span>View All</span>
+                <i class="fas fa-arrow-right text-xs"></i>
             </a>
         </div>
         
         @if(isset($appointments) && count($appointments) > 0)
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Exam</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @foreach($appointments as $appointment)
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $appointment->id }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $appointment->formatted_date }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $appointment->formatted_time_slot }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ optional($appointment->medicalTestCategory)->name }}
-                            @if($appointment->medicalTest)
-                                - {{ $appointment->medicalTest->name }}
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₱{{ number_format($appointment->total_price ?? 0, 2) }}</td>
-                        <td class="px-6 py-4 text-sm text-gray-900">{{ $appointment->notes ?? 'No notes' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @php
-                                $statusClass = 'bg-gray-100 text-gray-800';
-                                $status = $appointment->status ?? 'pending';
-                                if ($status === 'approved') {
-                                    $statusClass = 'bg-green-100 text-green-800';
-                                } elseif ($status === 'failed') {
-                                    $statusClass = 'bg-red-100 text-red-800';
-                                } elseif ($status === 'pending') {
-                                    $statusClass = 'bg-yellow-100 text-yellow-800';
-                                }
-                            @endphp
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
-                                {{ ucfirst($status) }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <div class="flex space-x-2">
-                                <a href="{{ route('company.appointments.show', $appointment->id) }}" class="text-blue-600 hover:text-blue-900">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a href="{{ route('company.appointments.edit', $appointment->id) }}" class="text-gray-600 hover:text-gray-900">
-                                    <i class="fas fa-edit"></i>
-                                </a>
+        <div class="space-y-4">
+            @foreach($appointments->take(5) as $appointment)
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 hover:bg-gray-100 transition-colors duration-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-calendar text-blue-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">
+                                {{ optional($appointment->medicalTestCategory)->name }}
+                                @if($appointment->medicalTest)
+                                    - {{ $appointment->medicalTest->name }}
+                                @endif
+                            </h4>
+                            <div class="flex items-center space-x-4 text-sm text-gray-600 mt-1">
+                                <span class="flex items-center space-x-1">
+                                    <i class="fas fa-calendar-day text-xs"></i>
+                                    <span>{{ $appointment->formatted_date ?? 'N/A' }}</span>
+                                </span>
+                                <span class="flex items-center space-x-1">
+                                    <i class="fas fa-clock text-xs"></i>
+                                    <span>{{ $appointment->formatted_time_slot ?? 'N/A' }}</span>
+                                </span>
+                                <span class="flex items-center space-x-1">
+                                    <i class="fas fa-peso-sign text-xs"></i>
+                                    <span>₱{{ number_format($appointment->total_price ?? 0, 2) }}</span>
+                                </span>
                             </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        @php
+                            $statusConfig = [
+                                'pending' => ['bg-amber-100 text-amber-700', 'fas fa-clock', 'Pending'],
+                                'approved' => ['bg-emerald-100 text-emerald-700', 'fas fa-check-circle', 'Approved'],
+                                'failed' => ['bg-red-100 text-red-700', 'fas fa-times-circle', 'Failed'],
+                            ];
+                            $status = $appointment->status ?? 'pending';
+                            $config = $statusConfig[$status] ?? $statusConfig['pending'];
+                        @endphp
+                        <span class="px-3 py-1 rounded-full text-xs font-medium {{ $config[0] }} flex items-center space-x-1">
+                            <i class="{{ $config[1] }} text-xs"></i>
+                            <span>{{ $config[2] }}</span>
+                        </span>
+                        <div class="flex items-center space-x-2">
+                            <a href="{{ route('company.appointments.show', $appointment->id) }}" class="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors">
+                                <i class="fas fa-eye text-sm"></i>
+                            </a>
+                            <a href="{{ route('company.appointments.edit', $appointment->id) }}" class="p-2 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                                <i class="fas fa-edit text-sm"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endforeach
         </div>
         @else
-        <div class="p-6 text-center text-sm text-gray-600">
-            No appointments scheduled.
+        <div class="text-center py-12">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-calendar-times text-gray-400 text-2xl"></i>
+            </div>
+            <h4 class="text-lg font-medium text-gray-900 mb-2">No Appointments Yet</h4>
+            <p class="text-gray-600 mb-4">Get started by scheduling your first medical examination.</p>
+            <a href="{{ route('company.appointments.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <i class="fas fa-plus mr-2"></i>
+                Schedule Appointment
+            </a>
         </div>
         @endif
     </div>
-</div>
 
-<!-- Recent Pre-Employment Records -->
-<div class="mt-8">
-    <div class="bg-white rounded-lg shadow">
-        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h2 class="text-lg font-medium text-gray-900">Recent Pre-Employment Records</h2>
-            <a href="{{ route('company.pre-employment.create') }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                + New Record
+    <!-- Recent Pre-Employment Records -->
+    <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-user-tie text-purple-600"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Recent Pre-Employment Records</h3>
+                    <p class="text-gray-600 text-sm">Latest employee screening examinations</p>
+                </div>
+            </div>
+            <a href="{{ route('company.pre-employment.index') }}" class="text-purple-600 hover:text-purple-700 font-medium text-sm flex items-center space-x-1">
+                <span>View All</span>
+                <i class="fas fa-arrow-right text-xs"></i>
             </a>
         </div>
         
         @if(isset($preEmploymentRecords) && count($preEmploymentRecords) > 0)
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applicant</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Exam Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medical Exam</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Price</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @foreach($preEmploymentRecords as $record)
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $record->id }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-10 w-10">
-                                    <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                        <i class="fas fa-user text-gray-600"></i>
-                                    </div>
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">{{ $record->full_name }}</div>
-                                    <div class="text-sm text-gray-500">{{ $record->email }}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $record->created_at->format('M d, Y') }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ optional($record->medicalTestCategory)->name }}
-                            @if($record->medicalTest)
-                                - {{ $record->medicalTest->name }}
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₱{{ number_format($record->total_price ?? 0, 2) }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @php
-                                $statusClass = 'bg-gray-100 text-gray-800';
-                                $status = $record->status ?? 'pending';
-                                if ($status === 'passed') {
-                                    $statusClass = 'bg-green-100 text-green-800';
-                                } elseif ($status === 'failed') {
-                                    $statusClass = 'bg-red-100 text-red-800';
-                                } elseif ($status === 'pending') {
-                                    $statusClass = 'bg-yellow-100 text-yellow-800';
-                                }
-                            @endphp
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
-                                {{ ucfirst($status) }}
+        <div class="space-y-4">
+            @foreach($preEmploymentRecords->take(5) as $record)
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 hover:bg-gray-100 transition-colors duration-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <span class="text-purple-600 font-bold text-lg">
+                                {{ substr($record->full_name ?? 'A', 0, 1) }}
                             </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <div class="flex space-x-2">
-                                <a href="{{ route('company.pre-employment.show', $record->id) }}" class="text-blue-600 hover:text-blue-900">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                @if($record->uploaded_file)
-                                <a href="{{ asset('storage/' . $record->uploaded_file) }}" class="text-gray-600 hover:text-gray-900" download>
-                                    <i class="fas fa-download"></i>
-                                </a>
-                                @endif
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">{{ $record->full_name ?? 'Unknown Applicant' }}</h4>
+                            <div class="flex items-center space-x-4 text-sm text-gray-600 mt-1">
+                                <span class="flex items-center space-x-1">
+                                    <i class="fas fa-envelope text-xs"></i>
+                                    <span>{{ $record->email ?? 'N/A' }}</span>
+                                </span>
+                                <span class="flex items-center space-x-1">
+                                    <i class="fas fa-calendar-day text-xs"></i>
+                                    <span>{{ $record->created_at ? $record->created_at->format('M d, Y') : 'N/A' }}</span>
+                                </span>
+                                <span class="flex items-center space-x-1">
+                                    <i class="fas fa-peso-sign text-xs"></i>
+                                    <span>₱{{ number_format($record->total_price ?? 0, 2) }}</span>
+                                </span>
                             </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                            @if($record->medicalTestCategory || $record->medicalTest)
+                            <div class="text-xs text-gray-500 mt-1">
+                                <span class="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+                                    {{ optional($record->medicalTestCategory)->name }}
+                                    @if($record->medicalTest)
+                                        - {{ $record->medicalTest->name }}
+                                    @endif
+                                </span>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        @php
+                            $statusConfig = [
+                                'pending' => ['bg-amber-100 text-amber-700', 'fas fa-clock', 'Pending'],
+                                'passed' => ['bg-emerald-100 text-emerald-700', 'fas fa-check-circle', 'Passed'],
+                                'failed' => ['bg-red-100 text-red-700', 'fas fa-times-circle', 'Failed'],
+                            ];
+                            $status = $record->status ?? 'pending';
+                            $config = $statusConfig[$status] ?? $statusConfig['pending'];
+                        @endphp
+                        <span class="px-3 py-1 rounded-full text-xs font-medium {{ $config[0] }} flex items-center space-x-1">
+                            <i class="{{ $config[1] }} text-xs"></i>
+                            <span>{{ $config[2] }}</span>
+                        </span>
+                        <div class="flex items-center space-x-2">
+                            <a href="{{ route('company.pre-employment.show', $record->id) }}" class="p-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors">
+                                <i class="fas fa-eye text-sm"></i>
+                            </a>
+                            @if($record->uploaded_file)
+                            <a href="{{ asset('storage/' . $record->uploaded_file) }}" class="p-2 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" download>
+                                <i class="fas fa-download text-sm"></i>
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endforeach
         </div>
         @else
-        <div class="p-6 text-center text-sm text-gray-600">
-            No pre-employment records found.
+        <div class="text-center py-12">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-user-times text-gray-400 text-2xl"></i>
+            </div>
+            <h4 class="text-lg font-medium text-gray-900 mb-2">No Pre-Employment Records Yet</h4>
+            <p class="text-gray-600 mb-4">Start screening new employees with medical examinations.</p>
+            <a href="{{ route('company.pre-employment.create') }}" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                <i class="fas fa-plus mr-2"></i>
+                Create Record
+            </a>
         </div>
         @endif
     </div>

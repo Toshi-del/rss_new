@@ -3,118 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Doctor Dashboard') - RSS Health Services Corp</title>
+    <title>@yield('title', 'Doctor Dashboard') - RCC Health Services</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     @yield('styles')
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .nav-item-active {
+            background: #1f2937;
+            color: white;
+            border-radius: 12px;
+        }
+        
+        .nav-item {
+            transition: all 0.2s ease;
+            border-radius: 12px;
+            margin: 2px 0;
+        }
+        
+        .nav-item:hover {
+            background: #f3f4f6;
+        }
+        
+        .nav-item-active:hover {
+            background: #1f2937;
+        }
+        
+        .notification-badge {
+            background: #10b981;
+        }
+        
+        .sidebar-border {
+            border-right: 1px solid #e5e7eb;
+        }
+    </style>
 </head>
 <body class="bg-gray-50">
     <div class="flex h-screen">
-        <!-- Sidebar -->
-        <div class="w-64 bg-blue-900 text-white">
-            <div class="p-6">
-                <h1 class="text-xl font-bold mb-2">Doctor</h1>
-                <p class="text-blue-200 text-sm">Dashboard</p>
+        <!-- Clean Minimal Sidebar -->
+        <div class="w-80 bg-white sidebar-border flex flex-col">
+            <!-- Header Section -->
+            <div class="p-8 border-b border-gray-100">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-hospital text-white text-lg"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold text-gray-900">RCC</h1>
+                </div>
             </div>
-            <nav class="mt-8">
-                <a href="{{ route('doctor.dashboard') }}" class="flex items-center px-6 py-3 text-blue-100 hover:bg-blue-800 transition-colors {{ request()->routeIs('doctor.dashboard') ? 'bg-blue-800' : '' }}">
-                    <i class="fas fa-th-large mr-3"></i>
-                    <span class="{{ request()->routeIs('doctor.dashboard') ? 'text-blue-300' : '' }}">Overview</span>
-                </a>
-                <a href="{{ route('doctor.annual-physical') }}" class="flex items-center px-6 py-3 text-blue-100 hover:bg-blue-800 transition-colors {{ request()->routeIs('doctor.annual-physical') ? 'bg-blue-800' : '' }}">
-                    <i class="fas fa-file-medical mr-3"></i>
-                    <span class="{{ request()->routeIs('doctor.annual-physical') ? 'text-blue-300' : '' }}">Annual Physical Examination</span>
-                </a>
-                <a href="{{ route('doctor.pre-employment') }}" class="flex items-center px-6 py-3 text-blue-100 hover:bg-blue-800 transition-colors {{ request()->routeIs('doctor.pre-employment') ? 'bg-blue-800' : '' }}">
-                    <i class="fas fa-user mr-3"></i>
-                    <span class="{{ request()->routeIs('doctor.pre-employment') ? 'text-blue-300' : '' }}">Pre-Employment</span>
-                </a>
-                <a href="{{ route('doctor.messages') }}" class="flex items-center px-6 py-3 text-blue-100 hover:bg-blue-800 transition-colors {{ request()->routeIs('doctor.messages') ? 'bg-blue-800' : '' }}">
-                    <i class="fas fa-comments mr-3"></i>
-                    <span class="{{ request()->routeIs('doctor.messages') ? 'text-blue-300' : '' }}">Messages</span>
-                </a>
+            
+            <!-- Navigation -->
+            <nav class="flex-1 px-6 py-8">
+                <div class="space-y-1">
+                    <a href="{{ route('doctor.dashboard') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 {{ request()->routeIs('doctor.dashboard') ? 'nav-item-active text-white' : '' }}">
+                        <i class="fas fa-th-large mr-3 text-lg"></i>
+                        <span class="font-medium">Dashboard</span>
+                    </a>
+                    
+                    <a href="{{ route('doctor.annual-physical') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 {{ request()->routeIs('doctor.annual-physical*') ? 'nav-item-active text-white' : '' }}">
+                        <i class="fas fa-file-medical mr-3 text-lg"></i>
+                        <span class="font-medium">Annual Physical</span>
+                    </a>
+                    
+                    <a href="{{ route('doctor.pre-employment') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 {{ request()->routeIs('doctor.pre-employment*') ? 'nav-item-active text-white' : '' }}">
+                        <i class="fas fa-briefcase mr-3 text-lg"></i>
+                        <span class="font-medium">Pre-Employment</span>
+                    </a>
+                    
+                    <a href="{{ route('doctor.messages') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 {{ request()->routeIs('doctor.messages*') ? 'nav-item-active text-white' : '' }}">
+                        <i class="fas fa-comments mr-3 text-lg"></i>
+                        <span class="font-medium">Messages</span>
+                        <span class="ml-auto notification-badge text-white text-xs px-2 py-1 rounded-full font-medium">2</span>
+                    </a>
+                </div>
             </nav>
+            
+            <!-- Profile Section -->
+            <div class="p-6 border-t border-gray-100">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                        <span class="text-white font-semibold text-sm">
+                            {{ strtoupper(substr(Auth::user()->fname, 0, 1) . substr(Auth::user()->lname, 0, 1)) }}
+                        </span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-gray-900 font-semibold text-sm truncate">Dr. {{ Auth::user()->fname }} {{ Auth::user()->lname }}</p>
+                        <p class="text-gray-500 text-xs truncate">{{ Auth::user()->email }}</p>
+                    </div>
+                    <button id="profileButton" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors duration-200">
+                        <i class="fas fa-cog text-gray-500 text-sm"></i>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
-            <!-- Header -->
-            <header class="bg-white shadow-sm border-b">
-                <div class="flex items-center justify-between px-6 py-4">
-                    <div class="flex items-center space-x-4">
-                        <h1 class="text-2xl font-semibold text-gray-800">@yield('page-title', 'Overview')</h1>
-                        <div class="relative">
-                            <input type="text" placeholder="Search" class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <div class="text-right">
-                            <p class="font-medium text-gray-800">Dr. {{ Auth::user()->fname }} {{ Auth::user()->lname }}</p>
-                            <p class="text-sm text-gray-600">Doctor</p>
-                        </div>
-                        <div class="relative">
-                            <button id="profileButton" class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors">
-                                <i class="fas fa-user text-white"></i>
-                            </button>
-                        </div>
-                    </div>
+            <!-- Simple Header -->
+            <header class="bg-white border-b border-gray-100">
+                <div class="px-8 py-6">
+                    <h1 class="text-2xl font-semibold text-gray-900">@yield('page-title', 'Dashboard')</h1>
+                    <p class="text-gray-600 text-sm mt-1">@yield('page-description', 'Welcome to your medical dashboard')</p>
                 </div>
             </header>
 
             <!-- Main Content Area -->
-            <main class="flex-1 overflow-y-auto p-6">
-                @yield('content')
+            <main class="flex-1 overflow-y-auto bg-gray-50">
+                <div class="p-8">
+                    @yield('content')
+                </div>
             </main>
         </div>
     </div>
 
-    <!-- Profile Modal -->
-    <div id="profileModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3">
-                <!-- Header -->
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-900">Profile</h3>
-                    <button id="closeModal" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times"></i>
+    <!-- Clean Profile Modal -->
+    <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-0 w-96 shadow-xl rounded-xl bg-white overflow-hidden">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-gray-100 bg-white">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">Profile</h3>
+                    <button id="closeModal" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors duration-200">
+                        <i class="fas fa-times text-gray-500"></i>
                     </button>
                 </div>
-                
+            </div>
+            
+            <div class="p-6">
                 <!-- Profile Info -->
                 <div class="flex items-center space-x-4 mb-6">
-                    <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
-                        <i class="fas fa-user text-white text-xl"></i>
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                        <span class="text-white font-semibold text-lg">
+                            {{ strtoupper(substr(Auth::user()->fname, 0, 1) . substr(Auth::user()->lname, 0, 1)) }}
+                        </span>
                     </div>
-                    <div>
+                    <div class="flex-1">
                         <h4 class="text-lg font-semibold text-gray-900">Dr. {{ Auth::user()->fname }} {{ Auth::user()->lname }}</h4>
-                        <p class="text-sm text-gray-600">{{ Auth::user()->email }}</p>
-                        <p class="text-sm text-gray-500">Doctor</p>
+                        <p class="text-gray-600 text-sm">{{ Auth::user()->email }}</p>
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-2">
+                            <i class="fas fa-user-md mr-1"></i>
+                            Medical Doctor
+                        </span>
                     </div>
                 </div>
 
                 <!-- Menu Items -->
                 <div class="space-y-2">
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-                        <i class="fas fa-user-edit mr-3 text-gray-500"></i>
-                        <span>Edit Profile</span>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+                        <i class="fas fa-user-edit text-gray-500 mr-3"></i>
+                        <span class="font-medium">Edit Profile</span>
                     </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-                        <i class="fas fa-cog mr-3 text-gray-500"></i>
-                        <span>Settings</span>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+                        <i class="fas fa-cog text-gray-500 mr-3"></i>
+                        <span class="font-medium">Settings</span>
                     </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-                        <i class="fas fa-question-circle mr-3 text-gray-500"></i>
-                        <span>Help & Support</span>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+                        <i class="fas fa-question-circle text-gray-500 mr-3"></i>
+                        <span class="font-medium">Help & Support</span>
                     </a>
-                    <hr class="my-2">
-                    <form method="POST" action="{{ route('logout') }}" class="block">
-                        @csrf
-                        <button type="submit" class="flex items-center w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                            <i class="fas fa-sign-out-alt mr-3"></i>
-                            <span>Logout</span>
-                        </button>
-                    </form>
+                    
+                    <div class="border-t border-gray-100 pt-2 mt-4">
+                        <form method="POST" action="{{ route('logout') }}" class="block">
+                            @csrf
+                            <button type="submit" class="flex items-center w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200">
+                                <i class="fas fa-sign-out-alt text-red-500 mr-3"></i>
+                                <span class="font-medium">Logout</span>
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

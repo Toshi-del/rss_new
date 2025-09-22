@@ -1,312 +1,464 @@
 @extends('layouts.company')
 
-@section('title', 'Create New Appointment')
+@section('title', 'Create New Appointment - RSS Citi Health Services')
+@section('page-title', 'Create New Appointment')
+@section('page-description', 'Schedule a new medical examination appointment for your employees')
 
 @section('content')
-<div class="min-h-screen bg-gray-50" style="font-family: 'Inter', sans-serif;">
-    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        
-        <!-- Header Section -->
-        <div class="mb-8">
-            <div class="bg-white shadow rounded-lg overflow-hidden">
-                <div class="px-6 py-5 bg-gradient-to-r from-blue-50 to-white border-b border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-900 mb-2" style="font-family: 'Poppins', sans-serif; color: #800000;">
-                                <i class="fas fa-calendar-plus mr-3"></i>Create New Appointment
-                            </h1>
-                            <p class="text-sm text-gray-600">Schedule a new appointment and manage patient data</p>
-                        </div>
-                        <div class="flex space-x-3">
-                            <a href="{{ route('company.appointments.index') }}" 
-                               class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                                <i class="fas fa-arrow-left mr-2"></i>
-                                Back to List
-                            </a>
-                        </div>
+<div class="space-y-8">
+    <!-- Header Section -->
+    <div class="content-card rounded-xl overflow-hidden shadow-lg border border-gray-200">
+        <div class="bg-blue-600 px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20">
+                        <i class="fas fa-calendar-plus text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Schedule New Appointment</h2>
+                        <p class="text-blue-100 text-sm">Create a medical examination appointment with patient data</p>
                     </div>
                 </div>
+                <a href="{{ route('company.appointments.index') }}" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 font-medium">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Calendar
+                </a>
             </div>
         </div>
+    </div>
 
-        @if(session('error'))
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <span class="block sm:inline">{{ session('error') }}</span>
+    <!-- Error Messages -->
+    @if(session('error'))
+    <div class="content-card rounded-xl p-4 shadow-lg border border-red-200 bg-red-50">
+        <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-red-600"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-red-800 font-medium">{{ session('error') }}</p>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" class="text-red-400 hover:text-red-600 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-        @endif
+    </div>
+    @endif
 
-        @if($errors->any())
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <ul class="list-disc list-inside">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+    @if($errors->any())
+    <div class="content-card rounded-xl p-4 shadow-lg border border-red-200 bg-red-50">
+        <div class="flex items-start space-x-3">
+            <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-red-600"></i>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-red-800 font-semibold mb-2">Please correct the following errors:</h3>
+                <ul class="text-sm text-red-700 space-y-1">
+                    @foreach($errors->all() as $error)
+                        <li class="flex items-center space-x-2">
+                            <i class="fas fa-circle text-xs text-red-500"></i>
+                            <span>{{ $error }}</span>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" class="text-red-400 hover:text-red-600 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-        @endif
+    </div>
+    @endif
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Main Form -->
+        <div class="lg:col-span-2 space-y-8">
             
-            <!-- Main Form -->
-            <div class="lg:col-span-2">
-                <div class="bg-white shadow rounded-lg overflow-hidden">
-                    <form action="{{ route('company.appointments.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6 p-6">
-                        @csrf
+            <!-- Appointment Details -->
+            <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-calendar-alt text-blue-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Appointment Details</h3>
+                        <p class="text-gray-600 text-sm">Select date and time for the medical examination</p>
+                    </div>
+                </div>
 
+                <form action="{{ route('company.appointments.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                    @csrf
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Appointment Date -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-calendar mr-2 text-blue-600"></i>Appointment Date
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Appointment Date <span class="text-red-500">*</span>
                             </label>
-                            <input type="date" 
-                                   name="appointment_date" 
-                                   value="{{ old('appointment_date', request('date')) }}" 
-                                   min="{{ $minDate }}"
-                                   id="appointment_date"
-                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                   required>
-                            <div id="date-availability-message" class="mt-2 text-sm" style="display: none;"></div>
+                            <div class="relative">
+                                <input type="date" 
+                                       name="appointment_date" 
+                                       value="{{ old('appointment_date', request('date')) }}" 
+                                       min="{{ $minDate }}"
+                                       id="appointment_date"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('appointment_date') border-red-500 ring-2 ring-red-200 @enderror"
+                                       required>
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-calendar text-gray-400"></i>
+                                </div>
+                            </div>
+                            <div id="date-availability-message" class="text-sm" style="display: none;"></div>
                             @error('appointment_date')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-1 text-sm text-red-600 flex items-center">
+                                <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                            </p>
                             @enderror
                         </div>
 
                         <!-- Time Slot -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-clock mr-2 text-green-600"></i>Time Slot
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Time Slot <span class="text-red-500">*</span>
                             </label>
-                            <div class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                                <p class="text-sm text-blue-800">
-                                    <i class="fas fa-info-circle mr-1"></i>
-                                    <strong>Scheduling Rules:</strong> Appointments must be scheduled at least 4 days in advance. Only one company can book per day. No weekend appointments.
-                                </p>
+                            <div class="relative">
+                                <select name="time_slot" 
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('time_slot') border-red-500 ring-2 ring-red-200 @enderror"
+                                        required>
+                                    <option value="">Choose available time</option>
+                                    @foreach($timeSlots as $slot)
+                                    <option value="{{ $slot }}" {{ old('time_slot') == $slot ? 'selected' : '' }}>{{ $slot }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-clock text-gray-400"></i>
+                                </div>
                             </div>
-                            <select name="time_slot" 
-                                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                                    required>
-                                <option value="">Select a time slot</option>
-                                @foreach($timeSlots as $slot)
-                                <option value="{{ $slot }}" {{ old('time_slot') == $slot ? 'selected' : '' }}>{{ $slot }}</option>
-                                @endforeach
-                            </select>
                             @error('time_slot')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-1 text-sm text-red-600 flex items-center">
+                                <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                            </p>
                             @enderror
                         </div>
+                    </div>
 
-                        <!-- Medical Tests by Category -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-4">
-                                <i class="fas fa-vials mr-2 text-red-600"></i>Medical Tests
-                            </label>
+                    <!-- Scheduling Rules Info -->
+                    <div class="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-info-circle text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-blue-800 mb-2">Scheduling Guidelines</h4>
+                                <ul class="text-sm text-blue-700 space-y-1">
+                                    <li class="flex items-center space-x-2">
+                                        <i class="fas fa-check text-blue-500 text-xs"></i>
+                                        <span>Appointments must be scheduled at least 4 days in advance</span>
+                                    </li>
+                                    <li class="flex items-center space-x-2">
+                                        <i class="fas fa-check text-blue-500 text-xs"></i>
+                                        <span>Only one company can book per day</span>
+                                    </li>
+                                    <li class="flex items-center space-x-2">
+                                        <i class="fas fa-check text-blue-500 text-xs"></i>
+                                        <span>No weekend appointments available</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
 
-                            <input type="hidden" name="medical_test_categories_id" id="medical_test_categories_id" value="{{ old('medical_test_categories_id') }}">
-                            <input type="hidden" name="medical_test_id" id="medical_test_id" value="{{ old('medical_test_id') }}">
-                            @error('medical_test_categories_id')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                            @error('medical_test_id')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+            </div>
 
-                            @php
-                                $uniqueCategories = $medicalTestCategories->unique(function($c){ return strtolower($c->name ?? ''); });
-                            @endphp
-                            @foreach($uniqueCategories as $category)
-                                @php 
-                                    $categoryName = strtolower(trim($category->name)); 
-                                    $uniqueTests = $category->medicalTests->unique(function($t){ return strtolower($t->name ?? ''); });
-                                @endphp
-                                @if($categoryName === 'appointment' || $categoryName === 'blood chemistry' || $categoryName === 'package'    )
-                                    <div class="mb-8">
-                                        <h4 class="text-lg font-semibold mb-3" style="color:#800000;">
-                                            {{ $category->name }}
-                                            @if($category->description)
-                                                <span class="text-sm text-gray-500 font-normal">- {{ $category->description }}</span>
-                                            @endif
-                                        </h4>
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
-                                            @foreach($uniqueTests as $test)
-                                                @php
-                                                    $isPackage = str_contains(strtolower($test->name), 'package');
-                                                    $cardClass = $isPackage ? 'cursor-pointer block border-2 border-emerald-200 rounded-xl p-6 hover:shadow-lg hover:border-emerald-300 transition bg-gradient-to-br from-emerald-50 to-white' : 'cursor-pointer block border rounded-xl p-5 hover:shadow transition bg-white';
-                                                @endphp
-                                                <label for="appointment_test_{{ $test->id }}" class="{{ $cardClass }}">
-                                                    <div class="flex items-start">
-                                                        <input
-                                                            id="appointment_test_{{ $test->id }}"
-                                                            type="checkbox"
-                                                            name="appointment_selected_test"
-                                                            value="{{ $test->id }}"
-                                                            data-category-id="{{ $category->id }}"
-                                                            data-test-id="{{ $test->id }}"
-                                                            class="mt-1 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                                        >
-                                                        <div class="ml-3 w-full">
-                                                            <p class="text-base font-semibold text-gray-900">{{ $test->name }}</p>
-                                                            @if($test->description)
-                                                                @if(str_contains(strtolower($test->name), 'package'))
-                                                                    <p class="text-sm text-gray-600 mt-1 leading-relaxed">{{ $test->description }}</p>
-                                                                @else
-                                                                    <p class="text-sm text-gray-500">{{ Str::limit($test->description, 50) }}</p>
-                                                                @endif
-                                                            @endif
-                                                            @if(!is_null($test->price) && $test->price > 0)
-                                                                <div class="mt-3 flex items-center justify-between">
-                                                                    <p class="text-xl font-bold text-emerald-600">₱{{ number_format((float)$test->price, 2) }}</p>
-                                                                    @if($isPackage)
-                                                                        <span class="bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Package</span>
-                                                                    @endif
-                                                                </div>
-                                                            @elseif(!is_null($test->price) && $test->price == 0)
-                                                                <p class="mt-2 text-sm font-medium text-blue-600">Individual Test</p>
-                                                            @endif
+            <!-- Medical Tests Selection -->
+            <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-vials text-purple-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Medical Tests</h3>
+                        <p class="text-gray-600 text-sm">Choose the medical examination package or individual tests</p>
+                    </div>
+                </div>
+
+                <input type="hidden" name="medical_test_categories_id" id="medical_test_categories_id" value="{{ old('medical_test_categories_id') }}">
+                <input type="hidden" name="medical_test_id" id="medical_test_id" value="{{ old('medical_test_id') }}">
+                <div id="selected_tests_container">
+                    <!-- Selected tests will be added here as hidden inputs -->
+                </div>
+                <input type="hidden" name="total_price" id="total_price" value="0">
+                @error('medical_test_categories_id')
+                <p class="mt-1 text-sm text-red-600 flex items-center">
+                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                </p>
+                @enderror
+                @error('medical_test_id')
+                <p class="mt-1 text-sm text-red-600 flex items-center">
+                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                </p>
+                @enderror
+
+                @php
+                    $uniqueCategories = $medicalTestCategories->unique(function($c){ return strtolower($c->name ?? ''); });
+                @endphp
+                @foreach($uniqueCategories as $category)
+                    @php 
+                        $categoryName = strtolower(trim($category->name)); 
+                        $uniqueTests = $category->medicalTests->unique(function($t){ return strtolower($t->name ?? ''); });
+                    @endphp
+                    @if($categoryName === 'appointment' || $categoryName === 'blood chemistry' || $categoryName === 'package')
+                        <div class="mb-8">
+                            <div class="flex items-center space-x-3 mb-4">
+                                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-flask text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-bold text-gray-900">{{ $category->name }}</h4>
+                                    @if($category->description)
+                                        <p class="text-sm text-gray-600">{{ $category->description }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 gap-4">
+                                @foreach($uniqueTests as $test)
+                                    @php
+                                        $isPackage = str_contains(strtolower($test->name), 'package');
+                                    @endphp
+                                    <label for="appointment_test_{{ $test->id }}" class="cursor-pointer block border-2 border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-200 {{ $isPackage ? 'bg-emerald-50 border-emerald-200 hover:border-emerald-300' : 'bg-white' }}">
+                                        <div class="flex items-start space-x-4">
+                                            <input
+                                                id="appointment_test_{{ $test->id }}"
+                                                type="checkbox"
+                                                name="appointment_selected_test"
+                                                value="{{ $test->id }}"
+                                                data-category-id="{{ $category->id }}"
+                                                data-test-id="{{ $test->id }}"
+                                                class="mt-1 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-colors"
+                                            >
+                                            <div class="flex-1">
+                                                <div class="flex items-start justify-between">
+                                                    <div class="flex-1">
+                                                        <h5 class="text-lg font-semibold text-gray-900">{{ $test->name }}</h5>
+                                                        @if($test->description)
+                                                            <p class="text-sm text-gray-600 mt-1 leading-relaxed">{{ $test->description }}</p>
+                                                        @endif
+                                                    </div>
+                                                    @if($isPackage)
+                                                        <span class="bg-emerald-100 text-emerald-700 text-xs font-medium px-3 py-1 rounded-full ml-3">
+                                                            <i class="fas fa-box mr-1"></i>Package
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                @if(!is_null($test->price) && $test->price > 0)
+                                                    <div class="mt-4 flex items-center justify-between">
+                                                        <div class="flex items-center space-x-2">
+                                                            <i class="fas fa-peso-sign text-emerald-600"></i>
+                                                            <span class="text-2xl font-bold text-emerald-600">{{ number_format((float)$test->price, 2) }}</span>
+                                                        </div>
+                                                        <div class="text-sm text-gray-500">
+                                                            <i class="fas fa-info-circle mr-1"></i>
+                                                            Comprehensive examination
                                                         </div>
                                                     </div>
-                                                </label>
-                                            @endforeach
+                                                @elseif(!is_null($test->price) && $test->price == 0)
+                                                    <div class="mt-3 flex items-center space-x-2">
+                                                        <i class="fas fa-tag text-blue-600"></i>
+                                                        <span class="text-sm font-medium text-blue-600">Individual Test - Contact for pricing</span>
+                                                    </div>
+                                                @endif
+                                            </div>
                                         </div>
-                                    </div>
-                                @endif
-                            @endforeach
-                        </div>
-
-                        <!-- Notes -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-sticky-note mr-2 text-yellow-600"></i>Additional Notes
-                            </label>
-                            <textarea name="notes" 
-                                      rows="3" 
-                                      placeholder="Enter any additional notes or special instructions..."
-                                      class="shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md">{{ old('notes') }}</textarea>
-                            @error('notes')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Excel File Upload -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-file-excel mr-2 text-green-600"></i>Patient Data (Excel File)
-                            </label>
-                            <div class="mb-3 p-3 bg-green-50 border border-green-200 rounded-md">
-                                <p class="text-sm text-green-800">
-                                    <i class="fas fa-info-circle mr-1"></i>
-                                    <strong>Optional:</strong> Upload an Excel file with patient data. The file should contain columns: First Name, Last Name, Age, Sex, Email, Phone.
-                                </p>
+                                    </label>
+                                @endforeach
                             </div>
+                        </div>
+                    @endif
+                @endforeach
+            </div>
+
+            <!-- Additional Information -->
+            <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-clipboard-list text-amber-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Additional Information</h3>
+                        <p class="text-gray-600 text-sm">Notes and patient data upload</p>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Notes -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">
+                            Additional Notes
+                        </label>
+                        <textarea name="notes" 
+                                  rows="4" 
+                                  placeholder="Enter any special instructions, requirements, or notes for this appointment..."
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none @error('notes') border-red-500 ring-2 ring-red-200 @enderror">{{ old('notes') }}</textarea>
+                        @error('notes')
+                        <p class="mt-1 text-sm text-red-600 flex items-center">
+                            <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                        </p>
+                        @enderror
+                    </div>
+
+                    <!-- Excel File Upload -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">
+                            Patient Data (Excel File)
+                        </label>
+                        <div class="bg-emerald-50 rounded-xl p-4 border border-emerald-200 mb-4">
+                            <div class="flex items-start space-x-3">
+                                <div class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-info-circle text-emerald-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-semibold text-emerald-800 mb-1">Optional Upload</h4>
+                                    <p class="text-sm text-emerald-700">Upload an Excel file with patient data. Required columns: First Name, Last Name, Age, Sex, Email, Phone.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="relative">
                             <input type="file" 
                                    name="excel_file" 
                                    accept=".xlsx,.xls"
-                                   class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                            @error('excel_file')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Submit Buttons -->
-                        <div class="pt-5">
-                            <div class="flex justify-end space-x-3">
-                                <a href="{{ route('company.appointments.index') }}" 
-                                   class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                                    Cancel
-                                </a>
-                                <button type="submit" 
-                                        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                                    <i class="fas fa-save mr-2"></i>
-                                    Create Appointment
-                                </button>
+                                   id="excel_file"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 @error('excel_file') border-red-500 ring-2 ring-red-200 @enderror">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <i class="fas fa-file-excel text-gray-400"></i>
                             </div>
                         </div>
-                    </form>
+                        @error('excel_file')
+                        <p class="mt-1 text-sm text-red-600 flex items-center">
+                            <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                        </p>
+                        @enderror
+                    </div>
                 </div>
             </div>
 
-            <!-- Sidebar -->
-            <div class="space-y-6">
-                
-                <!-- Instructions Card -->
-                <div class="bg-white shadow rounded-lg overflow-hidden">
-                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">
-                            <i class="fas fa-lightbulb mr-2 text-yellow-600"></i>Instructions
-                        </h2>
-                    </div>
-                    <div class="p-6">
-                        <div class="space-y-4 text-sm text-gray-600">
-                            <div class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mr-2 mt-0.5"></i>
-                                <p>Select a date at least 4 days in advance</p>
-                            </div>
-                            <div class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mr-2 mt-0.5"></i>
-                                <p>Choose an available time slot</p>
-                            </div>
-                            <div class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mr-2 mt-0.5"></i>
-                                <p>Select the medical test category and specific test</p>
-                            </div>
-                            <div class="flex items-start">
-                                <i class="fas fa-check-circle text-green-500 mr-2 mt-0.5"></i>
-                                <p>Optionally upload an Excel file with patient data</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Excel Template Card -->
-                <div class="bg-white shadow rounded-lg overflow-hidden">
-                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">
-                            <i class="fas fa-file-download mr-2 text-blue-600"></i>Excel Template
-                        </h2>
-                    </div>
-                    <div class="p-6">
-                        <p class="text-sm text-gray-600 mb-4">Use this format for your Excel file:</p>
-                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                            <table class="w-full text-xs">
-                                <thead>
-                                    <tr class="border-b border-gray-300">
-                                        <th class="text-left py-1">First Name</th>
-                                        <th class="text-left py-1">Last Name</th>
-                                        <th class="text-left py-1">Age</th>
-                                        <th class="text-left py-1">Sex</th>
-                                        <th class="text-left py-1">Email</th>
-                                        <th class="text-left py-1">Phone</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr class="text-gray-600">
-                                        <td class="py-1">John</td>
-                                        <td class="py-1">Doe</td>
-                                        <td class="py-1">30</td>
-                                        <td class="py-1">Male</td>
-                                        <td class="py-1">john@email.com</td>
-                                        <td class="py-1">123-456-7890</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Selected Test Info Card -->
-                <div id="selectedTestInfo" class="bg-white shadow rounded-lg overflow-hidden" style="display: none;">
-                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">
-                            <i class="fas fa-info-circle mr-2 text-blue-600"></i>Selected Test
-                        </h2>
-                    </div>
-                    <div class="p-6">
-                        <div id="testDetails">
-                            <!-- Test details will be populated by JavaScript -->
-                        </div>
-                    </div>
-                </div>
-
+            <!-- Form Actions -->
+            <div class="flex flex-col sm:flex-row items-center justify-end pt-8 border-t border-gray-200 space-y-4 sm:space-y-0 sm:space-x-4">
+                <a href="{{ route('company.appointments.index') }}" 
+                   class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </a>
+                <button type="submit" 
+                        class="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-lg">
+                    <i class="fas fa-calendar-plus mr-2"></i>Create Appointment
+                </button>
             </div>
+                </form>
+            </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-8 sticky top-8 self-start">
+            
+            <!-- Instructions Card -->
+            <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-lightbulb text-yellow-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Quick Guide</h3>
+                        <p class="text-gray-600 text-sm">Follow these steps to create an appointment</p>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="text-blue-600 font-bold text-sm">1</span>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900 text-sm">Select Date & Time</h4>
+                            <p class="text-sm text-gray-600">Choose a date at least 4 days in advance</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="text-purple-600 font-bold text-sm">2</span>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900 text-sm">Choose Medical Test</h4>
+                            <p class="text-sm text-gray-600">Select examination package or individual test</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="text-emerald-600 font-bold text-sm">3</span>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900 text-sm">Add Patient Data</h4>
+                            <p class="text-sm text-gray-600">Upload Excel file or add manually later</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Excel Template Card -->
+            <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-file-excel text-emerald-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Excel Template</h3>
+                        <p class="text-gray-600 text-sm">Required format for patient data upload</p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs">
+                            <thead>
+                                <tr class="border-b border-gray-300">
+                                    <th class="text-left py-2 px-2 font-semibold text-gray-700">First Name</th>
+                                    <th class="text-left py-2 px-2 font-semibold text-gray-700">Last Name</th>
+                                    <th class="text-left py-2 px-2 font-semibold text-gray-700">Age</th>
+                                    <th class="text-left py-2 px-2 font-semibold text-gray-700">Sex</th>
+                                    <th class="text-left py-2 px-2 font-semibold text-gray-700">Email</th>
+                                    <th class="text-left py-2 px-2 font-semibold text-gray-700">Phone</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="text-gray-600">
+                                    <td class="py-2 px-2">John</td>
+                                    <td class="py-2 px-2">Doe</td>
+                                    <td class="py-2 px-2">30</td>
+                                    <td class="py-2 px-2">Male</td>
+                                    <td class="py-2 px-2">john@email.com</td>
+                                    <td class="py-2 px-2">123-456-7890</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p class="text-sm text-blue-700">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Make sure your Excel file follows this exact format for successful import.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Selected Test Info Card -->
+            <div id="selectedTestInfo" class="content-card rounded-xl p-8 shadow-lg border border-gray-200" style="display: none;">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-check-circle text-blue-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Selected Test</h3>
+                        <p class="text-gray-600 text-sm">Your chosen medical examination</p>
+                    </div>
+                </div>
+                <div id="testDetails">
+                    <!-- Test details will be populated by JavaScript -->
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -416,6 +568,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const selectedTestInfo = document.getElementById('selectedTestInfo');
     const testDetails = document.getElementById('testDetails');
     
+    // Helper function to extract price from test card
+    function extractPrice(checkbox) {
+        const testCard = checkbox.parentElement.parentElement;
+        
+        // Try different selectors for price
+        let priceElement = testCard.querySelector('.text-2xl.font-bold.text-emerald-600');
+        if (!priceElement) {
+            priceElement = testCard.querySelector('.text-emerald-600');
+        }
+        if (!priceElement) {
+            priceElement = testCard.querySelector('[class*="emerald-600"]');
+        }
+        
+        if (priceElement) {
+            const priceText = priceElement.textContent;
+            
+            // Extract number from text (handle ₱, commas, etc.)
+            const priceMatch = priceText.match(/[\d,]+\.?\d*/);
+            if (priceMatch) {
+                const price = parseFloat(priceMatch[0].replace(',', ''));
+                return price;
+            }
+        }
+        
+        return 0;
+    }
+    
     // Medical test category selection handling
     const hiddenCategoryInput = document.getElementById('medical_test_categories_id');
     const hiddenTestInput = document.getElementById('medical_test_id');
@@ -428,71 +607,124 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function updateSelectedTestInfo(checkbox) {
-        if (checkbox.checked) {
-            const testName = checkbox.parentElement.parentElement.querySelector('.text-base.font-semibold').textContent;
-            const description = checkbox.parentElement.parentElement.querySelector('.text-sm.text-gray-500')?.textContent || '';
-            const priceElement = checkbox.parentElement.parentElement.querySelector('.text-emerald-600');
-            const price = priceElement ? priceElement.textContent.replace('₱', '').replace(',', '') : '0';
-            
-            testDetails.innerHTML = `
-                <div class="space-y-3">
-                    <div>
-                        <h3 class="text-sm font-semibold text-gray-900">${testName}</h3>
-                        ${description ? `<p class="text-xs text-gray-600 mt-1">${description}</p>` : ''}
-                    </div>
-                    <div class="flex justify-between items-center p-3 bg-green-50 border border-green-200 rounded-lg">
-                        <span class="text-sm text-gray-700">Price:</span>
-                        <span class="text-lg font-bold text-green-600">₱${parseFloat(price).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
-                    </div>
-                </div>
-            `;
-            selectedTestInfo.style.display = 'block';
-        } else {
-            selectedTestInfo.style.display = 'none';
-        }
-    }
 
     function handleTestChange(e) {
         const current = e.target;
         const currentCategoryId = current.getAttribute('data-category-id');
         const currentTestId = current.getAttribute('data-test-id');
-        const selectedCategoryId = hiddenCategoryInput.value;
 
-        // Uncheck other tests when one is selected (single test selection)
         if (current.checked) {
+            // When checking a test, uncheck other tests in the SAME category only
             Array.from(testCheckboxes).forEach(cb => {
-                if (cb !== current) cb.checked = false;
+                if (cb !== current && cb.getAttribute('data-category-id') === currentCategoryId) {
+                    cb.checked = false;
+                }
             });
         }
 
-        // If none are checked, clear hidden inputs
-        if (!Array.from(testCheckboxes).some(cb => cb.checked)) {
-            hiddenCategoryInput.value = '';
-            hiddenTestInput.value = '';
+        // Update the selected test info display
+        updateSelectedTestsInfo();
+        
+        // Update hidden inputs with selected tests
+        updateHiddenInputs();
+    }
+
+    function updateSelectedTestsInfo() {
+        const checkedBoxes = Array.from(testCheckboxes).filter(cb => cb.checked);
+        
+        if (checkedBoxes.length === 0) {
             selectedTestInfo.style.display = 'none';
             return;
         }
 
-        // If no category selected yet, set it
-        if (!selectedCategoryId) {
-            hiddenCategoryInput.value = currentCategoryId;
-            hiddenTestInput.value = currentTestId;
-            updateSelectedTestInfo(current);
+        let totalPrice = 0;
+        let testsHtml = '<div class="space-y-4">';
+        
+        checkedBoxes.forEach(checkbox => {
+            const testName = checkbox.parentElement.parentElement.querySelector('.text-lg.font-semibold').textContent;
+            const description = checkbox.parentElement.parentElement.querySelector('.text-sm.text-gray-600')?.textContent || '';
+            const price = extractPrice(checkbox);
+            
+            totalPrice += price;
+            
+            testsHtml += `
+                <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                    <h4 class="text-sm font-semibold text-gray-900">${testName}</h4>
+                    ${description ? `<p class="text-xs text-gray-600 mt-1">${description}</p>` : ''}
+                    ${price > 0 ? `<p class="text-sm font-bold text-emerald-600 mt-2">₱${price.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>` : ''}
+                </div>
+            `;
+        });
+        
+        testsHtml += '</div>';
+        
+        if (totalPrice > 0) {
+            testsHtml += `
+                <div class="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-semibold text-emerald-800">Total Price:</span>
+                        <span class="text-xl font-bold text-emerald-600">₱${totalPrice.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        testDetails.innerHTML = testsHtml;
+        selectedTestInfo.style.display = 'block';
+    }
+
+    function updateHiddenInputs() {
+        const checkedBoxes = Array.from(testCheckboxes).filter(cb => cb.checked);
+        const selectedTestsContainer = document.getElementById('selected_tests_container');
+        const totalPriceInput = document.getElementById('total_price');
+        
+        // Clear existing hidden inputs
+        selectedTestsContainer.innerHTML = '';
+        
+        if (checkedBoxes.length === 0) {
+            hiddenCategoryInput.value = '';
+            hiddenTestInput.value = '';
+            totalPriceInput.value = '0';
             return;
         }
 
-        // If different category, prevent mixing and auto-uncheck
-        if (selectedCategoryId !== currentCategoryId) {
-            // Uncheck the box and notify
-            current.checked = false;
-            alert('Please select tests from one category only.');
-            return;
-        }
+        // For backward compatibility, set the first selected test in the original fields
+        const firstChecked = checkedBoxes[0];
+        hiddenCategoryInput.value = firstChecked.getAttribute('data-category-id');
+        hiddenTestInput.value = firstChecked.getAttribute('data-test-id');
 
-        // Same category: set test id
-        hiddenTestInput.value = currentTestId;
-        updateSelectedTestInfo(current);
+        // Calculate total price and create hidden inputs for all selected tests
+        let totalPrice = 0;
+        checkedBoxes.forEach((checkbox, index) => {
+            const categoryId = checkbox.getAttribute('data-category-id');
+            const testId = checkbox.getAttribute('data-test-id');
+            
+            // Get price from the test card
+            const price = extractPrice(checkbox);
+            totalPrice += price;
+            
+            // Create hidden inputs for selected tests array
+            const categoryInput = document.createElement('input');
+            categoryInput.type = 'hidden';
+            categoryInput.name = `selected_tests[${index}][category_id]`;
+            categoryInput.value = categoryId;
+            selectedTestsContainer.appendChild(categoryInput);
+            
+            const testInput = document.createElement('input');
+            testInput.type = 'hidden';
+            testInput.name = `selected_tests[${index}][test_id]`;
+            testInput.value = testId;
+            selectedTestsContainer.appendChild(testInput);
+            
+            const priceInput = document.createElement('input');
+            priceInput.type = 'hidden';
+            priceInput.name = `selected_tests[${index}][price]`;
+            priceInput.value = price;
+            selectedTestsContainer.appendChild(priceInput);
+        });
+        
+        // Set the total price
+        totalPriceInput.value = totalPrice.toFixed(2);
     }
 
     testCheckboxes.forEach(cb => cb.addEventListener('change', handleTestChange));
@@ -502,13 +734,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const oldTestId = '{{ old("medical_test_id") }}';
     
     if (oldTestId) {
+        // Handle single test ID (for backward compatibility)
         const targetCheckbox = document.querySelector(`input[data-test-id="${oldTestId}"]`);
         if (targetCheckbox) {
             targetCheckbox.checked = true;
-            hiddenCategoryInput.value = targetCheckbox.getAttribute('data-category-id');
-            hiddenTestInput.value = oldTestId;
-            updateSelectedTestInfo(targetCheckbox);
         }
+        
+        // Update displays
+        updateSelectedTestsInfo();
+        updateHiddenInputs();
     } else if (!hiddenCategoryInput.value) {
         syncHiddenFromChecked();
     }
@@ -520,7 +754,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!checkDateAvailability(selectedDate)) {
             e.preventDefault();
             alert('Please select an available date before submitting the appointment.');
+            return;
         }
+        
     });
 });
 </script>

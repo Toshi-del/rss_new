@@ -3,73 +3,146 @@
 @section('title', 'Medical Results')
 
 @section('content')
-<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-    <div class="px-4 py-6 sm:px-0">
-        <div class="mb-6">
-            <h1 class="text-2xl font-semibold text-gray-900">Medical Results</h1>
-            <p class="text-sm text-gray-600">View annual physical examination and pre-employment examination results.</p>
+<div class="min-h-screen" style="font-family: 'Poppins', sans-serif;">
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
+        
+        <!-- Header Section -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-700">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white mb-2" style="font-family: 'Poppins', sans-serif;">
+                            <i class="fas fa-file-medical mr-3"></i>Medical Results
+                        </h1>
+                        <p class="text-blue-100">View annual physical examination and pre-employment examination results</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="bg-blue-500 rounded-lg px-4 py-2">
+                            <p class="text-blue-100 text-sm font-medium">Total Results</p>
+                            <p class="text-white text-xl font-bold">{{ ($totalSentAnnualPhysical ?? 0) + ($totalSentPreEmployment ?? 0) }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
+        <!-- Success Message -->
         @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <span class="block sm:inline">{{ session('success') }}</span>
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="px-8 py-6 bg-gradient-to-r from-emerald-600 to-emerald-700">
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle text-white text-xl mr-3"></i>
+                    <span class="text-white font-medium">{{ session('success') }}</span>
+                </div>
+            </div>
         </div>
         @endif
 
    
 
-        <!-- Filter Tabs -->
-        <div class="mb-6">
-            <div class="border-b border-gray-200">
-                <nav class="-mb-px flex space-x-8">
+        <!-- Filter Navigation -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="px-8 py-6 bg-gradient-to-r from-indigo-600 to-indigo-700 border-l-4 border-indigo-800">
+                <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
+                    <i class="fas fa-filter mr-3"></i>Filter Results
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <a href="{{ route('company.medical-results') }}" 
-                       class="py-2 px-1 border-b-2 font-medium text-sm {{ !$statusFilter ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-                        All Results
+                       class="p-4 rounded-lg border-2 transition-all duration-200 {{ !$statusFilter ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50' }}">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-list text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900">All Results</p>
+                                <p class="text-sm text-gray-600">View everything</p>
+                            </div>
+                        </div>
                     </a>
+                    
                     <a href="{{ route('company.medical-results', ['status' => 'annual_physical']) }}" 
-                       class="py-2 px-1 border-b-2 font-medium text-sm {{ $statusFilter === 'annual_physical' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-                        Annual Physical
+                       class="p-4 rounded-lg border-2 transition-all duration-200 {{ $statusFilter === 'annual_physical' ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300 hover:bg-purple-50' }}">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-stethoscope text-purple-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900">Annual Physical</p>
+                                <p class="text-sm text-gray-600">Yearly checkups</p>
+                            </div>
+                        </div>
                     </a>
+                    
                     <a href="{{ route('company.medical-results', ['status' => 'pre_employment']) }}" 
-                       class="py-2 px-1 border-b-2 font-medium text-sm {{ $statusFilter === 'pre_employment' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-                        Pre-Employment
+                       class="p-4 rounded-lg border-2 transition-all duration-200 {{ $statusFilter === 'pre_employment' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-300 hover:bg-green-50' }}">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-briefcase text-green-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900">Pre-Employment</p>
+                                <p class="text-sm text-gray-600">Job requirements</p>
+                            </div>
+                        </div>
                     </a>
+                    
                     <a href="{{ route('company.medical-results', ['status' => 'sent_results']) }}" 
-                       class="py-2 px-1 border-b-2 font-medium text-sm {{ $statusFilter === 'sent_results' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-                        Sent Results
-                        @if($totalSentAnnualPhysical > 0 || $totalSentPreEmployment > 0)
-                            <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                {{ $totalSentAnnualPhysical + $totalSentPreEmployment }}
-                            </span>
-                        @endif
+                       class="p-4 rounded-lg border-2 transition-all duration-200 {{ $statusFilter === 'sent_results' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 hover:border-emerald-300 hover:bg-emerald-50' }}">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-paper-plane text-emerald-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900">Sent Results</p>
+                                <p class="text-sm text-gray-600">
+                                    @if(($totalSentAnnualPhysical ?? 0) > 0 || ($totalSentPreEmployment ?? 0) > 0)
+                                        {{ ($totalSentAnnualPhysical ?? 0) + ($totalSentPreEmployment ?? 0) }} available
+                                    @else
+                                        Ready to view
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
                     </a>
-                </nav>
+                </div>
             </div>
         </div>
 
-        <!-- Search and Export Section -->
-        <div class="mb-6 bg-white p-4 rounded-lg shadow">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <div class="flex-1 max-w-lg">
-                    <label for="search" class="sr-only">Search results</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-gray-400"></i>
+        <!-- Search and Actions Section -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="px-8 py-6 bg-gradient-to-r from-amber-600 to-amber-700 border-l-4 border-amber-800">
+                <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
+                    <i class="fas fa-search mr-3"></i>Search & Actions
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                    <!-- Search Section -->
+                    <div class="flex-1 max-w-2xl">
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search Results</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                            <input id="search" name="search" type="text" 
+                                   class="block w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200" 
+                                   placeholder="Search by patient name, email, or examination type...">
                         </div>
-                        <input id="search" name="search" type="text" 
-                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
-                               placeholder="Search by name, email, or status...">
                     </div>
-                </div>
-                <div class="mt-4 sm:mt-0 sm:ml-4 flex space-x-3">
-                    <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        <i class="fas fa-filter mr-2"></i>
-                        Filter
-                    </button>
-                    <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        <i class="fas fa-download mr-2"></i>
-                        Export
-                    </button>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex space-x-3">
+                        <button type="button" class="inline-flex items-center px-6 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-sm">
+                            <i class="fas fa-sliders-h mr-2"></i>
+                            Advanced Filter
+                        </button>
+                        <button type="button" class="inline-flex items-center px-6 py-3 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-sm">
+                            <i class="fas fa-download mr-2"></i>
+                            Export Results
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -77,110 +150,133 @@
 
 
         @if(!$statusFilter || $statusFilter === 'sent_results')
-        <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900 flex items-center">
-                    <i class="fas fa-paper-plane text-purple-500 mr-2"></i>
-                    Sent Examination Results
-                    <span class="ml-2 text-sm text-gray-500">(Sent by Admin)</span>
-                </h3>
+        <!-- Sent Examination Results -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="px-8 py-6 bg-gradient-to-r from-emerald-600 to-emerald-700 border-l-4 border-emerald-800">
+                <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
+                    <i class="fas fa-paper-plane mr-3"></i>Sent Examination Results
+                </h2>
+                <p class="text-emerald-100 mt-1">Results sent by admin are ready for viewing</p>
             </div>
             
             @if($sentAnnualPhysicalResults->count() > 0 || $sentPreEmploymentResults->count() > 0)
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient/Applicant Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Examination Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sent Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <!-- Sent Annual Physical Results -->
-                        @foreach($sentAnnualPhysicalResults as $exam)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $exam->name }}</div>
-                                <div class="text-sm text-gray-500">Patient ID: {{ $exam->patient_id }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    <i class="fas fa-stethoscope mr-1"></i>
-                                    Annual Physical
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($exam->date)->format('M d, Y') }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ $exam->updated_at->format('M d, Y') }}</div>
-                                <div class="text-sm text-gray-500">{{ $exam->updated_at->format('g:i A') }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    <i class="fas fa-check mr-1"></i>
-                                    Sent
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="viewSentResult('annual_physical', {{ $exam->id }})">
-                                    <i class="fas fa-eye mr-1"></i>View Details
+            <div class="p-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Annual Physical Results -->
+                    @foreach($sentAnnualPhysicalResults as $exam)
+                    <div class="bg-purple-50 rounded-xl p-6 border-l-4 border-purple-600 hover:shadow-md transition-shadow duration-200">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center mr-4">
+                                    <span class="text-white font-bold text-lg">
+                                        {{ strtoupper(substr($exam->name, 0, 2)) }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-purple-900">{{ $exam->name }}</h3>
+                                    <p class="text-purple-700 text-sm">Patient ID: {{ $exam->patient_id }}</p>
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-600 text-white">
+                                <i class="fas fa-stethoscope mr-1"></i>
+                                Annual Physical
+                            </span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="bg-white rounded-lg p-3">
+                                <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Examination Date</p>
+                                <p class="text-sm font-semibold text-gray-900">{{ \Carbon\Carbon::parse($exam->date)->format('M d, Y') }}</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-3">
+                                <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Sent Date</p>
+                                <p class="text-sm font-semibold text-gray-900">{{ $exam->updated_at->format('M d, Y') }}</p>
+                                <p class="text-xs text-gray-600">{{ $exam->updated_at->format('g:i A') }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check mr-1"></i>
+                                Result Available
+                            </span>
+                            <div class="flex space-x-2">
+                                <button class="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-200" onclick="viewSentResult('annual_physical', {{ $exam->id }})">
+                                    <i class="fas fa-eye mr-1"></i>View
                                 </button>
-                                <button class="text-green-600 hover:text-green-900" onclick="downloadResult('annual_physical', {{ $exam->id }})">
+                                <button class="inline-flex items-center px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-200" onclick="downloadResult('annual_physical', {{ $exam->id }})">
                                     <i class="fas fa-download mr-1"></i>Download
                                 </button>
-                            </td>
-                        </tr>
-                        @endforeach
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
 
-                        <!-- Sent Pre-Employment Results -->
-                        @foreach($sentPreEmploymentResults as $exam)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $exam->name }}</div>
-                                <div class="text-sm text-gray-500">{{ $exam->company_name }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    <i class="fas fa-briefcase mr-1"></i>
-                                    Pre-Employment
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($exam->date)->format('M d, Y') }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ $exam->updated_at->format('M d, Y') }}</div>
-                                <div class="text-sm text-gray-500">{{ $exam->updated_at->format('g:i A') }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    <i class="fas fa-check mr-1"></i>
-                                    Sent
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="viewSentResult('pre_employment', {{ $exam->id }})">
-                                    <i class="fas fa-eye mr-1"></i>View Details
+                    <!-- Pre-Employment Results -->
+                    @foreach($sentPreEmploymentResults as $exam)
+                    <div class="bg-green-50 rounded-xl p-6 border-l-4 border-green-600 hover:shadow-md transition-shadow duration-200">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center mr-4">
+                                    <span class="text-white font-bold text-lg">
+                                        {{ strtoupper(substr($exam->name, 0, 2)) }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-green-900">{{ $exam->name }}</h3>
+                                    <p class="text-green-700 text-sm">{{ $exam->company_name }}</p>
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-600 text-white">
+                                <i class="fas fa-briefcase mr-1"></i>
+                                Pre-Employment
+                            </span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="bg-white rounded-lg p-3">
+                                <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Examination Date</p>
+                                <p class="text-sm font-semibold text-gray-900">{{ \Carbon\Carbon::parse($exam->date)->format('M d, Y') }}</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-3">
+                                <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Sent Date</p>
+                                <p class="text-sm font-semibold text-gray-900">{{ $exam->updated_at->format('M d, Y') }}</p>
+                                <p class="text-xs text-gray-600">{{ $exam->updated_at->format('g:i A') }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check mr-1"></i>
+                                Result Available
+                            </span>
+                            <div class="flex space-x-2">
+                                <button class="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-200" onclick="viewSentResult('pre_employment', {{ $exam->id }})">
+                                    <i class="fas fa-eye mr-1"></i>View
                                 </button>
-                                <button class="text-green-600 hover:text-green-900" onclick="downloadResult('pre_employment', {{ $exam->id }})">
+                                <button class="inline-flex items-center px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-200" onclick="downloadResult('pre_employment', {{ $exam->id }})">
                                     <i class="fas fa-download mr-1"></i>Download
                                 </button>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
             </div>
             @else
-            <div class="px-6 py-8 text-center">
-                <i class="fas fa-paper-plane text-gray-400 text-4xl mb-4"></i>
-                <p class="text-gray-500">No sent examination results found.</p>
-                <p class="text-sm text-gray-400 mt-2">Results sent by admin will appear here.</p>
+            <!-- Enhanced Empty State -->
+            <div class="p-12 text-center">
+                <div class="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-paper-plane text-emerald-600 text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">No Results Available Yet</h3>
+                <p class="text-gray-600 mb-4">Medical examination results sent by admin will appear here.</p>
+                <div class="bg-blue-50 rounded-lg p-4 max-w-md mx-auto">
+                    <p class="text-blue-800 text-sm">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Results are typically available within 24-48 hours after your examination.
+                    </p>
+                </div>
             </div>
             @endif
         </div>

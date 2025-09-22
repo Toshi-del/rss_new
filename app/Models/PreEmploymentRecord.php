@@ -55,4 +55,64 @@ class PreEmploymentRecord extends Model
     {
         return $this->belongsTo(MedicalTest::class, 'medical_test_id');
     }
+
+
+    // Helper method to parse other_exams JSON data
+    public function getParsedOtherExamsAttribute()
+    {
+        if (empty($this->other_exams)) {
+            return null;
+        }
+
+        // Try to decode as JSON first
+        $decoded = json_decode($this->other_exams, true);
+        
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            return $decoded;
+        }
+
+        // If not JSON, return as plain text
+        return ['additional_exams' => $this->other_exams];
+    }
+
+    // Helper method to get all selected tests (including from other_exams)
+    public function getAllSelectedTestsAttribute()
+    {
+        $tests = [];
+        
+        // Add primary test
+        if ($this->medicalTest) {
+            $tests[] = [
+                'category_id' => $this->medical_test_categories_id,
+                'category_name' => $this->medicalTestCategory->name ?? 'Unknown',
+                'test_id' => $this->medical_test_id,
+                'test_name' => $this->medicalTest->name,
+                'price' => $this->medicalTest->price ?? 0,
+                'is_primary' => true,
+            ];
+        }
+
+        // Add tests from other_exams if they exist (excluding the primary test to avoid duplicates)
+        $parsedOtherExams = $this->parsed_other_exams;
+        if ($parsedOtherExams && isset($parsedOtherExams['selected_tests'])) {
+            foreach ($parsedOtherExams['selected_tests'] as $test) {
+                // Skip if this is the same as the primary test (avoid duplicates)
+                if (isset($test['test_id']) && $test['test_id'] == $this->medical_test_id) {
+                    continue;
+                }
+                
+                // If category_name is 'Unknown', try to fetch it from the database
+                if (($test['category_name'] ?? '') === 'Unknown' && isset($test['category_id'])) {
+                    $category = \App\Models\MedicalTestCategory::find($test['category_id']);
+                    if ($category) {
+                        $test['category_name'] = $category->name;
+                    }
+                }
+                
+                $tests[] = array_merge($test, ['is_primary' => false]);
+            }
+        }
+
+        return collect($tests);
+    }
 }

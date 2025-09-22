@@ -3,242 +3,240 @@
 @section('title', 'Appointment Details')
 
 @section('content')
-<div class="min-h-screen bg-gray-50" style="font-family: 'Inter', sans-serif;">
-    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen" style="font-family: 'Poppins', sans-serif;">
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
         
         <!-- Header Section -->
-        <div class="mb-8">
-            <div class="bg-white shadow rounded-lg overflow-hidden">
-                <div class="px-6 py-5 bg-gradient-to-r from-blue-50 to-white border-b border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-900 mb-2" style="font-family: 'Poppins', sans-serif; color: #800000;">
-                                <i class="fas fa-calendar-check mr-3"></i>Appointment Details
-                            </h1>
-                            <p class="text-sm text-gray-600">View and manage appointment information</p>
-                        </div>
-                        <div class="flex space-x-3">
-                            <a href="{{ route('company.appointments.edit', $appointment) }}" 
-                               class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                                <i class="fas fa-edit mr-2"></i>
-                                Edit Appointment
-                            </a>
-                            <a href="{{ route('company.appointments.index') }}" 
-                               class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                                <i class="fas fa-arrow-left mr-2"></i>
-                                Back to List
-                            </a>
-                        </div>
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-700">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white mb-2" style="font-family: 'Poppins', sans-serif;">
+                            <i class="fas fa-calendar-check mr-3"></i>Appointment Details
+                        </h1>
+                        <p class="text-blue-100">View and manage appointment information</p>
+                    </div>
+                    <div class="flex space-x-3">
+                        <a href="{{ route('company.appointments.edit', $appointment) }}" 
+                           class="inline-flex items-center px-4 py-2 bg-white text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 shadow-sm">
+                            <i class="fas fa-edit mr-2"></i>
+                            Edit Appointment
+                        </a>
+                        <a href="{{ route('company.appointments.index') }}" 
+                           class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 shadow-sm">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Back to List
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Single Column Layout -->
+        <div class="space-y-8">
             
-            <!-- Main Information Card -->
-            <div class="lg:col-span-2 space-y-6">
-                
-                <!-- Basic Information Card -->
-                <div class="bg-white shadow rounded-lg overflow-hidden">
-                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">
-                            <i class="fas fa-info-circle mr-2 text-blue-600"></i>Basic Information
-                        </h2>
-                    </div>
-                    <div class="p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-500 mb-1">Appointment ID</label>
-                                    <p class="text-lg font-semibold text-gray-900">#{{ $appointment->id }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-500 mb-1">Date</label>
-                                    <p class="text-lg font-semibold text-gray-900 flex items-center">
-                                        <i class="fas fa-calendar mr-2 text-blue-600"></i>
-                                        {{ $appointment->formatted_date }}
-                                    </p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-500 mb-1">Time Slot</label>
-                                    <p class="text-lg font-semibold text-gray-900 flex items-center">
-                                        <i class="fas fa-clock mr-2 text-green-600"></i>
-                                        {{ $appointment->formatted_time_slot }}
-                                    </p>
-                                </div>
+            <!-- Basic Information Card -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-700 border-l-4 border-blue-800">
+                    <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
+                        <i class="fas fa-info-circle mr-3"></i>Basic Information
+                    </h2>
+                </div>
+                <div class="p-8">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="space-y-6">
+                            <div class="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-600">
+                                <label class="block text-sm font-medium text-blue-700 mb-2">Appointment ID</label>
+                                <p class="text-xl font-bold text-blue-900">#{{ $appointment->id }}</p>
                             </div>
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-500 mb-1">Status</label>
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                        <i class="fas fa-check-circle mr-1"></i>
-                                        Scheduled
-                                    </span>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-500 mb-1">Exam</label>
-                                    <p class="text-lg font-semibold text-gray-900">
-                                        {{ optional($appointment->medicalTestCategory)->name }}
-                                        @if($appointment->medicalTest)
-                                            - {{ $appointment->medicalTest->name }}
-                                        @endif
-                                    </p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-500 mb-1">Created By</label>
-                                    <p class="text-lg font-semibold text-gray-900 flex items-center">
-                                        <i class="fas fa-user mr-2 text-purple-600"></i>
-                                        {{ $appointment->creator->full_name }}
-                                    </p>
-                                </div>
+                            <div class="p-4 bg-green-50 rounded-lg border-l-4 border-green-600">
+                                <label class="block text-sm font-medium text-green-700 mb-2">Date</label>
+                                <p class="text-lg font-semibold text-green-900 flex items-center">
+                                    <i class="fas fa-calendar mr-2 text-green-600"></i>
+                                    {{ $appointment->formatted_date }}
+                                </p>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Medical Test Card -->
-                @if($appointment->medicalTest)
-                <div class="bg-white shadow rounded-lg overflow-hidden">
-                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">
-                            <i class="fas fa-vial mr-2 text-blue-600"></i>Selected Medical Test
-                        </h2>
-                    </div>
-                    <div class="p-6">
-                        <div class="space-y-3">
-                            @php $test = $appointment->medicalTest; @endphp
-                            <div class="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                <div class="flex-1">
-                                    <h3 class="text-sm font-semibold text-gray-900">{{ $test->name }}</h3>
-                                    @if($test->description)
-                                        <p class="text-xs text-gray-600 mt-1">{{ Str::limit($test->description, 80) }}</p>
+                        <div class="space-y-6">
+                            <div class="p-4 bg-purple-50 rounded-lg border-l-4 border-purple-600">
+                                <label class="block text-sm font-medium text-purple-700 mb-2">Time Slot</label>
+                                <p class="text-lg font-semibold text-purple-900 flex items-center">
+                                    <i class="fas fa-clock mr-2 text-purple-600"></i>
+                                    {{ $appointment->formatted_time_slot }}
+                                </p>
+                            </div>
+                            <div class="p-4 bg-emerald-50 rounded-lg border-l-4 border-emerald-600">
+                                <label class="block text-sm font-medium text-emerald-700 mb-2">Status</label>
+                                <span class="inline-flex items-center px-3 py-2 rounded-full text-sm font-bold bg-emerald-600 text-white">
+                                    <i class="fas fa-check-circle mr-2"></i>
+                                    Scheduled
+                                </span>
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                            <div class="p-4 bg-indigo-50 rounded-lg border-l-4 border-indigo-600">
+                                <label class="block text-sm font-medium text-indigo-700 mb-2">Medical Exam</label>
+                                <p class="text-lg font-semibold text-indigo-900">
+                                    {{ optional($appointment->medicalTestCategory)->name }}
+                                    @if($appointment->medicalTest)
+                                        <br><span class="text-sm text-indigo-700">{{ $appointment->medicalTest->name }}</span>
                                     @endif
-                                    @if($test->category)
-                                        <p class="text-xs text-blue-600 mt-1 font-medium">{{ $test->category->name }}</p>
-                                    @else
-                                        <p class="text-xs text-gray-500 mt-1 font-medium">No category</p>
-                                    @endif
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-lg font-bold text-green-600">₱{{ number_format($test->price, 2) }}</p>
-                                </div>
+                                </p>
+                            </div>
+                            <div class="p-4 bg-rose-50 rounded-lg border-l-4 border-rose-600">
+                                <label class="block text-sm font-medium text-rose-700 mb-2">Created By</label>
+                                <p class="text-lg font-semibold text-rose-900 flex items-center">
+                                    <i class="fas fa-user mr-2 text-rose-600"></i>
+                                    {{ $appointment->creator->full_name }}
+                                </p>
                             </div>
                         </div>
-                        
-                        
                     </div>
                 </div>
-                @endif
-
-                <!-- Notes Card -->
-                @if($appointment->notes)
-                <div class="bg-white shadow rounded-lg overflow-hidden">
-                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">
-                            <i class="fas fa-sticky-note mr-2 text-yellow-600"></i>Additional Notes
-                        </h2>
-                    </div>
-                    <div class="p-6">
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                            <p class="text-gray-900 whitespace-pre-wrap">{{ $appointment->notes }}</p>
-                        </div>
-                    </div>
-                </div>
-                @endif
-
             </div>
 
-            <!-- Sidebar -->
-            <div class="space-y-6">
-                
-                <!-- Patients Card -->
-                @if($appointment->patients && $appointment->patients->count() > 0)
-                <div class="bg-white shadow rounded-lg overflow-hidden">
-                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">
-                            <i class="fas fa-users mr-2 text-green-600"></i>Patients
-                        </h2>
-                        <p class="text-sm text-gray-600 mt-1">{{ $appointment->patients->count() }} patient(s) registered</p>
+            <!-- Medical Test Card -->
+            @if($appointment->medicalTest)
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="px-8 py-6 bg-gradient-to-r from-emerald-600 to-emerald-700 border-l-4 border-emerald-800">
+                    <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
+                        <i class="fas fa-vial mr-3"></i>Selected Medical Test
+                    </h2>
+                </div>
+                <div class="p-8">
+                    @php $test = $appointment->medicalTest; @endphp
+                    <div class="bg-emerald-50 rounded-xl p-6 border-l-4 border-emerald-600">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold text-emerald-900 mb-2">{{ $test->name }}</h3>
+                                @if($test->description)
+                                    <p class="text-emerald-700 mb-3">{{ $test->description }}</p>
+                                @endif
+                                @if($test->category)
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-600 text-white">
+                                        <i class="fas fa-tag mr-1"></i>
+                                        {{ $test->category->name }}
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-500 text-white">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                        No category
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="text-right ml-6">
+                                <p class="text-3xl font-bold text-emerald-600">₱{{ number_format($test->price, 2) }}</p>
+                                <p class="text-sm text-emerald-700">Test Price</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="p-6">
-                        <div class="space-y-3 max-h-96 overflow-y-auto">
-                            @foreach($appointment->patients as $patient)
-                            <div class="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                                <div class="flex items-start justify-between">
-                                    <div class="flex-1">
-                                        <h3 class="text-sm font-semibold text-gray-900">{{ $patient->full_name }}</h3>
-                                        <p class="text-xs text-gray-600 mt-1">{{ $patient->age_sex }}</p>
-                                        @if($patient->email)
-                                            <p class="text-xs text-blue-600 mt-1">
-                                                <i class="fas fa-envelope mr-1"></i>{{ $patient->email }}
-                                            </p>
-                                        @endif
-                                        @if($patient->phone)
-                                            <p class="text-xs text-green-600 mt-1">
-                                                <i class="fas fa-phone mr-1"></i>{{ $patient->phone }}
-                                            </p>
-                                        @endif
-                                    </div>
+                </div>
+            </div>
+            @endif
+
+            <!-- Notes Card -->
+            @if($appointment->notes)
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="px-8 py-6 bg-gradient-to-r from-amber-600 to-amber-700 border-l-4 border-amber-800">
+                    <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
+                        <i class="fas fa-sticky-note mr-3"></i>Additional Notes
+                    </h2>
+                </div>
+                <div class="p-8">
+                    <div class="bg-amber-50 rounded-xl p-6 border-l-4 border-amber-600">
+                        <p class="text-amber-900 whitespace-pre-wrap text-lg leading-relaxed">{{ $appointment->notes }}</p>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            <!-- Patients Card -->
+            @if($appointment->patients && $appointment->patients->count() > 0)
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="px-8 py-6 bg-gradient-to-r from-indigo-600 to-indigo-700 border-l-4 border-indigo-800">
+                    <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
+                        <i class="fas fa-users mr-3"></i>Registered Patients
+                    </h2>
+                    <p class="text-indigo-100 mt-1">{{ $appointment->patients->count() }} patient(s) registered</p>
+                </div>
+                <div class="p-8">
+                    <div class="space-y-4 max-h-96 overflow-y-auto">
+                        @foreach($appointment->patients as $patient)
+                        <div class="bg-indigo-50 rounded-xl p-4 border-l-4 border-indigo-600">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-bold text-indigo-900">{{ $patient->full_name }}</h3>
+                                    <p class="text-indigo-700 mt-1">{{ $patient->age_sex }}</p>
+                                    @if($patient->email)
+                                        <p class="text-indigo-600 mt-2 flex items-center">
+                                            <i class="fas fa-envelope mr-2"></i>{{ $patient->email }}
+                                        </p>
+                                    @endif
+                                    @if($patient->phone)
+                                        <p class="text-indigo-600 mt-1 flex items-center">
+                                            <i class="fas fa-phone mr-2"></i>{{ $patient->phone }}
+                                        </p>
+                                    @endif
                                 </div>
                             </div>
-                            @endforeach
                         </div>
+                        @endforeach
                     </div>
                 </div>
-                @endif
+            </div>
+            @endif
 
-                <!-- File Upload Card -->
-                @if($appointment->excel_file_path)
-                <div class="bg-white shadow rounded-lg overflow-hidden">
-                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">
-                            <i class="fas fa-file-excel mr-2 text-green-600"></i>Uploaded File
-                        </h2>
-                    </div>
-                    <div class="p-6">
-                        <div class="flex items-center p-3 bg-green-50 border border-green-200 rounded-lg">
-                            <i class="fas fa-file-excel text-green-600 text-xl mr-3"></i>
+            <!-- File Upload Card -->
+            @if($appointment->excel_file_path)
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="px-8 py-6 bg-gradient-to-r from-green-600 to-green-700 border-l-4 border-green-800">
+                    <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
+                        <i class="fas fa-file-excel mr-3"></i>Uploaded File
+                    </h2>
+                </div>
+                <div class="p-8">
+                    <div class="bg-green-50 rounded-xl p-6 border-l-4 border-green-600">
+                        <div class="flex items-center">
+                            <i class="fas fa-file-excel text-green-600 text-3xl mr-4"></i>
                             <div class="flex-1">
-                                <p class="text-sm font-medium text-green-800">{{ basename($appointment->excel_file_path) }}</p>
-                                <p class="text-xs text-green-600">Excel file uploaded</p>
+                                <p class="text-lg font-bold text-green-900">{{ basename($appointment->excel_file_path) }}</p>
+                                <p class="text-green-700">Excel file uploaded successfully</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                @endif
+            </div>
+            @endif
 
-                <!-- Appointment Summary Card -->
-                <div class="bg-white shadow rounded-lg overflow-hidden">
-                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">
-                            <i class="fas fa-chart-bar mr-2 text-purple-600"></i>Summary
-                        </h2>
-                    </div>
-                    <div class="p-6">
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-600">Patients:</span>
-                                <span class="text-sm font-semibold text-gray-900">{{ $appointment->patients->count() }}</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-600">Medical Tests:</span>
-                                <span class="text-sm font-semibold text-gray-900">{{ $appointment->medical_test_id ? 1 : 0 }}</span>
-                            </div>
-                            @if($appointment->medicalTest)
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-600">Total Price:</span>
-                                <span class="text-sm font-semibold text-green-600">₱{{ number_format($appointment->medicalTest->price ?? 0, 2) }}</span>
-                            </div>
-                            @endif
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-600">Created:</span>
-                                <span class="text-sm font-semibold text-gray-900">{{ $appointment->created_at->format('M d, Y') }}</span>
-                            </div>
+            <!-- Appointment Summary Card -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="px-8 py-6 bg-gradient-to-r from-purple-600 to-purple-700 border-l-4 border-purple-800">
+                    <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
+                        <i class="fas fa-chart-bar mr-3"></i>Appointment Summary
+                    </h2>
+                </div>
+                <div class="p-8">
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-600">
+                            <p class="text-blue-700 text-sm font-medium">Total Patients</p>
+                            <p class="text-2xl font-bold text-blue-900">{{ $appointment->patients->count() }}</p>
+                        </div>
+                        <div class="bg-emerald-50 rounded-lg p-4 border-l-4 border-emerald-600">
+                            <p class="text-emerald-700 text-sm font-medium">Medical Tests</p>
+                            <p class="text-2xl font-bold text-emerald-900">{{ $appointment->medical_test_id ? 1 : 0 }}</p>
+                        </div>
+                        @if($appointment->medicalTest)
+                        <div class="bg-green-50 rounded-lg p-4 border-l-4 border-green-600 col-span-2">
+                            <p class="text-green-700 text-sm font-medium">Total Price</p>
+                            <p class="text-3xl font-bold text-green-900">₱{{ number_format($appointment->medicalTest->price ?? 0, 2) }}</p>
+                        </div>
+                        @endif
+                        <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-gray-600 col-span-2">
+                            <p class="text-gray-700 text-sm font-medium">Created Date</p>
+                            <p class="text-xl font-bold text-gray-900">{{ $appointment->created_at->format('M d, Y') }}</p>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>

@@ -3,139 +3,199 @@
 @section('title', 'Pre-Employment Record Details')
 
 @section('content')
-<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-    <div class="px-4 py-6 sm:px-0">
-        <div class="mb-6">
-            <div class="flex items-center justify-between">
-                <h1 class="text-2xl font-semibold text-gray-900">Pre-Employment Record Details</h1>
-                <a href="{{ route('company.pre-employment.index') }}" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
-                    Back to List
-                </a>
+<div class="min-h-screen" style="font-family: 'Poppins', sans-serif;">
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
+        
+        <!-- Header Section -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-700">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white mb-2" style="font-family: 'Poppins', sans-serif;">
+                            <i class="fas fa-user-check mr-3"></i>Pre-Employment Record Details
+                        </h1>
+                        <p class="text-blue-100">View detailed pre-employment medical examination information</p>
+                    </div>
+                    <div>
+                        <a href="{{ route('company.pre-employment.index') }}" 
+                           class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 shadow-sm">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Back to List
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-            <div class="px-4 py-5 sm:px-6">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Record Information</h3>
-                <p class="mt-1 max-w-2xl text-sm text-gray-500">Pre-employment medical examination details.</p>
+        <!-- Personal Information Card -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="px-8 py-6 bg-gradient-to-r from-indigo-600 to-indigo-700 border-l-4 border-indigo-800">
+                <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
+                    <i class="fas fa-user mr-3"></i>Personal Information
+                </h2>
             </div>
-            <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
-                <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
-                    <div class="sm:col-span-1">
-                        <dt class="text-sm font-medium text-gray-500">Record ID</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $record->id }}</dd>
+            <div class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="space-y-6">
+                        <div class="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-600">
+                            <label class="block text-sm font-medium text-blue-700 mb-2">Record ID</label>
+                            <p class="text-xl font-bold text-blue-900">#{{ $record->id }}</p>
+                        </div>
+                        <div class="p-4 bg-green-50 rounded-lg border-l-4 border-green-600">
+                            <label class="block text-sm font-medium text-green-700 mb-2">Full Name</label>
+                            <p class="text-lg font-semibold text-green-900">{{ $record->full_name }}</p>
+                        </div>
                     </div>
-                    <div class="sm:col-span-1">
-                        <dt class="text-sm font-medium text-gray-500">Full Name</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $record->full_name }}</dd>
+                    <div class="space-y-6">
+                        <div class="p-4 bg-purple-50 rounded-lg border-l-4 border-purple-600">
+                            <label class="block text-sm font-medium text-purple-700 mb-2">Age & Gender</label>
+                            <p class="text-lg font-semibold text-purple-900">{{ $record->age }} years old • {{ $record->sex }}</p>
+                        </div>
+                        <div class="p-4 bg-emerald-50 rounded-lg border-l-4 border-emerald-600">
+                            <label class="block text-sm font-medium text-emerald-700 mb-2">Email Address</label>
+                            <p class="text-lg font-semibold text-emerald-900 flex items-center">
+                                <i class="fas fa-envelope mr-2 text-emerald-600"></i>
+                                {{ $record->email }}
+                            </p>
+                        </div>
                     </div>
-                    <div class="sm:col-span-1">
-                        <dt class="text-sm font-medium text-gray-500">Age</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $record->age }}</dd>
+                    <div class="space-y-6">
+                        <div class="p-4 bg-rose-50 rounded-lg border-l-4 border-rose-600">
+                            <label class="block text-sm font-medium text-rose-700 mb-2">Phone Number</label>
+                            <p class="text-lg font-semibold text-rose-900 flex items-center">
+                                <i class="fas fa-phone mr-2 text-rose-600"></i>
+                                {{ $record->phone_number }}
+                            </p>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-lg border-l-4 border-gray-600">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Created Date</label>
+                            <p class="text-lg font-semibold text-gray-900">{{ $record->created_at->format('M d, Y H:i') }}</p>
+                        </div>
                     </div>
-                    <div class="sm:col-span-1">
-                        <dt class="text-sm font-medium text-gray-500">Sex</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $record->sex }}</dd>
-                    </div>
-                    <div class="sm:col-span-1">
-                        <dt class="text-sm font-medium text-gray-500">Email</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $record->email }}</dd>
-                    </div>
-                    <div class="sm:col-span-1">
-                        <dt class="text-sm font-medium text-gray-500">Phone Number</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $record->phone_number }}</dd>
-                    </div>
-                    <div class="sm:col-span-1">
-                        <dt class="text-sm font-medium text-gray-500">Medical Exam Type</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ optional($record->medicalTestCategory)->name }}</dd>
-                    </div>
-                    <div class="sm:col-span-1">
-                        <dt class="text-sm font-medium text-gray-500">Selected Test</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ optional($record->medicalTest)->name }}</dd>
-                    </div>
-                    <div class="sm:col-span-1">
-                        <dt class="text-sm font-medium text-gray-500">Billing Type</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $record->billing_type }}</dd>
-                    </div>
-                    @if($record->company_name)
-                    <div class="sm:col-span-1">
-                        <dt class="text-sm font-medium text-gray-500">Company Name</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $record->company_name }}</dd>
-                    </div>
-                    @endif
-                    
-                    @if($record->other_exams)
-                    <div class="sm:col-span-2">
-                        <dt class="text-sm font-medium text-gray-500">Other Exams</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $record->other_exams }}</dd>
-                    </div>
-                    @endif
-                    @if($record->uploaded_file)
-                    <div class="sm:col-span-1">
-                        <dt class="text-sm font-medium text-gray-500">Uploaded File</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $record->uploaded_file }}</dd>
-                    </div>
-                    @endif
-                    <div class="sm:col-span-1">
-                        <dt class="text-sm font-medium text-gray-500">Created At</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $record->created_at->format('M d, Y H:i') }}</dd>
-                    </div>
-                </dl>
+                </div>
             </div>
         </div>
         
-        <!-- Selected Medical Test Card -->
-        @if($record->medicalTest)
-        <div class="bg-white shadow rounded-lg overflow-hidden mt-6">
-            <div class="px-4 py-4 bg-gray-50 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">
-                    <i class="fas fa-vial mr-2 text-blue-600"></i>Selected Medical Test
+        <!-- Selected Medical Tests Card -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="px-8 py-6 bg-gradient-to-r from-emerald-600 to-emerald-700 border-l-4 border-emerald-800">
+                <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
+                    <i class="fas fa-vial mr-3"></i>Selected Medical Tests
+                </h2>
+                <p class="text-emerald-100 mt-1">
+                    @php
+                        $allTests = $record->all_selected_tests;
+                        $testsCount = $allTests->count();
+                    @endphp
+                    {{ $testsCount }} medical test(s) selected
+                </p>
+            </div>
+            <div class="p-8">
+                @if($allTests->count() > 0)
+                    <!-- Display All Selected Tests -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        @foreach($allTests as $test)
+                            <div class="bg-emerald-50 rounded-xl p-6 border-l-4 border-emerald-600 {{ $test['is_primary'] ? 'ring-2 ring-emerald-300' : '' }}">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <div class="flex items-center mb-2">
+                                            <h3 class="text-lg font-bold text-emerald-900">{{ $test['test_name'] }}</h3>
+                                            @if($test['is_primary'])
+                                                <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-600 text-white">
+                                                    <i class="fas fa-star mr-1"></i>Primary
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-600 text-white">
+                                            <i class="fas fa-tag mr-1"></i>
+                                            {{ $test['category_name'] }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="mt-4 text-right">
+                                    <p class="text-2xl font-bold text-emerald-600">₱{{ number_format($test['price'], 2) }}</p>
+                                    <p class="text-sm text-emerald-700">Test Price</p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <!-- No Tests Found -->
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-vial text-gray-400 text-xl"></i>
+                        </div>
+                        <p class="text-gray-600">No medical tests found for this record.</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Additional Information Card -->
+        @php
+            $parsedOtherExams = $record->parsed_other_exams;
+            $hasAdditionalExams = $parsedOtherExams && isset($parsedOtherExams['additional_exams']);
+            $hasOtherExams = $record->other_exams && !$parsedOtherExams;
+        @endphp
+        @if($hasAdditionalExams || $hasOtherExams || $record->uploaded_file)
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="px-8 py-6 bg-gradient-to-r from-amber-600 to-amber-700 border-l-4 border-amber-800">
+                <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
+                    <i class="fas fa-info-circle mr-3"></i>Additional Information
                 </h2>
             </div>
-            <div class="p-6">
-                <div class="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div class="flex-1">
-                        <h3 class="text-sm font-semibold text-gray-900">{{ $record->medicalTest->name }}</h3>
-                        @if($record->medicalTest->description)
-                            <p class="text-xs text-gray-600 mt-1">{{ Str::limit($record->medicalTest->description, 80) }}</p>
-                        @endif
-                        @if($record->medicalTestCategory)
-                            <p class="text-xs text-blue-600 mt-1 font-medium">{{ $record->medicalTestCategory->name }}</p>
-                        @endif
+            <div class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    @if($hasAdditionalExams)
+                    <div class="bg-amber-50 rounded-xl p-6 border-l-4 border-amber-600">
+                        <h3 class="text-lg font-bold text-amber-900 mb-3">
+                            <i class="fas fa-clipboard-list mr-2"></i>Additional Examinations
+                        </h3>
+                        <p class="text-amber-800 leading-relaxed">{{ $parsedOtherExams['additional_exams'] }}</p>
                     </div>
-                    <div class="text-right">
-                        <p class="text-lg font-bold text-green-600">₱{{ number_format($record->medicalTest->price ?? 0, 2) }}</p>
+                    @elseif($hasOtherExams)
+                    <div class="bg-amber-50 rounded-xl p-6 border-l-4 border-amber-600">
+                        <h3 class="text-lg font-bold text-amber-900 mb-3">
+                            <i class="fas fa-clipboard-list mr-2"></i>Other Examinations
+                        </h3>
+                        <p class="text-amber-800 leading-relaxed">{{ $record->other_exams }}</p>
                     </div>
+                    @endif
+                    @if($record->uploaded_file)
+                    <div class="bg-green-50 rounded-xl p-6 border-l-4 border-green-600">
+                        <h3 class="text-lg font-bold text-green-900 mb-3">
+                            <i class="fas fa-file-excel mr-2"></i>Uploaded File
+                        </h3>
+                        <p class="text-green-800">{{ $record->uploaded_file }}</p>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
         @endif
 
-        <!-- Summary Card -->
-        <div class="bg-white shadow rounded-lg overflow-hidden mt-6">
-            <div class="px-4 py-4 bg-gray-50 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">
-                    <i class="fas fa-chart-bar mr-2 text-purple-600"></i>Summary
+        <!-- Billing & Summary Card -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="px-8 py-6 bg-gradient-to-r from-purple-600 to-purple-700 border-l-4 border-purple-800">
+                <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
+                    <i class="fas fa-receipt mr-3"></i>Billing & Summary
                 </h2>
             </div>
-            <div class="p-6">
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-600">Medical Exam:</span>
-                        <span class="text-sm font-semibold text-gray-900">
-                            {{ optional($record->medicalTestCategory)->name }}
-                            @if($record->medicalTest)
-                                - {{ $record->medicalTest->name }}
-                            @endif
-                        </span>
+            <div class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-600">
+                        <p class="text-blue-700 text-sm font-medium">Billing Type</p>
+                        <p class="text-2xl font-bold text-blue-900">{{ $record->billing_type }}</p>
                     </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-600">Total Price:</span>
-                        <span class="text-sm font-semibold text-green-600">₱{{ number_format($record->total_price ?? 0, 2) }}</span>
+                    @if($record->company_name)
+                    <div class="bg-indigo-50 rounded-lg p-4 border-l-4 border-indigo-600">
+                        <p class="text-indigo-700 text-sm font-medium">Company Name</p>
+                        <p class="text-lg font-bold text-indigo-900">{{ $record->company_name }}</p>
                     </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-600">Created:</span>
-                        <span class="text-sm font-semibold text-gray-900">{{ $record->created_at->format('M d, Y') }}</span>
+                    @endif
+                    <div class="bg-green-50 rounded-lg p-4 border-l-4 border-green-600 {{ $record->company_name ? '' : 'md:col-span-2' }}">
+                        <p class="text-green-700 text-sm font-medium">Total Price</p>
+                        <p class="text-3xl font-bold text-green-900">₱{{ number_format($record->total_price ?? 0, 2) }}</p>
                     </div>
                 </div>
             </div>

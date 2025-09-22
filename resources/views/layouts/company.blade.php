@@ -11,11 +11,64 @@
     
     <!-- Styles -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" crossorigin="anonymous">
+    
+    <!-- Fallback for Font Awesome -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if Font Awesome loaded
+            const testIcon = document.createElement('i');
+            testIcon.className = 'fas fa-home';
+            testIcon.style.display = 'none';
+            document.body.appendChild(testIcon);
+            
+            const computedStyle = window.getComputedStyle(testIcon, ':before');
+            if (computedStyle.content === 'none' || computedStyle.content === '') {
+                console.warn('Font Awesome not loaded, trying alternative CDN');
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = 'https://use.fontawesome.com/releases/v6.5.2/css/all.css';
+                document.head.appendChild(link);
+            }
+            document.body.removeChild(testIcon);
+        });
+    </script>
     
     <style>
+        :root {
+            --primary-color: #1e40af;
+            --secondary-color: #3b82f6;
+            --accent-color: #1e3a8a;
+            --info-color: #0891b2;
+            --warning-color: #ca8a04;
+            --danger-color: #dc2626;
+            --success-color: #16a34a;
+            --dark-color: #1f2937;
+            --light-color: #f8fafc;
+        }
+        
         * {
             font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: #1f2937;
+            min-height: 100vh;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
         
         .content-card {
@@ -25,7 +78,7 @@
         }
         
         .glass-sidebar {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.25));
+            background: #1e40af;
             backdrop-filter: blur(20px);
             border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -43,7 +96,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            background: rgba(255, 255, 255, 0.1);
             transition: left 0.5s;
         }
         
@@ -57,9 +110,8 @@
         }
         
         .nav-item.active {
-            background: rgba(59, 130, 246, 0.2);
-            border-right: 3px solid #3b82f6;
-            color: #3b82f6;
+            background: rgba(255, 255, 255, 0.15);
+            border-left: 4px solid #3b82f6;
         }
         
         .nav-section {
@@ -85,13 +137,8 @@
         }
         
         .notification-badge {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
+            background: #dc2626;
             animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
         }
         
         .search-bar {
@@ -113,23 +160,16 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
+        .modal-active {
+            overflow: hidden;
+        }
+        
         .modal-active .glass-sidebar {
             filter: blur(2px);
         }
         
         .animate-slide-in {
             animation: slideIn 0.3s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
         
         .mobile-menu-overlay {
@@ -151,162 +191,107 @@
 
     @stack('styles')
 </head>
-<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen">
+<body class="bg-gray-800 min-h-screen">
     @auth
     <!-- Mobile Menu Overlay -->
     <div id="mobile-overlay" class="fixed inset-0 mobile-menu-overlay z-40 hidden md:hidden"></div>
     
     <div class="flex h-screen overflow-hidden">
-        <!-- Glass Morphism Sidebar -->
-        <aside id="sidebar" class="glass-sidebar fixed md:relative w-80 h-full z-50 shadow-2xl">
-            <!-- Logo Area -->
-            <div class="p-6 border-b border-white/10">
-                <a href="{{ route('company.dashboard') }}" class="flex items-center space-x-4 text-white group">
-                    <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 group-hover:bg-white/20 transition-all duration-300">
-                        <i class="fas fa-building text-xl"></i>
+        <!-- Sidebar -->
+        <div id="sidebar" class="w-72 glass-sidebar relative z-10 shadow-2xl flex flex-col h-full">
+            <!-- Header -->
+            <div class="p-8 border-b border-white/10 flex-shrink-0">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20">
+                        <i class="fas fa-building text-white text-xl"></i>
                     </div>
                     <div>
-                        <span class="text-xl font-bold">Company Portal</span>
-                        <p class="text-xs text-white/70 mt-1">RSS Citi Health Services</p>
+                        <h1 class="text-xl font-bold text-white">Company Portal</h1>
+                        <p class="text-blue-200 text-sm">RSS Citi Health Services</p>
                     </div>
-                </a>
-            </div>
-
-            <!-- Search Bar -->
-            <div class="p-4">
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fas fa-search text-white/50"></i>
-                    </div>
-                    <input type="text" 
-                           placeholder="Search employees..." 
-                           class="search-bar w-full pl-10 pr-4 py-3 rounded-xl text-white placeholder-white/50 focus:outline-none">
                 </div>
             </div>
 
-            <!-- Navigation Links -->
-            <nav class="px-4 pb-20 overflow-y-auto">
+            <!-- Navigation -->
+            <nav class="flex-1 px-6 py-8 space-y-2 overflow-y-auto">
                 <!-- Main Menu Section -->
-                <div class="nav-section">
-                    <div class="nav-section-title">Main Menu</div>
-                    <a href="{{ route('company.dashboard') }}" 
-                       class="nav-item flex items-center px-4 py-3 rounded-xl text-white/80 hover:text-white mb-2 {{ request()->routeIs('company.dashboard') ? 'active' : '' }}">
-                        <div class="w-10 h-10 flex items-center justify-center">
-                            <i class="fas fa-chart-line text-lg"></i>
-                        </div>
-                        <span class="ml-3 font-medium">Dashboard</span>
-                    </a>
-
-                    <a href="{{ route('company.appointments.index') }}" 
-                       class="nav-item flex items-center px-4 py-3 rounded-xl text-white/80 hover:text-white mb-2 {{ request()->routeIs('company.appointments.*') ? 'active' : '' }}">
-                        <div class="w-10 h-10 flex items-center justify-center">
-                            <i class="fas fa-calendar-check text-lg"></i>
-                        </div>
-                        <span class="ml-3 font-medium">Appointments</span>
-                        <div class="ml-auto">
-                            <span class="notification-badge w-2 h-2 rounded-full"></span>
-                        </div>
-                    </a>
-
-                    <a href="{{ route('company.pre-employment.index') }}"
-                       class="nav-item flex items-center px-4 py-3 rounded-xl text-white/80 hover:text-white mb-2 {{ request()->routeIs('company.pre-employment.*') ? 'active' : '' }}">
-                        <div class="w-10 h-10 flex items-center justify-center">
-                            <i class="fas fa-briefcase text-lg"></i>
-                        </div>
-                        <span class="ml-3 font-medium">Pre-Employment</span>
-                    </a>
-
-                    <a href="{{ route('company.medical-results') }}" 
-                       class="nav-item flex items-center px-4 py-3 rounded-xl text-white/80 hover:text-white mb-2 {{ request()->routeIs('company.medical-results*') ? 'active' : '' }}">
-                        <div class="w-10 h-10 flex items-center justify-center">
-                            <i class="fas fa-file-medical text-lg"></i>
-                        </div>
-                        <span class="ml-3 font-medium">Medical Results</span>
-                    </a>
+                <div class="mb-8">
+                    <h3 class="text-xs font-semibold text-blue-200 uppercase tracking-wider mb-4 px-3">Main Menu</h3>
+                    <div class="space-y-1">
+                        <a href="{{ route('company.dashboard') }}" class="nav-item flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {{ request()->routeIs('company.dashboard') ? 'active text-white' : '' }}">
+                            <i class="fas fa-chart-line mr-4 text-lg"></i>
+                            <span class="font-medium">Dashboard</span>
+                        </a>
+                        <a href="{{ route('company.appointments.index') }}" class="nav-item flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {{ request()->routeIs('company.appointments.*') ? 'active text-white' : '' }}">
+                            <i class="fas fa-calendar-check mr-4 text-lg"></i>
+                            <span class="font-medium">Appointments</span>
+                            <span class="ml-auto notification-badge w-2 h-2 bg-red-500 rounded-full"></span>
+                        </a>
+                        <a href="{{ route('company.pre-employment.index') }}" class="nav-item flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {{ request()->routeIs('company.pre-employment.*') ? 'active text-white' : '' }}">
+                            <i class="fas fa-briefcase mr-4 text-lg"></i>
+                            <span class="font-medium">Pre-Employment</span>
+                        </a>
+                        <a href="{{ route('company.medical-results') }}" class="nav-item flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {{ request()->routeIs('company.medical-results*') ? 'active text-white' : '' }}">
+                            <i class="fas fa-file-medical mr-4 text-lg"></i>
+                            <span class="font-medium">Medical Results</span>
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Employee Management Section -->
-                <div class="nav-section">
-                    <div class="nav-section-title">Employee Management</div>
-                    <a href="{{ route('company.account-invitations.index') }}" 
-                       class="nav-item flex items-center px-4 py-3 rounded-xl text-white/80 hover:text-white mb-2 {{ request()->routeIs('company.account-invitations*') ? 'active' : '' }}">
-                        <div class="w-10 h-10 flex items-center justify-center">
-                            <i class="fas fa-user-plus text-lg"></i>
-                        </div>
-                        <span class="ml-3 font-medium">Account Invitations</span>
-                    </a>
+                <div class="mb-8">
+                    <h3 class="text-xs font-semibold text-blue-200 uppercase tracking-wider mb-4 px-3">Employee Management</h3>
+                    <div class="space-y-1">
+                        <a href="{{ route('company.account-invitations.index') }}" class="nav-item flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {{ request()->routeIs('company.account-invitations*') ? 'active text-white' : '' }}">
+                            <i class="fas fa-user-plus mr-4 text-lg"></i>
+                            <span class="font-medium">Account Invitations</span>
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Communication Section -->
-                <div class="nav-section">
-                    <div class="nav-section-title">Communication</div>
-                    <a href="{{ route('company.messages') }}" 
-                       class="nav-item flex items-center px-4 py-3 rounded-xl text-white/80 hover:text-white mb-2 {{ request()->routeIs('company.messages') ? 'active' : '' }}">
-                        <div class="w-10 h-10 flex items-center justify-center">
-                            <i class="fas fa-comments text-lg"></i>
-                        </div>
-                        <span class="ml-3 font-medium">Messages</span>
-                        <div class="ml-auto">
-                            <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">3</span>
-                        </div>
-                    </a>
-
-                    <a href="{{ route('company.settings') }}" 
-                       class="nav-item flex items-center px-4 py-3 rounded-xl text-white/80 hover:text-white mb-2 {{ request()->routeIs('company.settings*') ? 'active' : '' }}">
-                        <div class="w-10 h-10 flex items-center justify-center">
-                            <i class="fas fa-cog text-lg"></i>
-                        </div>
-                        <span class="ml-3 font-medium">Settings</span>
-                    </a>
+                <div class="mb-8">
+                    <h3 class="text-xs font-semibold text-blue-200 uppercase tracking-wider mb-4 px-3">Communication</h3>
+                    <div class="space-y-1">
+                        <a href="{{ route('company.messages') }}" class="nav-item flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {{ request()->routeIs('company.messages') ? 'active text-white' : '' }}">
+                            <i class="fas fa-comments mr-4 text-lg"></i>
+                            <span class="font-medium">Messages</span>
+                            <span class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">3</span>
+                        </a>
+                        <a href="{{ route('company.settings') }}" class="nav-item flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {{ request()->routeIs('company.settings*') ? 'active text-white' : '' }}">
+                            <i class="fas fa-cog mr-4 text-lg"></i>
+                            <span class="font-medium">Settings</span>
+                        </a>
+                    </div>
                 </div>
             </nav>
 
-            <!-- User Profile -->
-            <div class="absolute bottom-0 w-full p-4 border-t border-white/10">
-                <div class="flex items-center space-x-3 p-3 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
-                    <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                        {{ substr(Auth::user()->full_name ?? 'C', 0, 1) }}
-                    </div>
-                    <div class="flex-1 text-white">
-                        <p class="text-sm font-semibold">{{ Auth::user()->full_name ?? 'Company Admin' }}</p>
-                        <p class="text-xs text-white/70">Company Administrator</p>
-                    </div>
-                    <div class="relative">
-                        <button id="profile-menu-btn" class="text-white/70 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors">
-                            <i class="fas fa-ellipsis-v"></i>
-                        </button>
-                        
-                        <!-- Profile Dropdown -->
-                        <div id="profile-dropdown" class="profile-modal absolute bottom-full right-0 mb-2 w-48 rounded-xl shadow-xl border hidden animate-slide-in">
-                            <div class="p-2">
-                                <a href="#" class="flex items-center px-3 py-2 text-gray-700 hover:bg-blue-50 rounded-lg transition-colors">
-                                    <i class="fas fa-user-circle mr-3"></i>
-                                    Profile Settings
-                                </a>
-                                <a href="#" class="flex items-center px-3 py-2 text-gray-700 hover:bg-blue-50 rounded-lg transition-colors">
-                                    <i class="fas fa-bell mr-3"></i>
-                                    Notifications
-                                </a>
-                                <hr class="my-2 border-gray-200">
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="w-full flex items-center px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                                        <i class="fas fa-sign-out-alt mr-3"></i>
-                                        Sign Out
-                                    </button>
-                                </form>
-                            </div>
+            <!-- User Profile Section - Sticky Bottom -->
+            <div class="flex-shrink-0 p-6 border-t border-white/10 mt-auto">
+                <div class="bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/20">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                            {{ substr(Auth::user()->full_name ?? 'C', 0, 1) }}
                         </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-white font-semibold text-sm truncate">
+                                {{ Auth::user()->full_name ?? 'Company Admin' }}
+                            </p>
+                            <p class="text-blue-200 text-xs">Company Administrator</p>
+                        </div>
+                        <button id="profileButton" class="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-lg transition-all duration-300">
+                            <i class="fas fa-user-cog text-lg"></i>
+                        </button>
                     </div>
                 </div>
             </div>
-        </aside>
+        </div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden md:ml-0">
-            <!-- Top Header Bar -->
-            <header class="content-card shadow-lg border-b border-white/20 backdrop-blur-sm">
-                <div class="flex items-center justify-between px-6 py-4">
+        <div class="flex-1 flex flex-col overflow-hidden bg-gray-50">
+            <!-- Header -->
+            <header class="content-card shadow-lg border-b border-gray-200 relative z-20">
+                <div class="flex items-center justify-between px-8 py-6">
                     <div class="flex items-center space-x-4">
                         <!-- Mobile Menu Button -->
                         <button id="mobile-menu-btn" class="md:hidden text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-colors">
@@ -321,10 +306,20 @@
                     
                     <div class="flex items-center space-x-4">
                         <!-- Notifications -->
-                        <button class="relative p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors">
-                            <i class="fas fa-bell text-lg"></i>
-                            <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
-                        </button>
+                        <div class="relative">
+                            <button class="p-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200">
+                                <i class="fas fa-bell text-lg"></i>
+                                <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full notification-badge"></span>
+                            </button>
+                        </div>
+                        
+                        <!-- Messages -->
+                        <div class="relative">
+                            <button class="p-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200">
+                                <i class="fas fa-envelope text-lg"></i>
+                                <span class="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full notification-badge"></span>
+                            </button>
+                        </div>
                         
                         <!-- Current Time -->
                         <div class="hidden md:block text-right">
@@ -335,10 +330,90 @@
                 </div>
             </header>
 
-            <!-- Page Content -->
-            <main class="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50/50 via-blue-50/50 to-indigo-100/50 p-6">
-                @yield('content')
+            <!-- Main Content Area -->
+            <main class="flex-1 overflow-y-auto p-8 bg-gray-50">
+                <div class="max-w-7xl mx-auto">
+                    @yield('content')
+                </div>
             </main>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full hidden z-50 flex items-center justify-center">
+        <div class="relative mx-auto p-0 border-0 w-full max-w-md shadow-2xl rounded-2xl bg-white">
+            <!-- Modal Header -->
+            <div class="bg-blue-600 px-8 py-6 rounded-t-2xl">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20">
+                            <i class="fas fa-building text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Profile</h3>
+                            <p class="text-blue-100 text-sm">Company Administrator</p>
+                        </div>
+                    </div>
+                    <button id="closeModal" class="text-white/70 hover:text-white transition-colors p-2">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-8">
+                <!-- Profile Info -->
+                <div class="flex items-center space-x-4 mb-8 p-4 bg-blue-50 rounded-xl border border-blue-100">
+                    <div class="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-building text-white text-2xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-bold text-gray-900">{{ Auth::user()->full_name ?? 'Company Admin' }}</h4>
+                        <p class="text-sm text-gray-600">{{ Auth::user()->email ?? 'admin@company.com' }}</p>
+                        <div class="flex items-center space-x-2 mt-1">
+                            <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Company Administrator</span>
+                            <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                            <span class="text-xs text-green-600 font-medium">Online</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Menu Items -->
+                <div class="space-y-2">
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-xl transition-all duration-200 group">
+                        <div class="w-10 h-10 bg-gray-100 group-hover:bg-blue-100 rounded-lg flex items-center justify-center mr-3 transition-colors">
+                            <i class="fas fa-user-edit text-gray-500 group-hover:text-blue-600"></i>
+                        </div>
+                        <span class="font-medium">Edit Profile</span>
+                        <i class="fas fa-chevron-right ml-auto text-gray-400 group-hover:text-blue-500"></i>
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-xl transition-all duration-200 group">
+                        <div class="w-10 h-10 bg-gray-100 group-hover:bg-blue-100 rounded-lg flex items-center justify-center mr-3 transition-colors">
+                            <i class="fas fa-cog text-gray-500 group-hover:text-blue-600"></i>
+                        </div>
+                        <span class="font-medium">Settings</span>
+                        <i class="fas fa-chevron-right ml-auto text-gray-400 group-hover:text-blue-500"></i>
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-xl transition-all duration-200 group">
+                        <div class="w-10 h-10 bg-gray-100 group-hover:bg-blue-100 rounded-lg flex items-center justify-center mr-3 transition-colors">
+                            <i class="fas fa-bell text-gray-500 group-hover:text-blue-600"></i>
+                        </div>
+                        <span class="font-medium">Notifications</span>
+                        <i class="fas fa-chevron-right ml-auto text-gray-400 group-hover:text-blue-500"></i>
+                    </a>
+                </div>
+
+                <!-- Logout Button -->
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="w-full flex items-center justify-center px-4 py-3 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-all duration-200 font-medium">
+                            <i class="fas fa-sign-out-alt mr-2"></i>
+                            Sign Out
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
     @endauth
@@ -365,22 +440,27 @@
                 });
             }
             
-            // Profile dropdown functionality
-            const profileMenuBtn = document.getElementById('profile-menu-btn');
-            const profileDropdown = document.getElementById('profile-dropdown');
+            // Profile modal functionality
+            const profileButton = document.getElementById('profileButton');
+            const profileModal = document.getElementById('profileModal');
+            const closeModal = document.getElementById('closeModal');
             
-            if (profileMenuBtn && profileDropdown) {
-                profileMenuBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    profileDropdown.classList.toggle('hidden');
+            if (profileButton && profileModal && closeModal) {
+                profileButton.addEventListener('click', function() {
+                    profileModal.classList.remove('hidden');
+                    document.body.classList.add('modal-active');
                 });
                 
-                document.addEventListener('click', function() {
-                    profileDropdown.classList.add('hidden');
+                closeModal.addEventListener('click', function() {
+                    profileModal.classList.add('hidden');
+                    document.body.classList.remove('modal-active');
                 });
                 
-                profileDropdown.addEventListener('click', function(e) {
-                    e.stopPropagation();
+                profileModal.addEventListener('click', function(e) {
+                    if (e.target === profileModal) {
+                        profileModal.classList.add('hidden');
+                        document.body.classList.remove('modal-active');
+                    }
                 });
             }
             
@@ -401,13 +481,6 @@
             // Update time immediately and then every minute
             updateTime();
             setInterval(updateTime, 60000);
-            
-            // Add smooth animations to navigation items
-            const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach((item, index) => {
-                item.style.animationDelay = `${index * 0.1}s`;
-                item.classList.add('animate-slide-in');
-            });
             
             // Search functionality
             const searchInput = document.querySelector('.search-bar');
