@@ -1,102 +1,331 @@
 @extends('layouts.nurse')
 
-@section('title', 'Annual Physical Examination')
-
-@section('page-title', 'Annual Physical Examination')
+@section('title', 'Annual Physical Examinations - RSS Citi Health Services')
+@section('page-title', 'Annual Physical Examinations')
+@section('page-description', 'Yearly health checkups and comprehensive medical assessments')
 
 @section('content')
+<div class="space-y-8">
+    <!-- Success/Error Messages -->
     @if(session('success'))
-        <div class="mb-4 p-4 rounded bg-green-100 text-green-800 border border-green-200">
-            {{ session('success') }}
+        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center space-x-3">
+            <div class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-check text-emerald-600"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-emerald-800 font-medium">{{ session('success') }}</p>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-600 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     @endif
-    <!-- Annual Physical Table -->
-    <div class="bg-white rounded-lg shadow-sm">
-        <div class="p-6 border-b border-gray-200">
-            <h2 class="text-xl font-semibold text-gray-800">Annual Physical Examination Patients</h2>
+
+    @if(session('error'))
+        <div class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center space-x-3">
+            <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-red-600"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-red-800 font-medium">{{ session('error') }}</p>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-600 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PATIENT NAME</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AGE</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SEX</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">EMAIL</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PHONE</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">APPOINTMENT ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">EXAMINATION STATUS</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($patients as $patient)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {{ $patient->first_name }} {{ $patient->last_name }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->age }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->sex }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->email }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->phone }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->appointment_id }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+    @endif
+
+    <!-- Header Section -->
+    <div class="content-card rounded-xl overflow-hidden shadow-lg border border-gray-200">
+        <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20">
+                        <i class="fas fa-calendar-check text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Annual Physical Examinations</h2>
+                        <p class="text-purple-100 text-sm">Yearly comprehensive health assessments and medical checkups</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-white/90 text-sm">Total Patients</div>
+                    <div class="text-white font-bold text-2xl">{{ $patients->count() }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        @php
+            $totalPatients = $patients->count();
+            $completedCount = 0;
+            $pendingCount = 0;
+            $scheduledCount = $totalPatients;
+            
+            foreach($patients as $patient) {
+                $annualPhysicalExam = \App\Models\AnnualPhysicalExamination::where('patient_id', $patient->id)->first();
+                $medicalChecklist = \App\Models\MedicalChecklist::where('patient_id', $patient->id)
+                    ->where('examination_type', 'annual-physical')
+                    ->first();
+                    
+                if($annualPhysicalExam && $medicalChecklist) {
+                    $completedCount++;
+                } else {
+                    $pendingCount++;
+                }
+            }
+        @endphp
+        
+        <div class="content-card rounded-xl p-6 border-l-4 border-purple-500 hover:shadow-lg transition-shadow duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Total Patients</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ $totalPatients }}</p>
+                    <p class="text-xs text-purple-600 mt-1">Scheduled checkups</p>
+                </div>
+                <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-users text-purple-600 text-lg"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-card rounded-xl p-6 border-l-4 border-emerald-500 hover:shadow-lg transition-shadow duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Completed</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ $completedCount }}</p>
+                    <p class="text-xs text-emerald-600 mt-1">Examinations done</p>
+                </div>
+                <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-check-circle text-emerald-600 text-lg"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-card rounded-xl p-6 border-l-4 border-amber-500 hover:shadow-lg transition-shadow duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Pending</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ $pendingCount }}</p>
+                    <p class="text-xs text-amber-600 mt-1">Awaiting examination</p>
+                </div>
+                <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-clock text-amber-600 text-lg"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-card rounded-xl p-6 border-l-4 border-blue-500 hover:shadow-lg transition-shadow duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Completion Rate</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ $totalPatients > 0 ? round(($completedCount / $totalPatients) * 100) : 0 }}%</p>
+                    <p class="text-xs text-blue-600 mt-1">Overall progress</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-chart-line text-blue-600 text-lg"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Annual Physical Patients Table -->
+    <div class="content-card rounded-xl shadow-lg border border-gray-200">
+        <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-8 py-6 rounded-t-xl">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center backdrop-blur-sm border border-white/20">
+                        <i class="fas fa-table text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Annual Physical Patients</h3>
+                        <p class="text-purple-100 text-sm">Comprehensive yearly health examination records</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button class="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 font-medium">
+                        <i class="fas fa-filter mr-2"></i>Filter
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-0">
+            @if($patients->count() > 0)
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Patient</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Demographics</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Contact Info</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Appointment</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-100">
+                            @foreach($patients as $patient)
                                 @php
                                     $annualPhysicalExam = \App\Models\AnnualPhysicalExamination::where('patient_id', $patient->id)->first();
                                     $medicalChecklist = \App\Models\MedicalChecklist::where('patient_id', $patient->id)
                                         ->where('examination_type', 'annual-physical')
                                         ->first();
+                                    $isCompleted = $annualPhysicalExam && $medicalChecklist;
+                                    $canSendToDoctor = $isCompleted;
                                 @endphp
-                                @if($annualPhysicalExam && $medicalChecklist)
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        Completed
-                                    </span>
-                                @else
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                        Pending
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                @php
-                                    $canSendToDoctor = $annualPhysicalExam && $medicalChecklist;
-                                @endphp
-                                @if($canSendToDoctor)
-                                    <form action="{{ route('nurse.annual-physical.send-to-doctor', $patient->id) }}" method="POST" class="inline">
-                                        @csrf
-                                        <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Send to Doctor">
-                                            <i class="fas fa-paper-plane"></i>
-                                        </button>
-                                    </form>
-                                @else
-                                    <button type="button" class="bg-gray-400 text-white px-3 py-1 rounded cursor-not-allowed mr-2" title="Complete examination and medical checklist first" disabled>
-                                        <i class="fas fa-paper-plane"></i>
-                                    </button>
-                                @endif
-                                @if($annualPhysicalExam)
-                                    <a href="{{ route('nurse.annual-physical.edit', $annualPhysicalExam->id) }}" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors mr-2" title="Edit Examination">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                @else
-                                    <a href="{{ route('nurse.annual-physical.create', ['patient_id' => $patient->id]) }}" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition-colors mr-2" title="Create Examination">
-                                        <i class="fas fa-plus"></i>
-                                    </a>
-                                @endif
-                                <a href="{{ route('nurse.medical-checklist.annual-physical', $patient->id) }}" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors mr-2" title="Medical Checklist">
-                                    <i class="fas fa-clipboard-list"></i>
-                                </a>
-                                
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">
-                                No annual physical examination patients found
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                                <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                                                <span class="text-purple-600 font-semibold text-sm">
+                                                    {{ substr($patient->first_name, 0, 1) }}{{ substr($patient->last_name, 0, 1) }}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-semibold text-gray-900">{{ $patient->first_name }} {{ $patient->last_name }}</p>
+                                                <p class="text-xs text-gray-500">Patient ID: #{{ $patient->id }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm">
+                                            <p class="text-gray-900 font-medium">{{ $patient->age }} years old</p>
+                                            <p class="text-xs text-gray-500">{{ ucfirst($patient->sex) }}</p>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm">
+                                            <p class="text-gray-900 font-medium">{{ $patient->email }}</p>
+                                            <p class="text-xs text-gray-500">{{ $patient->phone ?? 'No phone' }}</p>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm">
+                                            <p class="text-gray-900 font-medium">Appointment #{{ $patient->appointment_id }}</p>
+                                            <p class="text-xs text-gray-500">Annual physical checkup</p>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($isCompleted)
+                                            <span class="px-3 py-1 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full">
+                                                <i class="fas fa-check-circle mr-1"></i>Completed
+                                            </span>
+                                        @else
+                                            <span class="px-3 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">
+                                                <i class="fas fa-clock mr-1"></i>Pending
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center space-x-2">
+                                            <!-- Send to Doctor -->
+                                            @if($canSendToDoctor)
+                                                <form action="{{ route('nurse.annual-physical.send-to-doctor', $patient->id) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    <button type="submit" class="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors" title="Send to Doctor">
+                                                        <i class="fas fa-paper-plane"></i>
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <button type="button" class="p-2 text-gray-400 cursor-not-allowed rounded-lg" title="Complete examination and medical checklist first" disabled>
+                                                    <i class="fas fa-paper-plane"></i>
+                                                </button>
+                                            @endif
+
+                                            <!-- Examination -->
+                                            @if($annualPhysicalExam)
+                                                <a href="{{ route('nurse.annual-physical.edit', $annualPhysicalExam->id) }}" class="p-2 text-emerald-600 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg transition-colors" title="Edit Examination">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            @else
+                                                <a href="{{ route('nurse.annual-physical.create', ['patient_id' => $patient->id]) }}" class="p-2 text-emerald-600 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg transition-colors" title="Create Examination">
+                                                    <i class="fas fa-plus"></i>
+                                                </a>
+                                            @endif
+
+                                            <!-- Medical Checklist -->
+                                            <a href="{{ route('nurse.medical-checklist.annual-physical', $patient->id) }}" class="p-2 text-purple-600 hover:text-purple-900 hover:bg-purple-50 rounded-lg transition-colors" title="Medical Checklist">
+                                                <i class="fas fa-clipboard-list"></i>
+                                            </a>
+
+                                            <!-- View Details -->
+                                            <button class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <!-- Empty State -->
+                <div class="text-center py-16">
+                    <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-gray-100 flex items-center justify-center">
+                        <i class="fas fa-calendar-check text-4xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">No Annual Physical Patients</h3>
+                    <p class="text-gray-600 mb-8 max-w-md mx-auto">There are no patients scheduled for annual physical examinations. New appointments will appear here once scheduled.</p>
+                    <button class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium">
+                        <i class="fas fa-calendar-plus mr-2"></i>Schedule Appointment
+                    </button>
+                </div>
+            @endif
         </div>
     </div>
+</div>
+
+@push('scripts')
+<script>
+    // Add smooth animations to content cards
+    document.addEventListener('DOMContentLoaded', function() {
+        const contentCards = document.querySelectorAll('.content-card');
+        contentCards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
+            card.classList.add('animate-fade-in-up');
+        });
+
+        // Auto-hide alert messages after 5 seconds
+        const alerts = document.querySelectorAll('[class*="bg-emerald-50"], [class*="bg-red-50"]');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                alert.style.transition = 'opacity 0.5s ease-out';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            }, 5000);
+        });
+
+        // Add confirmation for send to doctor actions
+        const sendForms = document.querySelectorAll('form[action*="send-to-doctor"]');
+        sendForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (!confirm('Are you sure you want to send this examination to the doctor?')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+    @keyframes fade-in-up {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .animate-fade-in-up {
+        animation: fade-in-up 0.6s ease-out forwards;
+    }
+</style>
+@endpush
 @endsection

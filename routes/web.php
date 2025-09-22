@@ -447,5 +447,3 @@ Route::get('/location', function () {
 Route::get('/', function () {
     return redirect()->route('login');
 });
-
-

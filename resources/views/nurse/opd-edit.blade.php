@@ -1,39 +1,95 @@
 @extends('layouts.nurse')
 
-@section('title', 'Edit OPD Examination')
-
+@section('title', 'Edit OPD Examination - RSS Citi Health Services')
 @section('page-title', 'Edit OPD Examination')
+@section('page-description', 'Update outpatient department consultation and medical examination')
 
 @section('content')
-    <div class="bg-white rounded-lg shadow-sm">
-        <div class="p-6 border-b border-gray-200">
-            <div class="flex items-center justify-between">
-                <h2 class="text-xl font-semibold text-gray-800">Edit OPD Examination</h2>
-                <a href="{{ route('nurse.opd') }}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
-                    <i class="fas fa-arrow-left mr-2"></i>Back to OPD List
-                </a>
+<div class="space-y-8">
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center space-x-3">
+            <div class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-check text-emerald-600"></i>
             </div>
+            <div class="flex-1">
+                <p class="text-emerald-800 font-medium">{{ session('success') }}</p>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-600 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-        
-        <div class="p-6">
-            <!-- Patient Information -->
-            <div class="mb-6 p-4 bg-blue-50 rounded-lg">
-                <h3 class="text-lg font-semibold text-blue-800 mb-2">Patient Information</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div>
-                        <span class="font-medium text-blue-700">Name:</span>
-                        <span class="text-blue-600">{{ $opdExamination->user->fname }} {{ $opdExamination->user->lname }}</span>
+    @endif
+
+    @if(session('error'))
+        <div class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center space-x-3">
+            <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-red-600"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-red-800 font-medium">{{ session('error') }}</p>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-600 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    @endif
+
+    <!-- Header Section -->
+    <div class="content-card rounded-xl overflow-hidden shadow-lg border border-gray-200">
+        <div class="bg-gradient-to-r from-amber-600 to-amber-700 px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20">
+                        <i class="fas fa-edit text-white text-2xl"></i>
                     </div>
                     <div>
-                        <span class="font-medium text-blue-700">Age:</span>
-                        <span class="text-blue-600">{{ $opdExamination->user->age }}</span>
-                    </div>
-                    <div>
-                        <span class="font-medium text-blue-700">Email:</span>
-                        <span class="text-blue-600">{{ $opdExamination->user->email }}</span>
+                        <h2 class="text-2xl font-bold text-white">Edit OPD Examination</h2>
+                        <p class="text-amber-100 text-sm">Update outpatient consultation and medical assessment</p>
                     </div>
                 </div>
+                <div class="text-right">
+                    <div class="text-white/90 text-sm">Examination ID</div>
+                    <div class="text-white font-bold text-lg">#{{ $opdExamination->id }}</div>
+                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Patient Information Card -->
+    <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">
+        <div class="flex items-center space-x-3 mb-6">
+            <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-user text-amber-600"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-gray-900">Patient Information</h3>
+                <p class="text-gray-600 text-sm">Walk-in patient details for examination</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <label class="block text-xs font-semibold text-gray-600 uppercase mb-2">Patient Name</label>
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                        <span class="text-amber-600 font-semibold text-sm">
+                            {{ substr($opdExamination->user->fname, 0, 1) }}{{ substr($opdExamination->user->lname, 0, 1) }}
+                        </span>
+                    </div>
+                    <div class="text-lg font-semibold text-gray-900">{{ $opdExamination->user->fname }} {{ $opdExamination->user->lname }}</div>
+                </div>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <label class="block text-xs font-semibold text-gray-600 uppercase mb-2">Age</label>
+                <div class="text-lg font-semibold text-gray-900">{{ $opdExamination->user->age }} years old</div>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <label class="block text-xs font-semibold text-gray-600 uppercase mb-2">Email</label>
+                <div class="text-sm font-medium text-gray-900">{{ $opdExamination->user->email }}</div>
+            </div>
+        </div>
+    </div>
 
             <form action="{{ route('nurse.opd.update', $opdExamination->id) }}" method="POST">
                 @csrf
