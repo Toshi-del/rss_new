@@ -209,6 +209,20 @@
                     <span>Medical Staff</span>
                     <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
                 </a>
+                
+                <a href="{{ route('admin.inventory.index') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('admin.inventory*') ? 'active' : '' }}">
+                    <i class="fas fa-boxes text-lg mr-4"></i>
+                    <span>Inventory Management</span>
+                    <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
+                </a>
+                
+                <div class="text-white/40 text-xs font-semibold uppercase tracking-wider px-4 mt-8 mb-4">Content Management</div>
+                
+                <a href="{{ route('admin.page-contents.index') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('admin.page-contents*') ? 'active' : '' }}">
+                    <i class="fas fa-edit text-lg mr-4"></i>
+                    <span>Page Contents</span>
+                    <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
+                </a>
             </nav>
             
             <!-- User profile section -->

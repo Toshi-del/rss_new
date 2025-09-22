@@ -7,6 +7,7 @@ use App\Models\Message;
 use App\Models\Patient;
 use App\Models\PreEmploymentRecord;
 use App\Models\User;
+use App\Models\OpdExamination;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -30,13 +31,27 @@ class NurseController extends Controller
             ->where('status', 'approved')->latest()->take(5)->get();
         $preEmploymentCount = PreEmploymentRecord::where('status', 'approved')->count();
 
+        // Get OPD walk-in patients (users with 'opd' role)
+        $opdPatients = User::where('role', 'opd')->latest()->take(5)->get();
+        $opdCount = User::where('role', 'opd')->count();
+
+        // Get annual physical count
+        $annualPhysicalCount = Patient::where('status', 'approved')
+            ->whereDoesntHave('annualPhysicalExamination', function ($q) {
+                $q->whereIn('status', ['completed', 'sent_to_company']);
+            })
+            ->count();
+
         return view('nurse.dashboard', compact(
             'patients',
             'patientCount',
             'appointments',
             'appointmentCount',
             'preEmployments',
-            'preEmploymentCount'
+            'preEmploymentCount',
+            'opdPatients',
+            'opdCount',
+            'annualPhysicalCount'
         ));
     }
 
@@ -230,6 +245,7 @@ class NurseController extends Controller
             'pre_employment_record_id' => 'nullable|integer',
             'patient_id' => 'nullable|integer',
             'annual_physical_examination_id' => 'nullable|integer',
+            'opd_examination_id' => 'nullable|integer',
             'physical_exam_done_by' => 'nullable|string',
             'optional_exam' => 'nullable|string',
             'nurse_signature' => 'nullable|string',
@@ -240,9 +256,12 @@ class NurseController extends Controller
         \App\Models\MedicalChecklist::create($validated);
 
         // Redirect out of the checklist page back to the appropriate list
-        $redirectRoute = ($validated['examination_type'] === 'pre-employment')
-            ? 'nurse.pre-employment'
-            : 'nurse.annual-physical';
+        $redirectRoute = match($validated['examination_type']) {
+            'pre-employment' => 'nurse.pre-employment',
+            'annual-physical' => 'nurse.annual-physical',
+            'opd' => 'nurse.opd',
+            default => 'nurse.dashboard'
+        };
 
         return redirect()->route($redirectRoute)->with('success', 'Medical checklist created successfully.');
     }
@@ -267,9 +286,12 @@ class NurseController extends Controller
         $medicalChecklist->update($validated);
 
         // Redirect out of the checklist page back to the appropriate list
-        $redirectRoute = ($request->input('examination_type') === 'pre-employment')
-            ? 'nurse.pre-employment'
-            : 'nurse.annual-physical';
+        $redirectRoute = match($request->input('examination_type')) {
+            'pre-employment' => 'nurse.pre-employment',
+            'annual-physical' => 'nurse.annual-physical',
+            'opd' => 'nurse.opd',
+            default => 'nurse.dashboard'
+        };
 
         return redirect()->route($redirectRoute)->with('success', 'Medical checklist updated successfully.');
     }
@@ -480,5 +502,155 @@ class NurseController extends Controller
         \App\Models\AnnualPhysicalExamination::create($validated);
 
         return redirect()->route('nurse.annual-physical')->with('success', 'Annual physical examination created successfully.');
+    }
+
+    /**
+     * Show OPD walk-in patients
+     */
+    public function opd()
+    {
+        $opdPatients = User::where('role', 'opd')
+            ->whereDoesntHave('opdExamination', function ($q) {
+                $q->whereIn('status', ['completed', 'sent_to_company']);
+            })
+            ->latest()->get();
+        
+        return view('nurse.opd', compact('opdPatients'));
+    }
+
+    /**
+     * Show create OPD examination form
+     */
+    public function createOpdExamination(Request $request)
+    {
+        $userId = $request->query('user_id');
+        $opdPatient = User::where('role', 'opd')->findOrFail($userId);
+        
+        return view('nurse.opd-create', compact('opdPatient'));
+    }
+
+    /**
+     * Store new OPD examination
+     */
+    public function storeOpdExamination(Request $request)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'illness_history' => 'nullable|string',
+            'accidents_operations' => 'nullable|string',
+            'past_medical_history' => 'nullable|string',
+            'family_history' => 'nullable|array',
+            'personal_habits' => 'nullable|array',
+            'physical_exam' => 'required|array',
+            'physical_exam.temp' => 'required|string',
+            'physical_exam.height' => 'required|string',
+            'physical_exam.weight' => 'required|string',
+            'physical_exam.heart_rate' => 'required|string',
+            'skin_marks' => 'required|string',
+            'visual' => 'required|string',
+            'ishihara_test' => 'required|string',
+            'findings' => 'required|string',
+            'lab_report' => 'nullable|array',
+            'physical_findings' => 'nullable|array',
+            'lab_findings' => 'nullable|array',
+            'ecg' => 'nullable|string',
+        ], [
+            'physical_exam.required' => 'Physical examination data is required.',
+            'physical_exam.temp.required' => 'Temperature is required.',
+            'physical_exam.height.required' => 'Height is required.',
+            'physical_exam.weight.required' => 'Weight is required.',
+            'physical_exam.heart_rate.required' => 'Heart rate is required.',
+            'skin_marks.required' => 'Skin marks/tattoos are required.',
+            'visual.required' => 'Visual acuity is required.',
+            'ishihara_test.required' => 'Ishihara test is required.',
+            'findings.required' => 'Findings are required.',
+        ]);
+
+        // Auto-populate linkage fields from the OPD patient
+        $opdPatient = User::findOrFail($validated['user_id']);
+        $validated['name'] = trim(($opdPatient->fname ?? '') . ' ' . ($opdPatient->lname ?? ''));
+        $validated['date'] = now()->toDateString();
+        $validated['status'] = 'pending';
+        
+        OpdExamination::create($validated);
+
+        return redirect()->route('nurse.opd')->with('success', 'OPD examination created successfully.');
+    }
+
+    /**
+     * Show edit OPD examination form
+     */
+    public function editOpdExamination($id)
+    {
+        $opdExamination = OpdExamination::with('user')->findOrFail($id);
+        
+        return view('nurse.opd-edit', compact('opdExamination'));
+    }
+
+    /**
+     * Update OPD examination
+     */
+    public function updateOpdExamination(Request $request, $id)
+    {
+        $opdExamination = OpdExamination::findOrFail($id);
+        
+        $validated = $request->validate([
+            'illness_history' => 'nullable|string',
+            'accidents_operations' => 'nullable|string',
+            'past_medical_history' => 'nullable|string',
+            'family_history' => 'nullable|array',
+            'personal_habits' => 'nullable|array',
+            'physical_exam' => 'nullable|array',
+            'skin_marks' => 'nullable|string',
+            'visual' => 'nullable|string',
+            'ishihara_test' => 'nullable|string',
+            'findings' => 'nullable|string',
+            'lab_report' => 'nullable|array',
+            'physical_findings' => 'nullable|array',
+            'lab_findings' => 'nullable|array',
+            'ecg' => 'nullable|string',
+        ]);
+
+        $opdExamination->update($validated);
+
+        return redirect()->route('nurse.opd')->with('success', 'OPD examination updated successfully.');
+    }
+
+    /**
+     * Send OPD examination to doctor
+     */
+    public function sendOpdToDoctor($userId)
+    {
+        $opdPatient = User::where('role', 'opd')->findOrFail($userId);
+        $exam = OpdExamination::firstOrCreate(
+            ['user_id' => $userId],
+            [
+                'name' => trim(($opdPatient->fname ?? '') . ' ' . ($opdPatient->lname ?? '')),
+                'date' => now()->toDateString(),
+                'status' => 'pending',
+            ]
+        );
+        
+        // Mark as completed from nurse to send up to doctor
+        $exam->update(['status' => 'completed']);
+        
+        return redirect()->route('nurse.opd')->with('success', 'OPD examination sent to doctor.');
+    }
+
+    /**
+     * Show medical checklist for OPD
+     */
+    public function showMedicalChecklistOpd($userId)
+    {
+        $opdPatient = User::where('role', 'opd')->findOrFail($userId);
+        $opdExamination = OpdExamination::where('user_id', $userId)->first();
+        $medicalChecklist = \App\Models\MedicalChecklist::where('opd_examination_id', $opdExamination->id ?? 0)->first();
+        $examinationType = 'opd';
+        $number = 'OPD-' . str_pad($opdPatient->id, 4, '0', STR_PAD_LEFT);
+        $name = trim(($opdPatient->fname ?? '') . ' ' . ($opdPatient->lname ?? ''));
+        $age = $opdPatient->age ?? null;
+        $date = now()->format('Y-m-d');
+        
+        return view('nurse.medical-checklist', compact('medicalChecklist', 'opdPatient', 'opdExamination', 'examinationType', 'number', 'name', 'age', 'date'));
     }
 }

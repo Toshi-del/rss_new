@@ -7,7 +7,9 @@ use App\Models\Patient;
 use App\Models\PreEmploymentRecord;
 use App\Models\PreEmploymentExamination;
 use App\Models\AnnualPhysicalExamination;
+use App\Models\OpdExamination;
 use App\Models\MedicalChecklist;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,6 +26,9 @@ class PleboController extends Controller
         $patients = Patient::where('status', 'approved')->latest()->take(5)->get();
         $patientCount = Patient::where('status', 'approved')->count();
 
+        $opdPatients = User::where('role', 'opd')->latest()->take(5)->get();
+        $opdCount = User::where('role', 'opd')->count();
+
         $appointments = Appointment::with('patients')->latest()->take(5)->get();
         $appointmentCount = Appointment::count();
 
@@ -32,6 +37,8 @@ class PleboController extends Controller
             'preEmploymentCount',
             'patients',
             'patientCount',
+            'opdPatients',
+            'opdCount',
             'appointments',
             'appointmentCount'
         ));
@@ -70,6 +77,23 @@ class PleboController extends Controller
     }
 
     /**
+     * Show medical checklist for OPD
+     */
+    public function showMedicalChecklistOpd($userId)
+    {
+        $user = User::findOrFail($userId);
+        $opdExamination = $user->opdExamination;
+        $medicalChecklist = MedicalChecklist::where('opd_examination_id', optional($opdExamination)->id)->first();
+        $examinationType = 'opd';
+        $number = 'OPD-' . str_pad($user->id, 4, '0', STR_PAD_LEFT);
+        $name = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? ''));
+        $age = $user->age ?? null;
+        $date = now()->format('Y-m-d');
+
+        return view('plebo.medical-checklist', compact('medicalChecklist', 'user', 'opdExamination', 'examinationType', 'number', 'name', 'age', 'date'));
+    }
+
+    /**
      * List pre-employment records for plebo
      */
     public function preEmployment()
@@ -93,6 +117,19 @@ class PleboController extends Controller
             })
             ->latest()->paginate(15);
         return view('plebo.annual-physical', compact('patients'));
+    }
+
+    /**
+     * List OPD patients for plebo
+     */
+    public function opd()
+    {
+        $opdPatients = User::where('role', 'opd')
+            ->whereDoesntHave('opdExamination', function ($q) {
+                $q->whereIn('status', ['completed', 'sent_to_doctor']);
+            })
+            ->latest()->paginate(15);
+        return view('plebo.opd', compact('opdPatients'));
     }
 
     public function sendAnnualPhysicalToDoctor($patientId)
@@ -144,16 +181,38 @@ class PleboController extends Controller
         return redirect()->route('plebo.pre-employment')->with('success', 'Pre-employment sent to doctor.');
     }
 
+    public function sendOpdToDoctor($userId)
+    {
+        $user = User::findOrFail($userId);
+        
+        // Check if OPD examination exists
+        $opdExamination = $user->opdExamination;
+        if (!$opdExamination) {
+            return redirect()->route('plebo.opd')->with('error', 'No OPD examination found for this patient.');
+        }
+        
+        // Check if medical checklist exists
+        $hasMedicalChecklist = MedicalChecklist::where('opd_examination_id', $opdExamination->id)->exists();
+        
+        if (!$hasMedicalChecklist) {
+            return redirect()->route('plebo.opd')->with('error', 'Please complete the medical checklist before sending to doctor.');
+        }
+        
+        $opdExamination->update(['status' => 'completed']);
+        return redirect()->route('plebo.opd')->with('success', 'OPD examination sent to doctor.');
+    }
+
     /**
      * Store a new medical checklist
      */
     public function storeMedicalChecklist(Request $request)
     {
         $data = $request->validate([
-            'examination_type' => 'required|in:pre_employment,annual_physical',
+            'examination_type' => 'required|in:pre_employment,annual_physical,opd',
             'pre_employment_record_id' => 'nullable|exists:pre_employment_records,id',
             'patient_id' => 'nullable|exists:patients,id',
             'annual_physical_examination_id' => 'nullable|exists:annual_physical_examinations,id',
+            'opd_examination_id' => 'nullable|exists:opd_examinations,id',
             'name' => 'required|string',
             'age' => 'required|integer',
             'number' => 'nullable|string',
@@ -184,6 +243,8 @@ class PleboController extends Controller
             $medicalChecklist = MedicalChecklist::where('pre_employment_record_id', $data['pre_employment_record_id'])->first();
         } elseif ($data['examination_type'] === 'annual_physical' && $data['patient_id']) {
             $medicalChecklist = MedicalChecklist::where('patient_id', $data['patient_id'])->first();
+        } elseif ($data['examination_type'] === 'opd' && $data['opd_examination_id']) {
+            $medicalChecklist = MedicalChecklist::where('opd_examination_id', $data['opd_examination_id'])->first();
         }
 
         try {
@@ -198,6 +259,8 @@ class PleboController extends Controller
             // Redirect based on examination type
             if ($data['examination_type'] === 'pre_employment') {
                 return redirect()->route('plebo.pre-employment')->with('success', 'Medical checklist saved successfully.');
+            } elseif ($data['examination_type'] === 'opd') {
+                return redirect()->route('plebo.opd')->with('success', 'Medical checklist saved successfully.');
             } else {
                 return redirect()->route('plebo.annual-physical')->with('success', 'Medical checklist saved successfully.');
             }
@@ -215,10 +278,11 @@ class PleboController extends Controller
         $medicalChecklist = MedicalChecklist::findOrFail($id);
 
         $data = $request->validate([
-            'examination_type' => 'required|in:pre_employment,annual_physical',
+            'examination_type' => 'required|in:pre_employment,annual_physical,opd',
             'pre_employment_record_id' => 'nullable|exists:pre_employment_records,id',
             'patient_id' => 'nullable|exists:patients,id',
             'annual_physical_examination_id' => 'nullable|exists:annual_physical_examinations,id',
+            'opd_examination_id' => 'nullable|exists:opd_examinations,id',
             'name' => 'required|string',
             'age' => 'required|integer',
             'number' => 'nullable|string',
@@ -242,6 +306,8 @@ class PleboController extends Controller
         // Redirect based on examination type
         if ($data['examination_type'] === 'pre_employment') {
             return redirect()->route('plebo.pre-employment')->with('success', 'Medical checklist updated successfully.');
+        } elseif ($data['examination_type'] === 'opd') {
+            return redirect()->route('plebo.opd')->with('success', 'Medical checklist updated successfully.');
         } else {
             return redirect()->route('plebo.annual-physical')->with('success', 'Medical checklist updated successfully.');
         }

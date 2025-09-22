@@ -7,6 +7,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanyPreEmploymentController;
 use App\Http\Controllers\CompanyAppointmentController;
 use App\Http\Controllers\CompanyAccountInvitationController;
+use App\Http\Controllers\InventoryController;
 
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\NurseController;
@@ -24,6 +25,11 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.attempt');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// OPD Registration Route
+Route::get('/register/opd', function () {
+    return redirect()->route('register', ['opd' => 1]);
+})->name('register.opd');
 
 // Role-based Dashboard Routes
 Route::middleware(['auth', 'role:admin'])->group(function () {
@@ -63,6 +69,20 @@ Route::post('admin/pre-employment/{id}/send-email', [App\Http\Controllers\AdminC
     // Medical Test Management Routes
     Route::resource('admin/medical-test-categories', App\Http\Controllers\Admin\MedicalTestCategoryController::class);
     Route::resource('admin/medical-tests', App\Http\Controllers\Admin\MedicalTestController::class)->except(['index']);
+    
+    // Inventory Management Routes
+    Route::resource('admin/inventory', InventoryController::class, ['as' => 'admin']);
+
+    // Page Content Management Routes
+    Route::get('/admin/page-contents', [App\Http\Controllers\Admin\PageContentController::class, 'index'])->name('admin.page-contents.index');
+    Route::get('/admin/page-contents/create', [App\Http\Controllers\Admin\PageContentController::class, 'create'])->name('admin.page-contents.create');
+    Route::post('/admin/page-contents/actions/bulk-update', [App\Http\Controllers\Admin\PageContentController::class, 'bulkUpdate'])->name('admin.page-contents.bulk-update');
+    Route::post('/admin/page-contents/actions/initialize-defaults', [App\Http\Controllers\Admin\PageContentController::class, 'initializeDefaults'])->name('admin.page-contents.initialize-defaults');
+    Route::post('/admin/page-contents/actions/add-service-card', [App\Http\Controllers\Admin\PageContentController::class, 'addServiceCard'])->name('admin.page-contents.add-service-card');
+    Route::post('/admin/page-contents', [App\Http\Controllers\Admin\PageContentController::class, 'store'])->name('admin.page-contents.store');
+    Route::get('/admin/page-contents/{pageContent}/edit', [App\Http\Controllers\Admin\PageContentController::class, 'edit'])->name('admin.page-contents.edit');
+    Route::put('/admin/page-contents/{pageContent}', [App\Http\Controllers\Admin\PageContentController::class, 'update'])->name('admin.page-contents.update');
+    Route::delete('/admin/page-contents/{pageContent}', [App\Http\Controllers\Admin\PageContentController::class, 'destroy'])->name('admin.page-contents.destroy');
 
     // Admin OPD entries
     Route::get('/admin/opd', [AdminController::class, 'opd'])->name('admin.opd');
@@ -70,6 +90,12 @@ Route::post('admin/pre-employment/{id}/send-email', [App\Http\Controllers\AdminC
     Route::post('/admin/opd/{id}/decline', [AdminController::class, 'declineOpd'])->name('admin.opd.decline');
     Route::post('/admin/opd/{id}/done', [AdminController::class, 'markOpdDone'])->name('admin.opd.mark-done');
     Route::post('/admin/opd/{id}/send-results', [AdminController::class, 'sendOpdResults'])->name('admin.opd.send-results');
+    
+    // Company Account Management Routes
+    Route::post('/admin/company-accounts/{id}/approve', [AdminController::class, 'approveCompanyAccount'])->name('admin.company-accounts.approve');
+    Route::post('/admin/company-accounts/{id}/reject', [AdminController::class, 'rejectCompanyAccount'])->name('admin.company-accounts.reject');
+    Route::put('/admin/company-accounts/{id}/update', [AdminController::class, 'updateCompanyAccount'])->name('admin.company-accounts.update');
+    Route::delete('/admin/company-accounts/{id}', [AdminController::class, 'deleteCompany'])->name('admin.company-accounts.delete');
 });
 
 Route::middleware(['auth', 'role:company'])->group(function () {
@@ -175,9 +201,11 @@ Route::middleware(['auth', 'role:opd'])->group(function () {
     Route::post('/opd/incoming-tests/add/{testId}', [OpdController::class, 'addIncomingTest'])->name('opd.incoming-tests.add');
     Route::post('/opd/incoming-tests/remove/{testId}', [OpdController::class, 'removeIncomingTest'])->name('opd.incoming-tests.remove');
     // OPD Result preview (UI only)
-    Route::get('/opd/result', function(){
-        return view('opd.result');
-    })->name('opd.result');
+    Route::get('/opd/result', [OpdController::class, 'result'])->name('opd.result');
+    
+    // OPD Account Creation Routes
+    Route::get('/opd/create-account', [OpdController::class, 'showCreateAccount'])->name('opd.create-account');
+    Route::post('/opd/create-account', [OpdController::class, 'createAccount'])->name('opd.create-account.store');
 });
 
 // Debug route to check users (temporary)
@@ -228,9 +256,18 @@ Route::middleware(['auth', 'role:nurse'])->group(function () {
     Route::patch('/nurse/annual-physical/{id}', [NurseController::class, 'updateAnnualPhysical'])->name('nurse.annual-physical.update');
     Route::post('/nurse/annual-physical/patient/{patientId}/send', [NurseController::class, 'sendAnnualPhysicalToDoctor'])->name('nurse.annual-physical.send-to-doctor');
     
+    // Nurse OPD Routes
+    Route::get('/nurse/opd', [NurseController::class, 'opd'])->name('nurse.opd');
+    Route::get('/nurse/opd/create', [NurseController::class, 'createOpdExamination'])->name('nurse.opd.create');
+    Route::post('/nurse/opd', [NurseController::class, 'storeOpdExamination'])->name('nurse.opd.store');
+    Route::get('/nurse/opd/{id}/edit', [NurseController::class, 'editOpdExamination'])->name('nurse.opd.edit');
+    Route::patch('/nurse/opd/{id}', [NurseController::class, 'updateOpdExamination'])->name('nurse.opd.update');
+    Route::post('/nurse/opd/{userId}/send', [NurseController::class, 'sendOpdToDoctor'])->name('nurse.opd.send-to-doctor');
+
     // Nurse Medical Checklist Routes
     Route::get('/nurse/medical-checklist/pre-employment/{recordId}', [NurseController::class, 'showMedicalChecklistPreEmployment'])->name('nurse.medical-checklist.pre-employment');
     Route::get('/nurse/medical-checklist/annual-physical/{patientId}', [NurseController::class, 'showMedicalChecklistAnnualPhysical'])->name('nurse.medical-checklist.annual-physical');
+    Route::get('/nurse/medical-checklist/opd/{userId}', [NurseController::class, 'showMedicalChecklistOpd'])->name('nurse.medical-checklist.opd');
     Route::post('/nurse/medical-checklist', [NurseController::class, 'storeMedicalChecklist'])->name('nurse.medical-checklist.store');
     Route::patch('/nurse/medical-checklist/{id}', [NurseController::class, 'updateMedicalChecklist'])->name('nurse.medical-checklist.update');
 
@@ -259,10 +296,13 @@ Route::middleware(['auth', 'role:plebo'])->group(function () {
     Route::get('/plebo/dashboard', [PleboController::class, 'dashboard'])->name('plebo.dashboard');
     Route::get('/plebo/pre-employment', [PleboController::class, 'preEmployment'])->name('plebo.pre-employment');
     Route::get('/plebo/annual-physical', [PleboController::class, 'annualPhysical'])->name('plebo.annual-physical');
+    Route::get('/plebo/opd', [PleboController::class, 'opd'])->name('plebo.opd');
     Route::post('/plebo/pre-employment/{recordId}/send', [PleboController::class, 'sendPreEmploymentToDoctor'])->name('plebo.pre-employment.send-to-doctor');
     Route::post('/plebo/annual-physical/patient/{patientId}/send', [PleboController::class, 'sendAnnualPhysicalToDoctor'])->name('plebo.annual-physical.send-to-doctor');
+    Route::post('/plebo/opd/{userId}/send', [PleboController::class, 'sendOpdToDoctor'])->name('plebo.opd.send-to-doctor');
     Route::get('/plebo/medical-checklist/pre-employment/{recordId}', [PleboController::class, 'showMedicalChecklistPreEmployment'])->name('plebo.medical-checklist.pre-employment');
     Route::get('/plebo/medical-checklist/annual-physical/{patientId}', [PleboController::class, 'showMedicalChecklistAnnualPhysical'])->name('plebo.medical-checklist.annual-physical');
+    Route::get('/plebo/medical-checklist/opd/{userId}', [PleboController::class, 'showMedicalChecklistOpd'])->name('plebo.medical-checklist.opd');
     Route::post('/plebo/medical-checklist', [PleboController::class, 'storeMedicalChecklist'])->name('plebo.medical-checklist.store');
     Route::patch('/plebo/medical-checklist/{id}', [PleboController::class, 'updateMedicalChecklist'])->name('plebo.medical-checklist.update');
 });
@@ -292,9 +332,17 @@ Route::middleware(['auth', 'role:ecgtech'])->group(function () {
     Route::get('/ecgtech/annual-physical/{id}/edit', [EcgtechController::class, 'editAnnualPhysical'])->name('ecgtech.annual-physical.edit');
     Route::patch('/ecgtech/annual-physical/{id}', [EcgtechController::class, 'updateAnnualPhysical'])->name('ecgtech.annual-physical.update');
     
+    // OPD
+    Route::get('/ecgtech/opd', [EcgtechController::class, 'opd'])->name('ecgtech.opd');
+    Route::post('/ecgtech/opd/{userId}/send-to-doctor', [EcgtechController::class, 'sendOpdToDoctor'])->name('ecgtech.opd.send-to-doctor');
+    Route::get('/ecgtech/opd/{id}/edit', [EcgtechController::class, 'editOpd'])->name('ecgtech.opd.edit');
+    Route::patch('/ecgtech/opd/{id}', [EcgtechController::class, 'updateOpd'])->name('ecgtech.opd.update');
+    Route::get('/ecgtech/opd/create', [EcgtechController::class, 'createOpd'])->name('ecgtech.opd.create');
+    
     // Medical Checklist
     Route::get('/ecgtech/medical-checklist/pre-employment/{recordId}', [EcgtechController::class, 'showMedicalChecklistPreEmployment'])->name('ecgtech.medical-checklist.pre-employment');
     Route::get('/ecgtech/medical-checklist/annual-physical/{patientId}', [EcgtechController::class, 'showMedicalChecklistAnnualPhysical'])->name('ecgtech.medical-checklist.annual-physical');
+    Route::get('/ecgtech/medical-checklist/opd/{userId}', [EcgtechController::class, 'showMedicalChecklistOpd'])->name('ecgtech.medical-checklist.opd');
     Route::get('/ecgtech/medical-checklist-page/pre-employment/{recordId}', [EcgtechController::class, 'showMedicalChecklistPagePreEmployment'])->name('ecgtech.medical-checklist-page.pre-employment');
     Route::get('/ecgtech/medical-checklist-page/annual-physical/{patientId}', [EcgtechController::class, 'showMedicalChecklistPageAnnualPhysical'])->name('ecgtech.medical-checklist-page.annual-physical');
     Route::post('/ecgtech/medical-checklist', [EcgtechController::class, 'storeMedicalChecklist'])->name('ecgtech.medical-checklist.store');
@@ -331,6 +379,13 @@ Route::middleware(['auth', 'role:pathologist'])->group(function () {
     Route::get('/pathologist/pre-employment/{id}/edit', [PathologistController::class, 'editPreEmployment'])->name('pathologist.pre-employment.edit');
     Route::put('/pathologist/pre-employment/{id}', [PathologistController::class, 'updatePreEmployment'])->name('pathologist.pre-employment.update');
     Route::post('/pathologist/pre-employment/{recordId}/send-to-doctor', [PathologistController::class, 'sendPreEmploymentToDoctor'])->name('pathologist.pre-employment.send-to-doctor');
+    
+    // OPD
+    Route::get('/pathologist/opd', [PathologistController::class, 'opd'])->name('pathologist.opd');
+    Route::get('/pathologist/opd/{id}/edit', [PathologistController::class, 'editOpd'])->name('pathologist.opd.edit');
+    Route::put('/pathologist/opd/{id}', [PathologistController::class, 'updateOpd'])->name('pathologist.opd.update');
+    Route::post('/pathologist/opd/{userId}/send-to-doctor', [PathologistController::class, 'sendOpdToDoctor'])->name('pathologist.opd.send-to-doctor');
+    Route::get('/pathologist/medical-checklist/opd/{userId}', [PathologistController::class, 'showMedicalChecklistOpd'])->name('pathologist.medical-checklist.opd');
     
     // Messages
     Route::get('/pathologist/messages', [PathologistController::class, 'messages'])->name('pathologist.messages');
@@ -370,11 +425,13 @@ Route::post('/invitation/{token}', [App\Http\Controllers\CompanyAccountInvitatio
 
 // Public pages
 Route::get('/about', function () {
-    return view('about');
+    $aboutContent = \App\Models\PageContent::getPageContent('about');
+    return view('about', compact('aboutContent'));
 })->name('about');
 
 Route::get('/services', function () {
-    return view('services');
+    $servicesContent = \App\Models\PageContent::getPageContent('services');
+    return view('services', compact('servicesContent'));
 })->name('services');
 
 Route::get('/service', function () {
@@ -382,7 +439,8 @@ Route::get('/service', function () {
 });
 
 Route::get('/location', function () {
-    return view('location');
+    $locationContent = \App\Models\PageContent::getPageContent('location');
+    return view('location', compact('locationContent'));
 })->name('location');
 
 // Default route - redirect to login

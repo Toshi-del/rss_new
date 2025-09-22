@@ -29,87 +29,96 @@ class MedicalTestSeeder extends Seeder
                 'is_active' => true,
             ],
             [
+                'name' => 'Package',
+                'description' => 'Package packages',
+                'sort_order' => 3,
+                'is_active' => true,
+            ],
+            [
                 'name' => 'Routine Examinations',
                 'description' => 'Basic routine medical examinations',
-                'sort_order' => 3,
+                'sort_order' => 4,
                 'is_active' => true,
             ],
             [
                 'name' => 'Histology',
                 'description' => 'Histological examinations and tests',
-                'sort_order' => 3,
+                'sort_order' => 5,
                 'is_active' => true,
             ],
             [
                 'name' => 'Special Hematology',
                 'description' => 'Specialized hematological tests',
-                'sort_order' => 4,
+                'sort_order' => 6,
                 'is_active' => true,
             ],
             [
                 'name' => 'Serology',
                 'description' => 'Serological tests and analysis',
-                'sort_order' => 5,
+                'sort_order' => 7,
                 'is_active' => true,
             ],
             [
                 'name' => 'Clinical Microscopy',
                 'description' => 'Clinical microscopy examinations',
-                'sort_order' => 6,
+                'sort_order' => 8,
                 'is_active' => true,
             ],
             [
                 'name' => 'Blood Chemistry',
                 'description' => 'Blood chemistry and biochemical tests',
-                'sort_order' => 7,
+                'sort_order' => 9,
                 'is_active' => true,
             ],
             [
                 'name' => 'Immunology',
                 'description' => 'Immunological tests and markers',
-                'sort_order' => 8,
+                'sort_order' => 10,
                 'is_active' => true,
             ],
             [
                 'name' => 'Tumor Markers',
                 'description' => 'Tumor marker tests for cancer detection',
-                'sort_order' => 9,
+                'sort_order' => 11,
                 'is_active' => true,
             ],
             [
                 'name' => 'Thyroid Function Test',
                 'description' => 'Thyroid function and hormone tests',
-                'sort_order' => 10,
+                'sort_order' => 12,
                 'is_active' => true,
             ],
             [
                 'name' => 'Drug Monitoring Assay',
                 'description' => 'Drug testing and monitoring assays',
-                'sort_order' => 11,
+                'sort_order' => 13,
                 'is_active' => true,
             ],
             [
                 'name' => 'X-RAY',
                 'description' => 'X-ray examinations and imaging',
-                'sort_order' => 12,
+                'sort_order' => 14,
                 'is_active' => true,
             ],
             [
                 'name' => 'Complete Hepa-Profile',
                 'description' => 'Complete hepatitis profile tests',
-                'sort_order' => 13,
+                'sort_order' => 15,
                 'is_active' => true,
             ],
             [
                 'name' => 'Bacteriology',
                 'description' => 'Bacteriological tests and cultures',
-                'sort_order' => 14,
+                'sort_order' => 16,
                 'is_active' => true,
             ],
         ];
 
         foreach ($categories as $categoryData) {
-            $category = MedicalTestCategory::create($categoryData);
+            $category = MedicalTestCategory::updateOrCreate(
+                ['name' => $categoryData['name']],
+                $categoryData
+            );
             
             // Add tests for each category
             switch ($category->name) {
@@ -130,6 +139,15 @@ class MedicalTestSeeder extends Seeder
                         ['name' => 'Annual Medical with ECG and Drug test', 'description' => 'Annual exam plus ECG and drug test', 'sort_order' => 3, 'price' => 0],
                     ];
                     break;
+                case 'Package':
+                    $tests = [
+                        ['name' => 'Package A', 'description' => 'ELECTROCARDIOGRAM, FASTING BLOOD SUGAR, TOTAL CHOLESTEROL, BLOOD UREA NITROGEN, BLOOD URIC ACID, SGPT, CBC, URINALYSIS AND FECALYSIS', 'sort_order' => 1, 'price' => 1600.00],
+                        ['name' => 'Package B', 'description' => 'PACKAGE A PLUS TRIGLYCERIDE, HDL & LDL (GOOD AND BAD CHOLESTEROL)', 'sort_order' => 2, 'price' => 1800.00],
+                        ['name' => 'Package C', 'description' => 'PACKAGE A B PLUS CREATININE & BLD. TYPING', 'sort_order' => 3, 'price' => 2050.00],
+                        ['name' => 'Package D', 'description' => 'PACKAGE A B C PLUS SODIUM, POTASSIUM, CALCIUM, CHLORIDE', 'sort_order' => 4, 'price' => 2200.00],
+                        ['name' => 'Package E', 'description' => 'PACKAGE A B C D PLUS (LIVER FUNCTION TEST) TPAG, SGOT, BILIRUBIN PLUS AMYLASE', 'sort_order' => 5, 'price' => 2800.00],
+                    ];
+                    break;
                 case 'Routine Examinations':
                     $tests = [
                         ['name' => 'CBC', 'description' => 'Complete Blood Count', 'sort_order' => 1, 'price' => 0],
@@ -141,132 +159,140 @@ class MedicalTestSeeder extends Seeder
                     
                 case 'Histology':
                     $tests = [
-                        ['name' => 'Pap\'s reading only', 'description' => 'Pap smear reading only', 'sort_order' => 1],
-                        ['name' => 'Papsmear', 'description' => 'Complete Pap smear test', 'sort_order' => 2],
+                        ['name' => 'Pap\'s reading only', 'description' => 'Pap smear reading only', 'sort_order' => 1, 'price' => 0],
+                        ['name' => 'Papsmear', 'description' => 'Complete Pap smear test', 'sort_order' => 2, 'price' => 0],
                     ];
                     break;
                     
                 case 'Special Hematology':
                     $tests = [
-                        ['name' => 'Platelet Count', 'description' => 'Platelet count test', 'sort_order' => 1],
-                        ['name' => 'Protime', 'description' => 'Prothrombin time test', 'sort_order' => 2],
-                        ['name' => 'APTT', 'description' => 'Activated Partial Thromboplastin Time', 'sort_order' => 3],
-                        ['name' => 'ESR', 'description' => 'Erythrocyte Sedimentation Rate', 'sort_order' => 4],
-                        ['name' => 'ABO Typing w/ RH', 'description' => 'Blood type and Rh factor', 'sort_order' => 5],
-                        ['name' => 'L.E. Prep', 'description' => 'Lupus Erythematosus preparation', 'sort_order' => 6],
-                        ['name' => 'Malarial Smear', 'description' => 'Malaria detection test', 'sort_order' => 7],
-                        ['name' => 'Retic CT', 'description' => 'Reticulocyte count', 'sort_order' => 8],
-                        ['name' => 'Peripheral Smear', 'description' => 'Peripheral blood smear', 'sort_order' => 9],
-                        ['name' => 'Clotting & Bleeding Time', 'description' => 'Clotting and bleeding time test', 'sort_order' => 10],
+                        ['name' => 'Platelet Count', 'description' => 'Platelet count test', 'sort_order' => 1, 'price' => 0],
+                        ['name' => 'Protime', 'description' => 'Prothrombin time test', 'sort_order' => 2, 'price' => 0],
+                        ['name' => 'APTT', 'description' => 'Activated Partial Thromboplastin Time', 'sort_order' => 3, 'price' => 0],
+                        ['name' => 'ESR', 'description' => 'Erythrocyte Sedimentation Rate', 'sort_order' => 4, 'price' => 0],
+                        ['name' => 'ABO Typing w/ RH', 'description' => 'Blood type and Rh factor', 'sort_order' => 5, 'price' => 0],
+                        ['name' => 'L.E. Prep', 'description' => 'Lupus Erythematosus preparation', 'sort_order' => 6, 'price' => 0],
+                        ['name' => 'Malarial Smear', 'description' => 'Malaria detection test', 'sort_order' => 7, 'price' => 0],
+                        ['name' => 'Retic CT', 'description' => 'Reticulocyte count', 'sort_order' => 8, 'price' => 0],
+                        ['name' => 'Peripheral Smear', 'description' => 'Peripheral blood smear', 'sort_order' => 9, 'price' => 0],
+                        ['name' => 'Clotting & Bleeding Time', 'description' => 'Clotting and bleeding time test', 'sort_order' => 10, 'price' => 0],
                     ];
                     break;
                     
                 case 'Serology':
                     $tests = [
-                        ['name' => 'VDRL', 'description' => 'Venereal Disease Research Laboratory test', 'sort_order' => 1],
-                        ['name' => 'ASO Titer', 'description' => 'Anti-Streptolysin O titer', 'sort_order' => 2],
-                        ['name' => 'RA Factor', 'description' => 'Rheumatoid factor test', 'sort_order' => 3],
-                        ['name' => 'Typhidot', 'description' => 'Typhoid fever test', 'sort_order' => 4],
+                        ['name' => 'VDRL', 'description' => 'Venereal Disease Research Laboratory test', 'sort_order' => 1, 'price' => 0],
+                        ['name' => 'ASO Titer', 'description' => 'Anti-Streptolysin O titer', 'sort_order' => 2, 'price' => 0],
+                        ['name' => 'RA Factor', 'description' => 'Rheumatoid factor test', 'sort_order' => 3, 'price' => 0],
+                        ['name' => 'Typhidot', 'description' => 'Typhoid fever test', 'sort_order' => 4, 'price' => 0],
                     ];
                     break;
                     
                 case 'Clinical Microscopy':
                     $tests = [
-                        ['name' => 'Occult Blood', 'description' => 'Occult blood test', 'sort_order' => 1],
+                        ['name' => 'Occult Blood', 'description' => 'Occult blood test', 'sort_order' => 1, 'price' => 0],
                     ];
                     break;
                     
                 case 'Blood Chemistry':
                     $tests = [
-                        ['name' => 'FBS', 'description' => 'Fasting Blood Sugar', 'sort_order' => 1],
-                        ['name' => 'BUA', 'description' => 'Blood Uric Acid', 'sort_order' => 2],
-                        ['name' => 'BUN', 'description' => 'Blood Urea Nitrogen', 'sort_order' => 3],
-                        ['name' => 'Cholesterol', 'description' => 'Cholesterol test', 'sort_order' => 4],
-                        ['name' => 'Creatinine', 'description' => 'Creatinine test', 'sort_order' => 5],
-                        ['name' => 'Triglycerides', 'description' => 'Triglycerides test', 'sort_order' => 6],
-                        ['name' => 'HDL & LDL', 'description' => 'High and Low Density Lipoproteins', 'sort_order' => 7],
-                        ['name' => 'VLDL', 'description' => 'Very Low Density Lipoprotein', 'sort_order' => 8],
-                        ['name' => 'SGOT', 'description' => 'Serum Glutamic Oxaloacetic Transaminase', 'sort_order' => 9],
-                        ['name' => 'SGPT', 'description' => 'Serum Glutamic Pyruvic Transaminase', 'sort_order' => 10],
-                        ['name' => 'Bilirubin', 'description' => 'Bilirubin test', 'sort_order' => 11],
-                        ['name' => 'TPAG', 'description' => 'Total Protein, Albumin, Globulin', 'sort_order' => 12],
-                        ['name' => 'A/G Ratio', 'description' => 'Albumin/Globulin ratio', 'sort_order' => 13],
-                        ['name' => 'Sodium', 'description' => 'Sodium test', 'sort_order' => 14],
-                        ['name' => 'Potassium', 'description' => 'Potassium test', 'sort_order' => 15],
-                        ['name' => 'Calcium', 'description' => 'Calcium test', 'sort_order' => 16],
-                        ['name' => 'Ionized Calcium', 'description' => 'Ionized calcium test', 'sort_order' => 17],
+                        ['name' => 'Package A', 'description' => 'ELECTROCARDIOGRAM, FASTING BLOOD SUGAR, TOTAL CHOLESTEROL, BLOOD UREA NITROGEN, BLOOD URIC ACID, SGPT, CBC, URINALYSIS AND FECALYSIS', 'sort_order' => 1, 'price' => 1600.00],
+                        ['name' => 'Package B', 'description' => 'PACKAGE A PLUS TRIGLYCERIDE, HDL & LDL (GOOD AND BAD CHOLESTEROL)', 'sort_order' => 2, 'price' => 1800.00],
+                        ['name' => 'Package C', 'description' => 'PACKAGE A B PLUS CREATININE & BLD. TYPING', 'sort_order' => 3, 'price' => 2050.00],
+                        ['name' => 'Package D', 'description' => 'PACKAGE A B C PLUS SODIUM, POTASSIUM, CALCIUM, CHLORIDE', 'sort_order' => 4, 'price' => 2200.00],
+                        ['name' => 'Package E', 'description' => 'PACKAGE A B C D PLUS (LIVER FUNCTION TEST) TPAG, SGOT, BILIRUBIN PLUS AMYLASE', 'sort_order' => 5, 'price' => 2800.00],
+                        ['name' => 'FBS', 'description' => 'Fasting Blood Sugar', 'sort_order' => 6, 'price' => 0],
+                        ['name' => 'BUA', 'description' => 'Blood Uric Acid', 'sort_order' => 7, 'price' => 0],
+                        ['name' => 'BUN', 'description' => 'Blood Urea Nitrogen', 'sort_order' => 8, 'price' => 0],
+                        ['name' => 'Cholesterol', 'description' => 'Cholesterol test', 'sort_order' => 9, 'price' => 0],
+                        ['name' => 'Creatinine', 'description' => 'Creatinine test', 'sort_order' => 10, 'price' => 0],
+                        ['name' => 'Triglycerides', 'description' => 'Triglycerides test', 'sort_order' => 11, 'price' => 0],
+                        ['name' => 'HDL & LDL', 'description' => 'High and Low Density Lipoproteins', 'sort_order' => 12, 'price' => 0],
+                        ['name' => 'VLDL', 'description' => 'Very Low Density Lipoprotein', 'sort_order' => 13, 'price' => 0],
+                        ['name' => 'SGOT', 'description' => 'Serum Glutamic Oxaloacetic Transaminase', 'sort_order' => 14, 'price' => 0],
+                        ['name' => 'SGPT', 'description' => 'Serum Glutamic Pyruvic Transaminase', 'sort_order' => 15, 'price' => 0],
+                        ['name' => 'Bilirubin', 'description' => 'Bilirubin test', 'sort_order' => 16, 'price' => 0],
+                        ['name' => 'TPAG', 'description' => 'Total Protein, Albumin, Globulin', 'sort_order' => 17, 'price' => 0],
+                        ['name' => 'A/G Ratio', 'description' => 'Albumin/Globulin ratio', 'sort_order' => 18, 'price' => 0],
+                        ['name' => 'Sodium', 'description' => 'Sodium test', 'sort_order' => 19, 'price' => 0],
+                        ['name' => 'Potassium', 'description' => 'Potassium test', 'sort_order' => 20, 'price' => 0],
+                        ['name' => 'Calcium', 'description' => 'Calcium test', 'sort_order' => 21, 'price' => 0],
+                        ['name' => 'Ionized Calcium', 'description' => 'Ionized calcium test', 'sort_order' => 22, 'price' => 0],
+                        ['name' => 'Chloride', 'description' => 'Chloride test', 'sort_order' => 23, 'price' => 0],
+                        ['name' => 'Amylase', 'description' => 'Amylase test', 'sort_order' => 24, 'price' => 0],
                     ];
                     break;
                     
                 case 'Immunology':
                     $tests = [
-                        ['name' => 'PSA', 'description' => 'Prostate Specific Antigen', 'sort_order' => 1],
+                        ['name' => 'PSA', 'description' => 'Prostate Specific Antigen', 'sort_order' => 1, 'price' => 0],
                     ];
                     break;
                     
                 case 'Tumor Markers':
                     $tests = [
-                        ['name' => 'Alpha Feto Protein', 'description' => 'Alpha Fetoprotein tumor marker', 'sort_order' => 1],
-                        ['name' => 'CEA', 'description' => 'Carcinoembryonic Antigen', 'sort_order' => 2],
-                        ['name' => 'B-HCG Serum', 'description' => 'Beta Human Chorionic Gonadotropin', 'sort_order' => 3],
-                        ['name' => 'CA-125', 'description' => 'Cancer Antigen 125', 'sort_order' => 4],
-                        ['name' => 'CA-153', 'description' => 'Cancer Antigen 15-3', 'sort_order' => 5],
-                        ['name' => 'CA-199', 'description' => 'Cancer Antigen 19-9', 'sort_order' => 6],
-                        ['name' => 'CA-72-3', 'description' => 'Cancer Antigen 72-3', 'sort_order' => 7],
+                        ['name' => 'Alpha Feto Protein', 'description' => 'Alpha Fetoprotein tumor marker', 'sort_order' => 1, 'price' => 0],
+                        ['name' => 'CEA', 'description' => 'Carcinoembryonic Antigen', 'sort_order' => 2, 'price' => 0],
+                        ['name' => 'B-HCG Serum', 'description' => 'Beta Human Chorionic Gonadotropin', 'sort_order' => 3, 'price' => 0],
+                        ['name' => 'CA-125', 'description' => 'Cancer Antigen 125', 'sort_order' => 4, 'price' => 0],
+                        ['name' => 'CA-153', 'description' => 'Cancer Antigen 15-3', 'sort_order' => 5, 'price' => 0],
+                        ['name' => 'CA-199', 'description' => 'Cancer Antigen 19-9', 'sort_order' => 6, 'price' => 0],
+                        ['name' => 'CA-72-3', 'description' => 'Cancer Antigen 72-3', 'sort_order' => 7, 'price' => 0],
                     ];
                     break;
                     
                 case 'Thyroid Function Test':
                     $tests = [
-                        ['name' => 'T3', 'description' => 'Triiodothyronine', 'sort_order' => 1],
-                        ['name' => 'T4', 'description' => 'Thyroxine', 'sort_order' => 2],
-                        ['name' => 'TSH', 'description' => 'Thyroid Stimulating Hormone', 'sort_order' => 3],
-                        ['name' => 'FT3', 'description' => 'Free Triiodothyronine', 'sort_order' => 4],
-                        ['name' => 'FT4', 'description' => 'Free Thyroxine', 'sort_order' => 5],
+                        ['name' => 'T3', 'description' => 'Triiodothyronine', 'sort_order' => 1, 'price' => 0],
+                        ['name' => 'T4', 'description' => 'Thyroxine', 'sort_order' => 2, 'price' => 0],
+                        ['name' => 'TSH', 'description' => 'Thyroid Stimulating Hormone', 'sort_order' => 3, 'price' => 0],
+                        ['name' => 'FT3', 'description' => 'Free Triiodothyronine', 'sort_order' => 4, 'price' => 0],
+                        ['name' => 'FT4', 'description' => 'Free Thyroxine', 'sort_order' => 5, 'price' => 0],
                     ];
                     break;
                     
                 case 'Drug Monitoring Assay':
                     $tests = [
-                        ['name' => 'Drugtest (Met & THC)', 'description' => 'Drug test for Methamphetamine and THC', 'sort_order' => 1],
+                        ['name' => 'Drugtest (Met & THC)', 'description' => 'Drug test for Methamphetamine and THC', 'sort_order' => 1, 'price' => 0],
                     ];
                     break;
                     
                 case 'X-RAY':
                     $tests = [
-                        ['name' => 'CXR-PA 11X14', 'description' => 'Chest X-ray Posteroanterior 11x14', 'sort_order' => 1],
-                        ['name' => 'Apico Lordotic View', 'description' => 'Apical lordotic chest X-ray view', 'sort_order' => 2],
-                        ['name' => 'AP-Lateral Adult', 'description' => 'Anteroposterior and Lateral adult X-ray', 'sort_order' => 3],
-                        ['name' => 'AP-Lateral Child', 'description' => 'Anteroposterior and Lateral child X-ray', 'sort_order' => 4],
-                        ['name' => 'Electrocardiogram', 'description' => 'ECG/EKG test', 'sort_order' => 5],
+                        ['name' => 'CXR-PA 11X14', 'description' => 'Chest X-ray Posteroanterior 11x14', 'sort_order' => 1, 'price' => 0],
+                        ['name' => 'Apico Lordotic View', 'description' => 'Apical lordotic chest X-ray view', 'sort_order' => 2, 'price' => 0],
+                        ['name' => 'AP-Lateral Adult', 'description' => 'Anteroposterior and Lateral adult X-ray', 'sort_order' => 3, 'price' => 0],
+                        ['name' => 'AP-Lateral Child', 'description' => 'Anteroposterior and Lateral child X-ray', 'sort_order' => 4, 'price' => 0],
+                        ['name' => 'Electrocardiogram', 'description' => 'ECG/EKG test', 'sort_order' => 5, 'price' => 0],
+                        ['name' => 'Chest X-ray with Package', 'description' => 'Additional 300.00 for package with chest X-ray', 'sort_order' => 6, 'price' => 300.00],
                     ];
                     break;
                     
                 case 'Complete Hepa-Profile':
                     $tests = [
-                        ['name' => 'Hepa B Profile', 'description' => 'Hepatitis B profile test', 'sort_order' => 1],
-                        ['name' => 'Hepa A & B Profile', 'description' => 'Hepatitis A and B profile test', 'sort_order' => 2],
-                        ['name' => 'Hepa ABC & Profile', 'description' => 'Hepatitis A, B, and C profile test', 'sort_order' => 3],
-                        ['name' => 'HBsAg (Latex)', 'description' => 'Hepatitis B Surface Antigen (Latex)', 'sort_order' => 4],
-                        ['name' => 'Elisa', 'description' => 'Enzyme-Linked Immunosorbent Assay', 'sort_order' => 5],
-                        ['name' => 'Anti-Hbs', 'description' => 'Anti-Hepatitis B Surface antibody', 'sort_order' => 6],
-                        ['name' => 'Anti-Hbc lgG', 'description' => 'Anti-Hepatitis B Core IgG', 'sort_order' => 7],
-                        ['name' => 'Anti-Hbc lGM', 'description' => 'Anti-Hepatitis B Core IgM', 'sort_order' => 8],
-                        ['name' => 'Anti-Hav lgG', 'description' => 'Anti-Hepatitis A IgG', 'sort_order' => 9],
-                        ['name' => 'Anti-Hav lGM', 'description' => 'Anti-Hepatitis A IgM', 'sort_order' => 10],
-                        ['name' => 'HBeAg', 'description' => 'Hepatitis B e Antigen', 'sort_order' => 11],
-                        ['name' => 'Anti-Hbe', 'description' => 'Anti-Hepatitis B e antibody', 'sort_order' => 12],
-                        ['name' => 'Anti-Hcv', 'description' => 'Anti-Hepatitis C antibody', 'sort_order' => 13],
+                        ['name' => 'Hepa B Profile', 'description' => 'Hepatitis B profile test', 'sort_order' => 1, 'price' => 0],
+                        ['name' => 'Hepa A & B Profile', 'description' => 'Hepatitis A and B profile test', 'sort_order' => 2, 'price' => 0],
+                        ['name' => 'Hepa ABC & Profile', 'description' => 'Hepatitis A, B, and C profile test', 'sort_order' => 3, 'price' => 0],
+                        ['name' => 'HBsAg (Latex)', 'description' => 'Hepatitis B Surface Antigen (Latex)', 'sort_order' => 4, 'price' => 0],
+                        ['name' => 'Elisa', 'description' => 'Enzyme-Linked Immunosorbent Assay', 'sort_order' => 5, 'price' => 0],
+                        ['name' => 'Anti-Hbs', 'description' => 'Anti-Hepatitis B Surface antibody', 'sort_order' => 6, 'price' => 0],
+                        ['name' => 'Anti-Hbc lgG', 'description' => 'Anti-Hepatitis B Core IgG', 'sort_order' => 7, 'price' => 0],
+                        ['name' => 'Anti-Hbc lGM', 'description' => 'Anti-Hepatitis B Core IgM', 'sort_order' => 8, 'price' => 0],
+                        ['name' => 'Anti-Hav lgG', 'description' => 'Anti-Hepatitis A IgG', 'sort_order' => 9, 'price' => 0],
+                        ['name' => 'Anti-Hav lGM', 'description' => 'Anti-Hepatitis A IgM', 'sort_order' => 10, 'price' => 0],
+                        ['name' => 'HBeAg', 'description' => 'Hepatitis B e Antigen', 'sort_order' => 11, 'price' => 0],
+                        ['name' => 'Anti-Hbe', 'description' => 'Anti-Hepatitis B e antibody', 'sort_order' => 12, 'price' => 0],
+                        ['name' => 'Anti-Hcv', 'description' => 'Anti-Hepatitis C antibody', 'sort_order' => 13, 'price' => 0],
                     ];
                     break;
                     
                 case 'Bacteriology':
                     $tests = [
-                        ['name' => 'All culture & Sensitivity', 'description' => 'All culture and sensitivity tests', 'sort_order' => 1],
-                        ['name' => 'KOH Mount', 'description' => 'Potassium Hydroxide mount test', 'sort_order' => 2],
-                        ['name' => 'Gram Stain', 'description' => 'Gram staining test', 'sort_order' => 3],
-                        ['name' => 'AFB', 'description' => 'Acid-Fast Bacilli test', 'sort_order' => 4],
-                        ['name' => 'Blood C/S', 'description' => 'Blood Culture and Sensitivity', 'sort_order' => 5],
+                        ['name' => 'All culture & Sensitivity', 'description' => 'All culture and sensitivity tests', 'sort_order' => 1, 'price' => 0],
+                        ['name' => 'KOH Mount', 'description' => 'Potassium Hydroxide mount test', 'sort_order' => 2, 'price' => 0],
+                        ['name' => 'Gram Stain', 'description' => 'Gram staining test', 'sort_order' => 3, 'price' => 0],
+                        ['name' => 'AFB', 'description' => 'Acid-Fast Bacilli test', 'sort_order' => 4, 'price' => 0],
+                        ['name' => 'Blood C/S', 'description' => 'Blood Culture and Sensitivity', 'sort_order' => 5, 'price' => 0],
                     ];
                     break;
                     
@@ -275,14 +301,18 @@ class MedicalTestSeeder extends Seeder
             }
             
             foreach ($tests as $testData) {
-                MedicalTest::create([
-                    'medical_test_category_id' => $category->id,
-                    'name' => $testData['name'],
-                    'description' => $testData['description'],
-                    'sort_order' => $testData['sort_order'],
-                    'price' => $testData['price'] ?? 0,
-                    'is_active' => true,
-                ]);
+                MedicalTest::updateOrCreate(
+                    [
+                        'medical_test_category_id' => $category->id,
+                        'name' => $testData['name']
+                    ],
+                    [
+                        'description' => $testData['description'],
+                        'sort_order' => $testData['sort_order'],
+                        'price' => $testData['price'] ?? 0,
+                        'is_active' => true,
+                    ]
+                );
             }
         }
     }

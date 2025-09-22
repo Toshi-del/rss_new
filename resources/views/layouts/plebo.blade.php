@@ -29,6 +29,10 @@
                     <i class="fas fa-file-medical mr-3"></i>
                     <span class="{{ request()->routeIs('plebo.annual-physical') ? 'text-blue-300' : '' }}">Annual Physical</span>
                 </a>
+                <a href="{{ route('plebo.opd') }}" class="flex items-center px-6 py-3 text-blue-100 hover:bg-blue-800 transition-colors {{ request()->routeIs('plebo.opd') ? 'bg-blue-800' : '' }}">
+                    <i class="fas fa-walking mr-3"></i>
+                    <span class="{{ request()->routeIs('plebo.opd') ? 'text-blue-300' : '' }}">OPD Walk-ins</span>
+                </a>
             </nav>
         </div>
 

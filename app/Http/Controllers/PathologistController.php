@@ -9,6 +9,7 @@ use App\Models\PreEmploymentRecord;
 use App\Models\User;
 use App\Models\PreEmploymentExamination;
 use App\Models\AnnualPhysicalExamination;
+use App\Models\OpdExamination;
 use App\Models\MedicalTest;
 use App\Models\MedicalTestCategory;
 use App\Models\MedicalChecklist;
@@ -922,5 +923,161 @@ class PathologistController extends Controller
             DB::rollBack();
             return redirect()->back()->with('error', 'Failed to update pre-employment examination: ' . $e->getMessage())->withInput();
         }
+    }
+
+    /**
+     * Show OPD walk-in patients for pathologist
+     */
+    public function opd(Request $request)
+    {
+        $query = User::with(['opdExamination'])
+            ->where('role', 'opd');
+
+        // Apply filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('fname', 'like', "%{$search}%")
+                  ->orWhere('lname', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter patients that don't have completed examinations
+        $query->whereDoesntHave('opdExamination', function ($q) {
+            $q->whereIn('status', ['completed', 'sent_to_company']);
+        });
+
+        $opdPatients = $query->latest()->paginate(15);
+        
+        return view('pathologist.opd', compact('opdPatients'));
+    }
+
+    /**
+     * Show the edit form for OPD examination
+     */
+    public function editOpd($id)
+    {
+        // Find the OPD patient
+        $opdPatient = User::where('role', 'opd')->findOrFail($id);
+        
+        // First try to find existing examination
+        $examination = OpdExamination::where('user_id', $id)->first();
+        
+        // If no examination exists, create one for the OPD patient
+        if (!$examination) {
+            $examination = OpdExamination::create([
+                'user_id' => $opdPatient->id,
+                'name' => trim(($opdPatient->fname ?? '') . ' ' . ($opdPatient->lname ?? '')),
+                'date' => now()->toDateString(),
+                'status' => 'pending',
+                'lab_report' => [
+                    'urinalysis' => 'Not available',
+                    'cbc' => 'Not available',
+                    'xray' => 'Not available',
+                    'fecalysis' => 'Not available',
+                    'blood_chemistry' => 'Not available',
+                    'others' => 'Not available',
+                    'hbsag_screening' => 'Not available',
+                    'hepa_a_igg_igm' => 'Not available',
+                ]
+            ]);
+        }
+        
+        return view('pathologist.opd-edit', compact('examination', 'opdPatient'));
+    }
+
+    /**
+     * Update the OPD examination
+     */
+    public function updateOpd(Request $request, $id)
+    {
+        $examination = OpdExamination::findOrFail($id);
+
+        $request->validate([
+            'status' => 'required|string|in:pending,completed,sent_to_company',
+            'lab_report' => 'nullable|array',
+            'lab_report.*' => 'nullable|string|max:500',
+            'lab_results' => 'nullable|array',
+            'lab_results.*' => 'nullable|string|max:500',
+            'visual' => 'nullable|string|max:255',
+            'ishihara_test' => 'nullable|string|max:255',
+            'ecg' => 'nullable|string|max:255',
+            'skin_marks' => 'nullable|string|max:500',
+            'illness_history' => 'nullable|string|max:1000',
+            'accidents_operations' => 'nullable|string|max:1000',
+            'past_medical_history' => 'nullable|string|max:1000',
+            'family_history' => 'nullable|string|max:1000',
+            'physical_findings' => 'nullable|string|max:1000',
+            'lab_findings' => 'nullable|string|max:1000',
+            'findings' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $examination->update([
+                'status' => $request->status,
+                'lab_report' => $request->lab_report ?? [],
+                'lab_results' => $request->lab_results ?? [],
+                'visual' => $request->visual,
+                'ishihara_test' => $request->ishihara_test,
+                'ecg' => $request->ecg,
+                'skin_marks' => $request->skin_marks,
+                'illness_history' => $request->illness_history,
+                'accidents_operations' => $request->accidents_operations,
+                'past_medical_history' => $request->past_medical_history,
+                'family_history' => $request->family_history,
+                'physical_findings' => $request->physical_findings,
+                'lab_findings' => $request->lab_findings,
+                'findings' => $request->findings,
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('pathologist.opd')->with('success', 'OPD examination updated successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Failed to update OPD examination: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    /**
+     * Send OPD examination to doctor
+     */
+    public function sendOpdToDoctor($userId)
+    {
+        $opdPatient = User::where('role', 'opd')->findOrFail($userId);
+        $exam = OpdExamination::firstOrCreate(
+            ['user_id' => $userId],
+            [
+                'name' => trim(($opdPatient->fname ?? '') . ' ' . ($opdPatient->lname ?? '')),
+                'date' => now()->toDateString(),
+                'status' => 'pending',
+            ]
+        );
+        
+        // Mark as completed from pathologist to send up to doctor
+        $exam->update(['status' => 'completed']);
+        
+        return redirect()->route('pathologist.opd')->with('success', 'OPD examination sent to doctor.');
+    }
+
+    /**
+     * Show medical checklist for OPD
+     */
+    public function showMedicalChecklistOpd($userId)
+    {
+        $opdPatient = User::where('role', 'opd')->findOrFail($userId);
+        $opdExamination = OpdExamination::where('user_id', $userId)->first();
+        $medicalChecklist = MedicalChecklist::where('opd_examination_id', $opdExamination->id ?? 0)->first();
+        $examinationType = 'opd';
+        $number = 'OPD-' . str_pad($opdPatient->id, 4, '0', STR_PAD_LEFT);
+        $name = trim(($opdPatient->fname ?? '') . ' ' . ($opdPatient->lname ?? ''));
+        $age = $opdPatient->age ?? null;
+        $date = now()->format('Y-m-d');
+        
+        return view('pathologist.medical-checklist', compact('medicalChecklist', 'opdPatient', 'opdExamination', 'examinationType', 'number', 'name', 'age', 'date'));
     }
 }

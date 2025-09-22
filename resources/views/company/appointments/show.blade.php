@@ -223,12 +223,12 @@
                             </div>
                             <div class="flex justify-between items-center">
                                 <span class="text-sm text-gray-600">Medical Tests:</span>
-                                <span class="text-sm font-semibold text-gray-900">{{ $appointment->blood_chemistry ? count($appointment->blood_chemistry) : 0 }}</span>
+                                <span class="text-sm font-semibold text-gray-900">{{ $appointment->medical_test_id ? 1 : 0 }}</span>
                             </div>
-                            @if($appointment->blood_chemistry && count($appointment->blood_chemistry) > 0)
+                            @if($appointment->medicalTest)
                             <div class="flex justify-between items-center">
                                 <span class="text-sm text-gray-600">Total Price:</span>
-                                <span class="text-sm font-semibold text-green-600">₱{{ number_format($totalPrice, 2) }}</span>
+                                <span class="text-sm font-semibold text-green-600">₱{{ number_format($appointment->medicalTest->price ?? 0, 2) }}</span>
                             </div>
                             @endif
                             <div class="flex justify-between items-center">

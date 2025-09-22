@@ -476,6 +476,8 @@ class AdminController extends Controller
     public function companyAccountsAndPatients()
     {
         $companyUsers = User::where('role', 'company')->orderBy('company')->get();
+        $pendingCompanyUsers = User::where('status', 'pending')->orderBy('created_at', 'desc')->get();
+        
         $companyData = [];
         foreach ($companyUsers as $company) {
             $appointmentIds = Appointment::where('created_by', $company->id)->pluck('id');
@@ -487,7 +489,78 @@ class AdminController extends Controller
                 'preEmployments' => $preEmployments,
             ];
         }
-        return view('admin.accounts-and-patients', compact('companyData'));
+        return view('admin.accounts-and-patients', compact('companyData', 'pendingCompanyUsers'));
+    }
+
+    /**
+     * Approve a pending company account
+     */
+    public function approveCompanyAccount($id)
+    {
+        $user = User::findOrFail($id);
+        
+        if ($user->status !== 'pending') {
+            return redirect()->back()->with('error', 'This account is not pending approval.');
+        }
+
+        $user->update([
+            'role' => 'company',
+            'status' => 'active',
+            'approved_at' => now(),
+            'approved_by' => Auth::id()
+        ]);
+
+        return redirect()->back()->with('success', 'Company account approved successfully! User can now login with company privileges.');
+    }
+
+    /**
+     * Reject a pending company account
+     */
+    public function rejectCompanyAccount(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        
+        if ($user->status !== 'pending') {
+            return redirect()->back()->with('error', 'This account is not pending approval.');
+        }
+
+        $user->update([
+            'status' => 'rejected',
+            'rejection_reason' => $request->get('reason', 'Account rejected by administrator'),
+            'approved_by' => Auth::id()
+        ]);
+
+        return redirect()->back()->with('success', 'Company account rejected.');
+    }
+
+    /**
+     * Update a company account
+     */
+    public function updateCompanyAccount(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        
+        if ($user->role !== 'company') {
+            return redirect()->back()->with('error', 'This is not a company account.');
+        }
+
+        $request->validate([
+            'fname' => 'required|string|max:255',
+            'lname' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'company' => 'required|string|max:255',
+            'phone' => 'required|string|unique:users,phone,' . $user->id,
+        ]);
+
+        $user->update([
+            'fname' => $request->fname,
+            'lname' => $request->lname,
+            'email' => $request->email,
+            'company' => $request->company,
+            'phone' => $request->phone,
+        ]);
+
+        return redirect()->back()->with('success', 'Company account updated successfully.');
     }
 
     /**
@@ -765,7 +838,7 @@ class AdminController extends Controller
         PreEmploymentRecord::where('created_by', $company->id)->delete();
         // Delete the company user
         $company->delete();
-        return redirect()->route('admin.dashboard')->with('success', 'Company account and all related data deleted successfully.');
+        return redirect()->back()->with('success', 'Company account and all related data deleted successfully.');
     }
 
     /**

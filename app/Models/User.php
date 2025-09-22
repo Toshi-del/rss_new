@@ -31,6 +31,10 @@ class User extends Authenticatable
         'age',
         'company',
         'role',
+        'status',
+        'approved_at',
+        'approved_by',
+        'rejection_reason',
         'password',
         'created_by',
     ];
@@ -218,5 +222,13 @@ class User extends Authenticatable
         return \App\Models\AnnualPhysicalExamination::whereHas('patient', function($query) {
             $query->where('email', $this->email);
         });
+    }
+
+    /**
+     * Get OPD examination for the user
+     */
+    public function opdExamination()
+    {
+        return $this->hasOne(\App\Models\OpdExamination::class);
     }
 }

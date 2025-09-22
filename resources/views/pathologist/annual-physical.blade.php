@@ -147,26 +147,37 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div class="flex items-center space-x-2">
+                            <div class="flex flex-wrap gap-2">
+                                <!-- View Patient Details -->
                                 <button onclick="openPatientModal({{ $patient->id }})" 
-                                        class="text-teal-600 hover:text-teal-900 p-2 hover:bg-teal-50 rounded-lg transition-colors" 
-                                        title="View Details">
-                                    <i class="fas fa-eye"></i>
+                                        class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-full transition-all duration-200 flex items-center text-sm font-medium shadow-sm hover:shadow-md" 
+                                        title="View Patient Details">
+                                    <i class="fas fa-eye mr-2 text-sm"></i>
+                                    View
                                 </button>
+                                
+                                <!-- Edit Lab Results -->
                                 <a href="{{ route('pathologist.annual-physical.edit', $patient->id) }}" 
-                                   class="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors" 
-                                   title="Edit">
-                                    <i class="fas fa-edit"></i>
+                                   class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-full transition-all duration-200 flex items-center text-sm font-medium shadow-sm hover:shadow-md" 
+                                   title="Edit Lab Results">
+                                    <i class="fas fa-edit mr-2 text-sm"></i>
+                                    Edit
                                 </a>
+                                
+                                <!-- Send to Doctor -->
                                 <button onclick="sendToDoctor({{ $patient->id }})" 
-                                        class="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors" 
+                                        class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-full transition-all duration-200 flex items-center text-sm font-medium shadow-sm hover:shadow-md" 
                                         title="Send to Doctor">
-                                    <i class="fas fa-paper-plane"></i>
+                                    <i class="fas fa-paper-plane mr-2 text-sm"></i>
+                                    Send
                                 </button>
+                                
+                                <!-- Medical Checklist -->
                                 <a href="{{ route('pathologist.medical-checklist') }}?patient_id={{ $patient->id }}&examination_type=annual_physical" 
-                                   class="text-purple-600 hover:text-purple-900 p-2 hover:bg-purple-50 rounded-lg transition-colors" 
-                                   title="Create Checklist">
-                                    <i class="fas fa-clipboard-list"></i>
+                                   class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-full transition-all duration-200 flex items-center text-sm font-medium shadow-sm hover:shadow-md" 
+                                   title="Medical Checklist">
+                                    <i class="fas fa-clipboard-list mr-2 text-sm"></i>
+                                    Checklist
                                 </a>
                             </div>
                         </td>

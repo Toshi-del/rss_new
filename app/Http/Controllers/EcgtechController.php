@@ -8,6 +8,7 @@ use App\Models\PreEmploymentRecord;
 use App\Models\MedicalChecklist;
 use App\Models\PreEmploymentExamination;
 use App\Models\AnnualPhysicalExamination;
+use App\Models\OpdExamination;
 use App\Models\User;
 use App\Models\Message;
 use Illuminate\Http\Request;
@@ -36,6 +37,10 @@ class EcgtechController extends Controller
             ->latest()->take(5)->get();
         $patientCount = Patient::where('status', 'approved')->count();
 
+        // Get OPD walk-in patients (users with 'opd' role)
+        $opdPatients = User::where('role', 'opd')->latest()->take(5)->get();
+        $opdCount = User::where('role', 'opd')->count();
+
         // Get ECG reports (simulated data for now)
         $ecgReports = collect([
             (object)['patient_name' => 'John Doe', 'date' => now()->format('Y-m-d'), 'ecg_result' => 'Normal', 'status' => 'completed'],
@@ -49,6 +54,8 @@ class EcgtechController extends Controller
             'preEmploymentCount',
             'patients',
             'patientCount',
+            'opdPatients',
+            'opdCount',
             'ecgReports',
             'ecgReportCount'
         ));
@@ -80,6 +87,20 @@ class EcgtechController extends Controller
             ->latest()->paginate(15);
         
         return view('ecgtech.annual-physical', compact('patients'));
+    }
+
+    /**
+     * Show OPD walk-in patients for ECG tech
+     */
+    public function opd()
+    {
+        $opdPatients = User::where('role', 'opd')
+            ->whereDoesntHave('opdExamination', function ($q) {
+                $q->whereIn('status', ['completed', 'sent_to_company']);
+            })
+            ->latest()->paginate(15);
+        
+        return view('ecgtech.opd', compact('opdPatients'));
     }
 
     /**
@@ -123,6 +144,27 @@ class EcgtechController extends Controller
     }
 
     /**
+     * Send ECG tech OPD to doctor
+     */
+    public function sendOpdToDoctor($userId)
+    {
+        $opdPatient = User::where('role', 'opd')->findOrFail($userId);
+        $exam = OpdExamination::firstOrCreate(
+            ['user_id' => $userId],
+            [
+                'name' => trim(($opdPatient->fname ?? '') . ' ' . ($opdPatient->lname ?? '')),
+                'date' => now()->toDateString(),
+                'status' => 'pending',
+            ]
+        );
+        
+        // Mark as completed from ECG tech to send up to doctor
+        $exam->update(['status' => 'completed']);
+        
+        return redirect()->route('ecgtech.opd')->with('success', 'OPD examination sent to doctor.');
+    }
+
+    /**
      * Show medical checklist for pre-employment
      */
     public function showMedicalChecklistPreEmployment($recordId)
@@ -152,6 +194,23 @@ class EcgtechController extends Controller
         $date = now()->format('Y-m-d');
 
         return view('ecgtech.medical-checklist', compact('medicalChecklist', 'patient', 'examinationType', 'number', 'name', 'age', 'date'));
+    }
+
+    /**
+     * Show medical checklist for OPD
+     */
+    public function showMedicalChecklistOpd($userId)
+    {
+        $opdPatient = User::where('role', 'opd')->findOrFail($userId);
+        $opdExamination = OpdExamination::where('user_id', $userId)->first();
+        $medicalChecklist = MedicalChecklist::where('opd_examination_id', $opdExamination->id ?? 0)->first();
+        $examinationType = 'opd';
+        $number = 'OPD-' . str_pad($opdPatient->id, 4, '0', STR_PAD_LEFT);
+        $name = trim(($opdPatient->fname ?? '') . ' ' . ($opdPatient->lname ?? ''));
+        $age = $opdPatient->age ?? null;
+        $date = now()->format('Y-m-d');
+        
+        return view('ecgtech.medical-checklist', compact('medicalChecklist', 'opdPatient', 'opdExamination', 'examinationType', 'number', 'name', 'age', 'date'));
     }
 
     /**
@@ -195,7 +254,8 @@ class EcgtechController extends Controller
         $data = $request->validate([
             'patient_id' => 'nullable|exists:patients,id',
             'pre_employment_record_id' => 'nullable|exists:pre_employment_records,id',
-            'examination_type' => 'required|in:annual-physical,pre-employment',
+            'opd_examination_id' => 'nullable|integer',
+            'examination_type' => 'required|in:annual-physical,pre-employment,opd',
             'name' => 'required|string|max:255',
             'age' => 'required|integer|min:1|max:120',
             'date' => 'required|date',
@@ -223,9 +283,15 @@ class EcgtechController extends Controller
         if ($data['examination_type'] === 'annual-physical' && $data['patient_id']) {
             $searchCriteria['patient_id'] = $data['patient_id'];
             $searchCriteria['pre_employment_record_id'] = null;
+            $searchCriteria['opd_examination_id'] = null;
         } elseif ($data['examination_type'] === 'pre-employment' && $data['pre_employment_record_id']) {
             $searchCriteria['pre_employment_record_id'] = $data['pre_employment_record_id'];
             $searchCriteria['patient_id'] = null;
+            $searchCriteria['opd_examination_id'] = null;
+        } elseif ($data['examination_type'] === 'opd' && $data['opd_examination_id']) {
+            $searchCriteria['opd_examination_id'] = $data['opd_examination_id'];
+            $searchCriteria['patient_id'] = null;
+            $searchCriteria['pre_employment_record_id'] = null;
         }
 
         MedicalChecklist::updateOrCreate(
@@ -241,6 +307,8 @@ class EcgtechController extends Controller
             return redirect()->route('ecgtech.pre-employment')->with('success', 'ECG checklist saved successfully.');
         } elseif (str_contains($redirectUrl, 'annual-physical')) {
             return redirect()->route('ecgtech.annual-physical')->with('success', 'ECG checklist saved successfully.');
+        } elseif (str_contains($redirectUrl, 'opd')) {
+            return redirect()->route('ecgtech.opd')->with('success', 'ECG checklist saved successfully.');
         } else {
             return redirect()->route('ecgtech.dashboard')->with('success', 'ECG checklist saved successfully.');
         }
@@ -600,6 +668,85 @@ class EcgtechController extends Controller
             return redirect()->route('ecgtech.annual-physical')->with('success', 'ECG examination results updated successfully.');
         } catch (\Exception $e) {
             \Log::error('Error in updateAnnualPhysical: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update ECG examination results.')->withInput();
+        }
+    }
+
+    /**
+     * Show create OPD examination form
+     */
+    public function createOpd(Request $request)
+    {
+        $userId = $request->query('user_id');
+        $opdPatient = User::where('role', 'opd')->findOrFail($userId);
+        
+        return view('ecgtech.opd-create', compact('opdPatient'));
+    }
+
+    /**
+     * Show the form for editing OPD examination
+     */
+    public function editOpd($id)
+    {
+        try {
+            // Find the OPD patient by user ID
+            $opdPatient = User::where('role', 'opd')->findOrFail($id);
+            
+            // Find or create the examination record
+            $opdExamination = $opdPatient->opdExamination;
+            if (!$opdExamination) {
+                $opdExamination = $opdPatient->opdExamination()->create([
+                    'status' => 'pending',
+                    'name' => trim(($opdPatient->fname ?? '') . ' ' . ($opdPatient->lname ?? '')),
+                    'date' => now()->toDateString(),
+                ]);
+            }
+            
+            return view('ecgtech.opd-edit', compact('opdExamination', 'opdPatient'));
+        } catch (\Exception $e) {
+            \Log::error('Error in editOpd: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to load OPD examination for editing.');
+        }
+    }
+
+    /**
+     * Update OPD examination ECG results
+     */
+    public function updateOpd(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'ecg' => 'required|string|max:1000',
+                'heart_rate' => 'nullable|string|max:255',
+            ]);
+
+            // Find the OPD patient
+            $opdPatient = User::where('role', 'opd')->findOrFail($id);
+            
+            // Find or create the examination record
+            $opdExamination = $opdPatient->opdExamination;
+            if (!$opdExamination) {
+                $opdExamination = $opdPatient->opdExamination()->create([
+                    'status' => 'pending',
+                    'name' => trim(($opdPatient->fname ?? '') . ' ' . ($opdPatient->lname ?? '')),
+                    'date' => now()->toDateString(),
+                ]);
+            }
+            
+            // Get existing physical_exam data or create new array
+            $physicalExam = $opdExamination->physical_exam ?? [];
+            if ($request->heart_rate) {
+                $physicalExam['heart_rate'] = $request->heart_rate;
+            }
+            
+            $opdExamination->update([
+                'ecg' => $request->ecg,
+                'physical_exam' => $physicalExam,
+            ]);
+
+            return redirect()->route('ecgtech.opd')->with('success', 'ECG examination results updated successfully.');
+        } catch (\Exception $e) {
+            \Log::error('Error in updateOpd: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to update ECG examination results.')->withInput();
         }
     }

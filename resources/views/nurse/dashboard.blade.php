@@ -6,7 +6,7 @@
 
 @section('content')
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <!-- Patients Card -->
         <div class="bg-white rounded-lg shadow-sm p-6">
             <div class="flex items-center justify-between">
@@ -20,8 +20,6 @@
             </div>
         </div>
 
-
-
         <!-- Pre-Employment Card -->
         <div class="bg-white rounded-lg shadow-sm p-6">
             <div class="flex items-center justify-between">
@@ -34,9 +32,90 @@
                 </div>
             </div>
         </div>
+
+        <!-- OPD Walk-ins Card -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800">OPD Walk-ins</h3>
+                    <p class="text-3xl font-bold text-blue-600">{{ $opdCount }}</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-walking text-blue-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Annual Physical Card -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800">Annual Physical</h3>
+                    <p class="text-3xl font-bold text-orange-600">{{ $annualPhysicalCount }}</p>
+                </div>
+                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-calendar-check text-orange-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
     </div>
 
-   
+    <!-- Quick Actions Section -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- OPD Walk-ins Actions -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">OPD Walk-ins</h3>
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-walking text-blue-600"></i>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <a href="{{ route('nurse.opd') }}" class="block w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-center">
+                    <i class="fas fa-stethoscope mr-2"></i>Examination
+                </a>
+                <a href="{{ route('nurse.opd') }}" class="block w-full bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 transition-colors text-center">
+                    <i class="fas fa-clipboard-list mr-2"></i>Medical Checklist
+                </a>
+            </div>
+        </div>
+
+        <!-- Pre-Employment Actions -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Pre-Employment</h3>
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-user-md text-purple-600"></i>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <a href="{{ route('nurse.pre-employment') }}" class="block w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-center">
+                    <i class="fas fa-stethoscope mr-2"></i>Examination
+                </a>
+                <a href="{{ route('nurse.pre-employment') }}" class="block w-full bg-purple-100 text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-200 transition-colors text-center">
+                    <i class="fas fa-clipboard-list mr-2"></i>Medical Checklist
+                </a>
+            </div>
+        </div>
+
+        <!-- Annual Physical Actions -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Annual Physical</h3>
+                <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-calendar-check text-orange-600"></i>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <a href="{{ route('nurse.annual-physical') }}" class="block w-full bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors text-center">
+                    <i class="fas fa-stethoscope mr-2"></i>Examination
+                </a>
+                <a href="{{ route('nurse.annual-physical') }}" class="block w-full bg-orange-100 text-orange-700 px-4 py-2 rounded-lg hover:bg-orange-200 transition-colors text-center">
+                    <i class="fas fa-clipboard-list mr-2"></i>Medical Checklist
+                </a>
+            </div>
+        </div>
+    </div>
 
     <!-- Appointments Section -->
     <div class="bg-white rounded-lg shadow-sm">

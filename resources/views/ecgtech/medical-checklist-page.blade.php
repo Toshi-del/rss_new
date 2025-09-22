@@ -94,17 +94,7 @@
             </div>
 
 
-            <!-- Optional Exam and Doctor Signature (Read-only for ECG Tech) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-xs font-semibold uppercase mb-1">Optional</label>
-                    <input type="text" name="optional_exam" value="{{ old('optional_exam', $medicalChecklist->optional_exam ?? 'Audiometry/Ishihara') }}" class="form-input w-full rounded-lg border-gray-300 bg-gray-100 text-gray-500" readonly />
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase mb-1">Doctor's Signature</label>
-                    <input type="text" name="doctor_signature" value="{{ old('doctor_signature', $medicalChecklist->doctor_signature ?? '') }}" class="form-input w-full rounded-lg border-gray-300 bg-gray-100 text-gray-500" readonly />
-                </div>
-            </div>
+            
 
             <!-- Action Buttons -->
             <div class="flex justify-end space-x-4">

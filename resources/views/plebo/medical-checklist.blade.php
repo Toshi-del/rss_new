@@ -38,12 +38,18 @@
             @if(isset($medicalChecklist) && $medicalChecklist->id)
                 @method('PATCH')
             @endif
-            <input type="hidden" name="examination_type" value="{{ $examinationType === 'pre-employment' ? 'pre_employment' : 'annual_physical' }}">
+            <input type="hidden" name="examination_type" value="{{ $examinationType === 'pre-employment' ? 'pre_employment' : ($examinationType === 'opd' ? 'opd' : 'annual_physical') }}">
             @if(isset($preEmploymentRecord))
                 <input type="hidden" name="pre_employment_record_id" value="{{ $preEmploymentRecord->id }}">
             @endif
             @if(isset($patient))
                 <input type="hidden" name="patient_id" value="{{ $patient->id }}">
+            @endif
+            @if(isset($user) && $examinationType === 'opd')
+                <input type="hidden" name="user_id" value="{{ $user->id }}">
+                @if(isset($opdExamination))
+                    <input type="hidden" name="opd_examination_id" value="{{ $opdExamination->id }}">
+                @endif
             @endif
             @if(isset($annualPhysicalExamination))
                 <input type="hidden" name="annual_physical_examination_id" value="{{ $annualPhysicalExamination->id }}">
@@ -58,6 +64,8 @@
                     $generatedNumber = 'APEP-' . str_pad($patient->id, 4, '0', STR_PAD_LEFT);
                 } elseif (isset($preEmploymentRecord)) {
                     $generatedNumber = 'PPEP-' . str_pad($preEmploymentRecord->id, 4, '0', STR_PAD_LEFT);
+                } elseif (isset($user) && $examinationType === 'opd') {
+                    $generatedNumber = 'OPD-' . str_pad($user->id, 4, '0', STR_PAD_LEFT);
                 } else {
                     $generatedNumber = old('number', $number ?? '');
                 }
@@ -153,7 +161,7 @@
 
             <!-- Submit Button -->
             <div class="flex justify-between">
-                <a href="{{ $examinationType === 'pre-employment' ? route('plebo.pre-employment') : route('plebo.annual-physical') }}" 
+                <a href="{{ $examinationType === 'pre-employment' ? route('plebo.pre-employment') : ($examinationType === 'opd' ? route('plebo.opd') : route('plebo.annual-physical')) }}" 
                    class="bg-gray-500 text-white px-8 py-3 rounded-lg shadow hover:bg-gray-600 transition-colors font-semibold tracking-wide">
                     Back to List
                 </a>

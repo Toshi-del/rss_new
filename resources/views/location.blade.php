@@ -70,8 +70,8 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div>
-                    <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-6">Find Our Location</h1>
-                    <p class="text-lg text-gray-600 leading-relaxed mb-8">Visit our state-of-the-art medical facility, conveniently located in Pasig City. We're easily accessible and ready to serve you with the best healthcare services.</p>
+                    <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-6">{{ $locationContent['hero_title']->content_value ?? 'Find Our Location' }}</h1>
+                    <p class="text-lg text-gray-600 leading-relaxed mb-8">{{ $locationContent['hero_description']->content_value ?? 'Visit our state-of-the-art medical facility, conveniently located in Pasig City. We\'re easily accessible and ready to serve you with the best healthcare services.' }}</p>
                     <div class="flex flex-col sm:flex-row gap-4">
                         <a href="https://www.google.com/maps/dir//14.565965385916304,121.0726871751055" target="_blank" class="inline-flex items-center px-6 py-3 rounded-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition">
                             <i class="fa-solid fa-route mr-2"></i>
@@ -131,7 +131,7 @@
                         <h3 class="text-2xl font-bold text-gray-900">Our Main Clinic</h3>
                     </div>
                     <p class="text-gray-600 leading-relaxed mb-8">
-                            Our main clinic is strategically located in the heart of Pasig City, making it easily accessible for patients from all parts of Metro Manila. The facility is equipped with state-of-the-art medical equipment and staffed by experienced healthcare professionals.
+                            {{ $locationContent['clinic_description']->content_value ?? 'Our main clinic is strategically located in the heart of Pasig City, making it easily accessible for patients from all parts of Metro Manila. The facility is equipped with state-of-the-art medical equipment and staffed by experienced healthcare professionals.' }}
                         </p>
                         
                     <div class="space-y-6">
@@ -141,7 +141,7 @@
                             </div>
                             <div>
                                 <h4 class="font-semibold text-gray-900 mb-1">Address</h4>
-                                <p class="text-gray-600">123 Health Avenue, Pasig City, Metro Manila</p>
+                                <p class="text-gray-600">{{ $locationContent['address']->content_value ?? '123 Health Avenue, Pasig City, Metro Manila' }}</p>
                             </div>
                         </div>
                         
@@ -151,7 +151,7 @@
                             </div>
                             <div>
                                 <h4 class="font-semibold text-gray-900 mb-1">Phone</h4>
-                                <p class="text-gray-600">(02) 8123-4567 / 0917-123-4567</p>
+                                <p class="text-gray-600">{{ $locationContent['phone']->content_value ?? '(02) 8123-4567 / 0917-123-4567' }}</p>
                             </div>
                         </div>
                         
@@ -161,7 +161,7 @@
                             </div>
                             <div>
                                 <h4 class="font-semibold text-gray-900 mb-1">Email</h4>
-                                <p class="text-gray-600">rsscitihealthservices@gmail.com</p>
+                                <p class="text-gray-600">{{ $locationContent['email']->content_value ?? 'rsscitihealthservices@gmail.com' }}</p>
                             </div>
                         </div>
                     </div>
@@ -176,39 +176,45 @@
                         <h3 class="text-2xl font-bold text-gray-900">Operating Hours</h3>
                     </div>
                     <p class="text-gray-600 leading-relaxed mb-8">
-                            We are committed to providing healthcare services when you need them. Our clinic operates with extended hours to accommodate your busy schedule.
+                            {{ $locationContent['hours_description']->content_value ?? 'We are committed to providing healthcare services when you need them. Our clinic operates with extended hours to accommodate your busy schedule.' }}
                         </p>
                         
                     <div class="space-y-6">
+                        @if(isset($locationContent['weekday_hours']) && $locationContent['weekday_hours']->is_active)
                         <div class="flex items-start">
                             <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 grid place-items-center mr-4 flex-shrink-0">
                                 <i class="fa-solid fa-calendar-week"></i>
                             </div>
                             <div>
                                 <h4 class="font-semibold text-gray-900 mb-1">Weekdays</h4>
-                                <p class="text-gray-600">Monday to Friday: 7:00 AM - 4:00 PM</p>
+                                <p class="text-gray-600">{{ $locationContent['weekday_hours']->content_value }}</p>
                             </div>
                         </div>
+                        @endif
                         
+                        @if(isset($locationContent['weekend_hours']) && $locationContent['weekend_hours']->is_active)
                         <div class="flex items-start">
                             <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 grid place-items-center mr-4 flex-shrink-0">
                                 <i class="fa-solid fa-calendar-days"></i>
                             </div>
                             <div>
                                 <h4 class="font-semibold text-gray-900 mb-1">Weekends</h4>
-                                <p class="text-gray-600">Saturday: 8:00 AM - 5:00 PM<br>Sunday: 8:00 AM - 12:00 PM</p>
+                                <p class="text-gray-600">{!! $locationContent['weekend_hours']->content_value !!}</p>
                             </div>
                         </div>
+                        @endif
                         
+                        @if(isset($locationContent['holiday_hours']) && $locationContent['holiday_hours']->is_active)
                         <div class="flex items-start">
                             <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 grid place-items-center mr-4 flex-shrink-0">
                                 <i class="fa-solid fa-info-circle"></i>
                             </div>
                             <div>
                                 <h4 class="font-semibold text-gray-900 mb-1">Holiday Schedule</h4>
-                                <p class="text-gray-600">Please call our clinic for holiday operating hours</p>
+                                <p class="text-gray-600">{{ $locationContent['holiday_hours']->content_value }}</p>
                             </div>
                         </div>
+                        @endif
                     </div>
                 </div>
             </div>

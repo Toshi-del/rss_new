@@ -51,6 +51,10 @@
                     <i class="fas fa-heartbeat mr-3"></i>
                     <span class="{{ request()->routeIs('ecgtech.annual-physical') ? 'text-ecgtech-300' : '' }}">Annual Physical</span>
                 </a>
+                <a href="{{ route('ecgtech.opd') }}" class="flex items-center px-6 py-3 text-ecgtech-100 hover:bg-ecgtech-800 transition-colors {{ request()->routeIs('ecgtech.opd*') ? 'bg-ecgtech-800' : '' }}">
+                    <i class="fas fa-walking mr-3"></i>
+                    <span class="{{ request()->routeIs('ecgtech.opd*') ? 'text-ecgtech-300' : '' }}">OPD Walk-ins</span>
+                </a>
                 <a href="{{ route('ecgtech.messages') }}" class="flex items-center px-6 py-3 text-ecgtech-100 hover:bg-ecgtech-800 transition-colors {{ request()->routeIs('ecgtech.messages') ? 'bg-ecgtech-800' : '' }}">
                     <i class="fas fa-comments mr-3"></i>
                     <span class="{{ request()->routeIs('ecgtech.messages') ? 'text-ecgtech-300' : '' }}">Messages</span>

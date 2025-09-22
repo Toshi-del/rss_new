@@ -4,85 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OPD - RSS Citi Health Services</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <style>
-        .navbar .nav-link{
-            display:flex; align-items:center; gap:.35rem;
-        }
-        .navbar .nav-link .nav-icon{ opacity:.7; }
-        .navbar .nav-link:hover .nav-icon{ opacity:1; }
-        .navbar .nav-link.active{
-            color:#0d6efd; font-weight:600; position:relative;
-        }
-        .navbar .nav-link.active::after{
-            content:""; position:absolute; left:.65rem; right:.65rem; bottom:.35rem;
-            height:2px; background:#0d6efd; border-radius:2px;
-        }
-        .brand-pill{ font-weight:600; padding:.25rem .5rem; border-radius:.5rem; background:rgba(13,110,253,.08); color:#0d6efd; }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
-        <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center" href="{{ route('opd.dashboard') }}">
-                <i class="fa-solid fa-hospital-user me-2 text-primary"></i>
-                <span class="brand-pill">OPD</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#opdNavbar" aria-controls="opdNavbar" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="opdNavbar">
-               
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item d-flex align-items-center me-2 text-muted small">
-                        <i class="fa-regular fa-user me-1"></i>{{ Auth::user()->lname ?? '' }}, {{ Auth::user()->fname ?? '' }}
-                    </li>
-                    <li class="nav-item">
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="btn btn-outline-secondary btn-sm">
-                                <i class="fa-solid fa-right-from-bracket me-1"></i>Logout
-                            </button>
-                        </form>
-                    </li>
-                </ul>
+<body class="min-h-screen bg-gray-50" style="font-family: 'Poppins', sans-serif;">
+    <!-- Header -->
+    <header class="bg-white/90 backdrop-blur border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center justify-between">
+                <a href="{{ route('opd.dashboard') }}" class="flex items-center space-x-2 group">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center">
+                        <i class="fa-solid fa-hospital-user"></i>
+                    </div>
+                    <div>
+                        <div class="text-lg font-semibold text-gray-900 group-hover:text-blue-700 transition">OPD</div>
+                        <div class="text-xs text-gray-500">RSS Citi Health Services</div>
+                    </div>
+                </a>
+
+                <div class="flex items-center space-x-4">
+                    <div class="hidden sm:flex items-center text-sm text-gray-600">
+                        <i class="fa-regular fa-user mr-2"></i>
+                        <span class="font-medium">{{ Auth::user()->lname ?? '' }}, {{ Auth::user()->fname ?? '' }}</span>
+                    </div>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="inline-flex items-center px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-100 transition">
+                            <i class="fa-solid fa-right-from-bracket mr-2"></i>
+                            Logout
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
-    </nav>
+    </header>
 
-    <main class="container py-4">
+    <!-- Flash messages -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 space-y-3">
         @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <div class="flex items-start p-4 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200">
+                <i class="fa-solid fa-circle-check mt-0.5 mr-3"></i>
+                <div class="flex-1 text-sm">{{ session('success') }}</div>
             </div>
         @endif
         @if($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <ul class="mb-0">
+            <div class="p-4 rounded-lg bg-red-50 text-red-800 border border-red-200">
+                <ul class="list-disc pl-5 space-y-1 text-sm">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
                 </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
+    </div>
 
+    <!-- Main content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         @yield('opd-content')
     </main>
 
-    <footer class="border-top bg-white py-3">
-        <div class="container d-flex justify-content-between align-items-center text-muted small">
+    <!-- Footer -->
+    <footer class="border-t bg-white/80 backdrop-blur">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-xs text-gray-600 flex items-center justify-between">
             <div>&copy; {{ date('Y') }} RSS Citi Health Services</div>
-            <div class="d-none d-sm-flex align-items-center gap-3">
-                <span><i class="fa-solid fa-shield-halved me-1"></i>Secure</span>
-                <span><i class="fa-solid fa-circle-info me-1"></i>Help</span>
+            <div class="hidden sm:flex items-center space-x-4">
+                <span class="inline-flex items-center space-x-1"><i class="fa-solid fa-shield-halved"></i><span>Secure</span></span>
+                <span class="inline-flex items-center space-x-1"><i class="fa-solid fa-circle-info"></i><span>Help</span></span>
             </div>
         </div>
     </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 

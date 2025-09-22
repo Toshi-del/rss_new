@@ -42,7 +42,7 @@
                     <p class="text-gray-600">{{ $examination->name ?? $examination->patient->full_name }}</p>
                 </div>
                 <div class="text-right">
-                    <p class="text-lg font-semibold text-gray-800">{{ $examination->date->format('M d, Y') }}</p>
+                    <p class="text-lg font-semibold text-gray-800">{{ $examination->date ? $examination->date->format('M d, Y') : now()->format('M d, Y') }}</p>
                     <p class="text-gray-600">Patient ID: {{ $examination->patient_id }}</p>
                 </div>
             </div>

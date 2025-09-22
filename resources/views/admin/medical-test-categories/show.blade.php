@@ -199,6 +199,12 @@
                                 </th>
                                 <th class="px-8 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
                                     <div class="flex items-center space-x-2">
+                                        <i class="fas fa-dollar-sign text-gray-500"></i>
+                                        <span>Price</span>
+                                    </div>
+                                </th>
+                                <th class="px-8 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                                    <div class="flex items-center space-x-2">
                                         <i class="fas fa-calendar text-gray-500"></i>
                                         <span>Created</span>
                                     </div>
@@ -247,6 +253,20 @@
                                         <div class="flex items-center space-x-2">
                                             <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
                                                 <span class="text-sm font-semibold text-gray-700">{{ $test->sort_order }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-8 py-6">
+                                        <div class="flex items-center space-x-2">
+                                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-peso-sign text-green-600 text-xs"></i>
+                                            </div>
+                                            <div class="text-sm font-semibold text-gray-900">
+                                                @if($test->price)
+                                                    ₱{{ number_format($test->price, 2) }}
+                                                @else
+                                                    <span class="text-gray-400 italic">Not set</span>
+                                                @endif
                                             </div>
                                         </div>
                                     </td>

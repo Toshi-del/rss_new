@@ -126,12 +126,10 @@
                 <!-- Text Content -->
                 <div class="animate-slide-in">
                     <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
-                        <span class="text-blue-600">Faith</span> is being sure of what we 
-                        <span class="text-indigo-600">hope</span> for, and certain of what we do not see.
+                        {!! $loginContent['hero_title']->content_value ?? '<span class="text-blue-600">Faith</span> is being sure of what we <span class="text-indigo-600">hope</span> for, and certain of what we do not see.' !!}
                     </h1>
                     <p class="text-xl text-gray-600 mb-8 leading-relaxed">
-                        Welcome to RSS Citi Health Services, where compassionate care meets modern medicine. 
-                        Your health and wellness are our top priorities.
+                        {{ $loginContent['hero_subtitle']->content_value ?? 'Welcome to RSS Citi Health Services, where compassionate care meets modern medicine. Your health and wellness are our top priorities.' }}
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4">
                         <button onclick="openLoginModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
@@ -166,9 +164,9 @@
     <section class="py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Our Services</h2>
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">{{ $loginContent['services_title']->content_value ?? 'Our Services' }}</h2>
                 <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-                    Discover our comprehensive healthcare services designed to meet your needs
+                    {{ $loginContent['services_subtitle']->content_value ?? 'Discover our comprehensive healthcare services designed to meet your needs' }}
                 </p>
             </div>
             
@@ -184,10 +182,9 @@
                             <i class="fa-solid fa-building text-blue-600 text-2xl"></i>
                         </div>
                         
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Corporate Booking</h3>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4">{{ $loginContent['corporate_title']->content_value ?? 'Corporate Booking' }}</h3>
                         <p class="text-gray-600 mb-6 leading-relaxed">
-                            Schedule appointments for your entire organization with our corporate booking service. 
-                            Special rates available for companies with more than 50 employees.
+                            {{ $loginContent['corporate_description']->content_value ?? 'Schedule appointments for your entire organization with our corporate booking service. Special rates available for companies with more than 50 employees.' }}
                         </p>
                         
                         <a href="{{ route('register') }}?corporate=1" class="inline-flex items-center text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200">
@@ -232,15 +229,14 @@
                             <i class="fa-solid fa-user text-green-600 text-2xl"></i>
                         </div>
                         
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4">OPD (Walk-in)</h3>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4">{{ $loginContent['opd_title']->content_value ?? 'OPD (Walk-in)' }}</h3>
                         <p class="text-gray-600 mb-6 leading-relaxed">
-                            Our Outpatient Department welcomes walk-in patients from 8:00 AM to 5:00 PM, 
-                            Monday through Saturday. No appointment necessary for general consultations.
+                            {{ $loginContent['opd_description']->content_value ?? 'Our Outpatient Department welcomes walk-in patients from 8:00 AM to 5:00 PM, Monday through Saturday. No appointment necessary for general consultations.' }}
                         </p>
                         
-                        <a href="#" class="inline-flex items-center text-green-600 hover:text-green-700 font-semibold transition-colors duration-200">
-                            Visit Us
-                            <i class="fa-solid fa-arrow-right ml-2 transition-transform duration-200 group-hover:translate-x-1"></i>
+                        <a href="{{ route('register.opd') }}" class="inline-flex items-center text-green-600 hover:text-green-700 font-semibold transition-colors duration-200">
+                            Register as OPD Patient
+                            <i class="fa-solid fa-user-plus ml-2 transition-transform duration-200 group-hover:translate-x-1"></i>
                         </a>
                     </div>
                 </div>
@@ -303,7 +299,7 @@
                         <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-white/30 transition-colors duration-300">
                             <i class="fa-solid fa-award text-white text-2xl"></i>
                         </div>
-                        <h3 class="text-4xl md:text-5xl font-bold text-white mb-2 counter" data-target="15">0</h3>
+                        <h3 class="text-4xl md:text-5xl font-bold text-white mb-2 counter" data-target="28">0</h3>
                         <p class="text-blue-100 text-lg font-medium">Years of Experience</p>
                     </div>
                 </div>
@@ -414,19 +410,56 @@
                     </form>
                     
                 <!-- Registration Links -->
-                <div class="mt-6 space-y-3 text-center">
-                        <p class="text-sm text-gray-600">
-                            Don't have an account? 
-                        <a href="{{ route('register') }}" class="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200">
-                                Register here
-                            </a>
+                <div class="mt-6 space-y-4 text-center">
+                    <!-- General Registration -->
+                    <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <p class="text-sm text-gray-600 mb-3 font-medium">
+                            Don't have an account? Choose your registration type:
                         </p>
-                    <p class="text-sm text-gray-600">
-                            Are you a new Corporate Client? 
-                        <a href="{{ route('register') }}?corporate=1" class="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200">
-                                Register here
+                        <div class="grid grid-cols-1 gap-3">
+                            <!-- OPD Walk-in Registration -->
+                            <a href="{{ route('register.opd') }}" class="group flex items-center justify-center px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                                        <i class="fa-solid fa-user text-sm"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <div class="text-sm font-bold">OPD Walk-in Patient</div>
+                                        <div class="text-xs opacity-90">Quick registration for walk-in services</div>
+                                    </div>
+                                </div>
+                                <i class="fa-solid fa-arrow-right ml-2 transition-transform duration-200 group-hover:translate-x-1"></i>
                             </a>
-                        </p>
+                            
+                            <!-- Corporate Registration -->
+                            <a href="{{ route('register') }}?corporate=1" class="group flex items-center justify-center px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                                        <i class="fa-solid fa-building text-sm"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <div class="text-sm font-bold">Corporate Client</div>
+                                        <div class="text-xs opacity-90">For companies and organizations</div>
+                                    </div>
+                                </div>
+                                <i class="fa-solid fa-arrow-right ml-2 transition-transform duration-200 group-hover:translate-x-1"></i>
+                            </a>
+                            
+                            <!-- General Registration -->
+                            <a href="{{ route('register') }}" class="group flex items-center justify-center px-4 py-3 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                                        <i class="fa-solid fa-user-plus text-sm"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <div class="text-sm font-bold">General Registration</div>
+                                        <div class="text-xs opacity-90">Standard account registration</div>
+                                    </div>
+                                </div>
+                                <i class="fa-solid fa-arrow-right ml-2 transition-transform duration-200 group-hover:translate-x-1"></i>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -697,6 +730,89 @@
     <!-- Page Transition Element -->
     <div class="page-transition"></div>
     
+    <!-- Company Pending Modal -->
+    @if(session('company_pending'))
+    <div id="companyPendingModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 mb-4">
+                    <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Company Account Under Review</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500 mb-4">
+                        Thank you for registering! Your company account is currently being processed by our administrators. 
+                        You will receive an email notification once your account has been approved.
+                    </p>
+                    <p class="text-xs text-gray-400">
+                        This process typically takes 1-2 business days.
+                    </p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button onclick="closeCompanyPendingModal()" 
+                            class="px-4 py-2 bg-blue-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                        I Understand
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function closeCompanyPendingModal() {
+            document.getElementById('companyPendingModal').style.display = 'none';
+        }
+        
+        // Auto-show modal if session exists
+        @if(session('company_pending'))
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('companyPendingModal').style.display = 'block';
+            });
+        @endif
+    </script>
+    @endif
+
+    <!-- Account Rejected Modal -->
+    @if(session('account_rejected'))
+    <div id="accountRejectedModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <i class="fas fa-times-circle text-red-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Account Access Denied</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500 mb-4">
+                        Your company account application has been reviewed and unfortunately cannot be approved at this time. 
+                        Please contact our support team if you believe this is an error.
+                    </p>
+                    <p class="text-xs text-gray-400">
+                        Support: rsscitihealthservices@gmail.com
+                    </p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button onclick="closeAccountRejectedModal()" 
+                            class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">
+                        I Understand
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function closeAccountRejectedModal() {
+            document.getElementById('accountRejectedModal').style.display = 'none';
+        }
+        
+        // Auto-show modal if session exists
+        @if(session('account_rejected'))
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('accountRejectedModal').style.display = 'block';
+            });
+        @endif
+    </script>
+    @endif
 
 
 </body>

@@ -15,15 +15,19 @@ class AuthController extends Controller
      */
     public function showLogin()
     {
-        return view('auth.login');
+        $loginContent = \App\Models\PageContent::getPageContent('login');
+        return view('auth.login', compact('loginContent'));
     }
 
     /**
      * Show the registration form
      */
-    public function showRegister()
+    public function showRegister(Request $request)
     {
-        return view('auth.register');
+        $isOpdRegistration = $request->has('opd') && $request->opd == '1';
+        $isCorporateRegistration = $request->has('corporate') && $request->corporate == '1';
+        
+        return view('auth.register', compact('isOpdRegistration', 'isCorporateRegistration'));
     }
 
     /**
@@ -39,9 +43,20 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            // Redirect based on user role
+            // Check if user account is pending approval
             $user = Auth::user();
             
+            if ($user->status === 'pending') {
+                Auth::logout();
+                return redirect()->route('login')->with('company_pending', true);
+            }
+            
+            if ($user->status === 'rejected') {
+                Auth::logout();
+                return redirect()->route('login')->with('account_rejected', true);
+            }
+            
+            // Redirect based on user role
             if ($user->isAdmin()) {
                 return redirect()->route('admin.dashboard');
             } elseif ($user->isCompany()) {
@@ -84,7 +99,7 @@ class AuthController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'phone' => 'required|string|unique:users',
             'birthday' => 'required|date',
-            'company' => 'nullable|in:Pasig Catholic College,AsiaPro,PrimeLime',
+            'company' => 'nullable|string|max:255',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
@@ -122,6 +137,17 @@ class AuthController extends Controller
         $birthday = Carbon::parse($request->birthday);
         $age = $birthday->age;
 
+        // Determine role and status based on request parameters
+        $role = 'patient'; // Default role
+        $status = 'active'; // Default status
+        
+        if ($request->has('opd') && $request->opd == '1') {
+            $role = 'opd';
+        } elseif ($request->has('corporate') && $request->corporate == '1') {
+            $role = 'patient'; // Set as patient initially
+            $status = 'pending'; // Company accounts need approval
+        }
+
         $user = User::create([
             'fname' => $firstName,
             'lname' => $lastName,
@@ -131,13 +157,24 @@ class AuthController extends Controller
             'birthday' => $request->birthday,
             'age' => $age,
             'company' => $request->company,
-            'role' => 'patient', // Default role
+            'role' => $role,
+            'status' => $status,
             'password' => Hash::make($request->password),
         ]);
 
+        // Don't auto-login pending company accounts
+        if ($status === 'pending') {
+            return redirect()->route('login')->with('company_pending', true);
+        }
+
         Auth::login($user);
 
-        return redirect()->route('patient.dashboard');
+        // Redirect based on role
+        if ($role === 'opd') {
+            return redirect()->route('opd.dashboard');
+        } else {
+            return redirect()->route('patient.dashboard');
+        }
     }
 
     /**

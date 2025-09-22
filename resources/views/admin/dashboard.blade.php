@@ -13,11 +13,28 @@
                 <div class="flex-1">
                     <p class="text-sm font-medium text-gray-600 mb-2 uppercase tracking-wide">Total Patients</p>
                     <div class="flex items-center space-x-3">
-                        <p class="text-2xl font-semibold text-gray-900">2,847</p>
-                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-50 text-green-700">
-                            <i class="fas fa-arrow-up text-xs mr-1"></i>
-                            +12.5%
-                        </span>
+                        <p class="text-2xl font-semibold text-gray-900">{{ number_format($totalPatients) }}</p>
+                        @php
+                            $lastMonthPatients = \App\Models\Patient::whereBetween('created_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])->count();
+                            $currentMonthPatients = \App\Models\Patient::whereBetween('created_at', [now()->startOfMonth(), now()])->count();
+                            $percentageChange = $lastMonthPatients > 0 ? (($currentMonthPatients - $lastMonthPatients) / $lastMonthPatients) * 100 : 0;
+                        @endphp
+                        @if($percentageChange > 0)
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-50 text-green-700">
+                                <i class="fas fa-arrow-up text-xs mr-1"></i>
+                                +{{ number_format($percentageChange, 1) }}%
+                            </span>
+                        @elseif($percentageChange < 0)
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-50 text-red-700">
+                                <i class="fas fa-arrow-down text-xs mr-1"></i>
+                                {{ number_format($percentageChange, 1) }}%
+                            </span>
+                        @else
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-50 text-gray-700">
+                                <i class="fas fa-minus text-xs mr-1"></i>
+                                0%
+                            </span>
+                        @endif
                     </div>
                     <p class="text-xs text-gray-500 mt-1">vs last month</p>
                 </div>
@@ -33,13 +50,23 @@
                 <div class="flex-1">
                     <p class="text-sm font-medium text-gray-600 mb-2 uppercase tracking-wide">Today's Appointments</p>
                     <div class="flex items-center space-x-3">
-                        <p class="text-2xl font-semibold text-gray-900">67</p>
-                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-50 text-green-700">
-                            <i class="fas fa-arrow-up text-xs mr-1"></i>
-                            +8.2%
-                        </span>
+                        <p class="text-2xl font-semibold text-gray-900">{{ $testsToday }}</p>
+                        @php
+                            $pendingAppointments = \App\Models\Appointment::where('status', 'pending')->count();
+                        @endphp
+                        @if($testsToday > 0)
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-50 text-green-700">
+                                <i class="fas fa-calendar-check text-xs mr-1"></i>
+                                Active
+                            </span>
+                        @else
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-50 text-gray-700">
+                                <i class="fas fa-calendar text-xs mr-1"></i>
+                                None
+                            </span>
+                        @endif
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">15 pending approval</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ $pendingAppointments }} pending approval</p>
                 </div>
                 <div class="w-12 h-12 bg-emerald-600 rounded-lg flex items-center justify-center">
                     <i class="fas fa-calendar-check text-white text-lg"></i>
@@ -53,11 +80,21 @@
                 <div class="flex-1">
                     <p class="text-sm font-medium text-gray-600 mb-2 uppercase tracking-wide">Pending Tests</p>
                     <div class="flex items-center space-x-3">
-                        <p class="text-2xl font-semibold text-gray-900">34</p>
-                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-orange-50 text-orange-700">
-                            <i class="fas fa-arrow-down text-xs mr-1"></i>
-                            -5.1%
-                        </span>
+                        @php
+                            $pendingTests = \App\Models\Appointment::where('status', 'pending')->count();
+                        @endphp
+                        <p class="text-2xl font-semibold text-gray-900">{{ $pendingTests }}</p>
+                        @if($pendingTests > 0)
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-orange-50 text-orange-700">
+                                <i class="fas fa-clock text-xs mr-1"></i>
+                                Pending
+                            </span>
+                        @else
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-50 text-green-700">
+                                <i class="fas fa-check text-xs mr-1"></i>
+                                Clear
+                            </span>
+                        @endif
                     </div>
                     <p class="text-xs text-gray-500 mt-1">awaiting results</p>
                 </div>
@@ -73,13 +110,37 @@
                 <div class="flex-1">
                     <p class="text-sm font-medium text-gray-600 mb-2 uppercase tracking-wide">Monthly Revenue</p>
                     <div class="flex items-center space-x-3">
-                        <p class="text-2xl font-semibold text-gray-900">₱156K</p>
-                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700">
-                            <i class="fas fa-arrow-up text-xs mr-1"></i>
-                            +18.7%
-                        </span>
+                        @php
+                            $monthlyRevenue = \App\Models\Appointment::whereBetween('created_at', [now()->startOfMonth(), now()])
+                                ->where('status', 'approved')
+                                ->sum('total_price');
+                            $lastMonthRevenue = \App\Models\Appointment::whereBetween('created_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])
+                                ->where('status', 'approved')
+                                ->sum('total_price');
+                            $revenueChange = $lastMonthRevenue > 0 ? (($monthlyRevenue - $lastMonthRevenue) / $lastMonthRevenue) * 100 : 0;
+                        @endphp
+                        <p class="text-2xl font-semibold text-gray-900">₱{{ number_format($monthlyRevenue, 0) }}</p>
+                        @if($revenueChange > 0)
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700">
+                                <i class="fas fa-arrow-up text-xs mr-1"></i>
+                                +{{ number_format($revenueChange, 1) }}%
+                            </span>
+                        @elseif($revenueChange < 0)
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-50 text-red-700">
+                                <i class="fas fa-arrow-down text-xs mr-1"></i>
+                                {{ number_format($revenueChange, 1) }}%
+                            </span>
+                        @else
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-50 text-gray-700">
+                                <i class="fas fa-minus text-xs mr-1"></i>
+                                0%
+                            </span>
+                        @endif
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">target: ₱180K</p>
+                    @php
+                        $targetRevenue = 180000; // ₱180K target
+                    @endphp
+                    <p class="text-xs text-gray-500 mt-1">target: ₱{{ number_format($targetRevenue, 0) }}</p>
                 </div>
                 <div class="w-12 h-12 bg-cyan-600 rounded-lg flex items-center justify-center">
                     <i class="fas fa-chart-line text-white text-lg"></i>
@@ -118,98 +179,112 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
-                                <tr class="hover:bg-gray-50 transition-colors duration-200">
-                                    <td class="py-4 px-2">
-                                        <div class="flex items-center space-x-4">
-                                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold text-lg">
-                                                JD
+                                @forelse($patients as $patient)
+                                    @php
+                                        $appointment = $patient->appointment;
+                                        $initials = strtoupper(substr($patient->first_name, 0, 1) . substr($patient->last_name, 0, 1));
+                                        $colors = ['from-blue-500 to-purple-600', 'from-emerald-500 to-teal-600', 'from-purple-500 to-pink-600', 'from-orange-500 to-red-600', 'from-cyan-500 to-blue-600'];
+                                        $colorIndex = crc32($patient->id) % count($colors);
+                                    @endphp
+                                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                        <td class="py-4 px-2">
+                                            <div class="flex items-center space-x-4">
+                                                <div class="w-12 h-12 bg-gradient-to-br {{ $colors[$colorIndex] }} rounded-2xl flex items-center justify-center text-white font-bold text-lg">
+                                                    {{ $initials }}
+                                                </div>
+                                                <div>
+                                                    <div class="font-semibold text-gray-900">{{ $patient->full_name }}</div>
+                                                    <div class="text-sm text-gray-500">{{ $patient->email ?? 'No email' }}</div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <div class="font-semibold text-gray-900">John Doe</div>
-                                                <div class="text-sm text-gray-500">john.doe@email.com</div>
+                                        </td>
+                                        <td class="py-4 px-2">
+                                            <div class="font-medium text-gray-900">{{ $appointment ? $appointment->time_slot : 'N/A' }}</div>
+                                            <div class="text-sm text-gray-500">
+                                                @if($appointment && $appointment->appointment_date)
+                                                    @if($appointment->appointment_date->isToday())
+                                                        Today
+                                                    @elseif($appointment->appointment_date->isTomorrow())
+                                                        Tomorrow
+                                                    @else
+                                                        {{ $appointment->appointment_date->format('M d') }}
+                                                    @endif
+                                                @else
+                                                    N/A
+                                                @endif
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td class="py-4 px-2">
-                                        <div class="font-medium text-gray-900">09:30 AM</div>
-                                        <div class="text-sm text-gray-500">Today</div>
-                                    </td>
-                                    <td class="py-4 px-2">
-                                        <div class="font-medium text-gray-900">Blood Test</div>
-                                        <div class="text-sm text-gray-500">CBC + Lipid Panel</div>
-                                    </td>
-                                    <td class="py-4 px-2">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">
-                                            <i class="fas fa-check-circle mr-1"></i>
-                                            Confirmed
-                                        </span>
-                                    </td>
-                                    <td class="py-4 px-2">
-                                        <button class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">View Details</button>
-                                    </td>
-                                </tr>
-                                
-                                <tr class="hover:bg-gray-50 transition-colors duration-200">
-                                    <td class="py-4 px-2">
-                                        <div class="flex items-center space-x-4">
-                                            <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center text-white font-bold text-lg">
-                                                MS
+                                        </td>
+                                        <td class="py-4 px-2">
+                                            <div class="font-medium text-gray-900">
+                                                @if($appointment && $appointment->medicalTest)
+                                                    {{ $appointment->medicalTest->name }}
+                                                @elseif($appointment && $appointment->medicalTestCategory)
+                                                    {{ $appointment->medicalTestCategory->name }}
+                                                @else
+                                                    General Checkup
+                                                @endif
                                             </div>
-                                            <div>
-                                                <div class="font-semibold text-gray-900">Maria Santos</div>
-                                                <div class="text-sm text-gray-500">maria.santos@email.com</div>
+                                            <div class="text-sm text-gray-500">
+                                                @if($appointment && $appointment->medicalTest)
+                                                    {{ $appointment->medicalTest->description ?? 'Medical Test' }}
+                                                @else
+                                                    Medical Examination
+                                                @endif
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td class="py-4 px-2">
-                                        <div class="font-medium text-gray-900">11:00 AM</div>
-                                        <div class="text-sm text-gray-500">Today</div>
-                                    </td>
-                                    <td class="py-4 px-2">
-                                        <div class="font-medium text-gray-900">X-Ray</div>
-                                        <div class="text-sm text-gray-500">Chest X-Ray</div>
-                                    </td>
-                                    <td class="py-4 px-2">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800">
-                                            <i class="fas fa-clock mr-1"></i>
-                                            Pending
-                                        </span>
-                                    </td>
-                                    <td class="py-4 px-2">
-                                        <button class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">View Details</button>
-                                    </td>
-                                </tr>
-                                
-                                <tr class="hover:bg-gray-50 transition-colors duration-200">
-                                    <td class="py-4 px-2">
-                                        <div class="flex items-center space-x-4">
-                                            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center text-white font-bold text-lg">
-                                                RG
+                                        </td>
+                                        <td class="py-4 px-2">
+                                            @if($appointment)
+                                                @switch($appointment->status)
+                                                    @case('approved')
+                                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">
+                                                            <i class="fas fa-check-circle mr-1"></i>
+                                                            Approved
+                                                        </span>
+                                                        @break
+                                                    @case('pending')
+                                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800">
+                                                            <i class="fas fa-clock mr-1"></i>
+                                                            Pending
+                                                        </span>
+                                                        @break
+                                                    @case('cancelled')
+                                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800">
+                                                            <i class="fas fa-times-circle mr-1"></i>
+                                                            Cancelled
+                                                        </span>
+                                                        @break
+                                                    @default
+                                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
+                                                            <i class="fas fa-calendar mr-1"></i>
+                                                            Scheduled
+                                                        </span>
+                                                @endswitch
+                                            @else
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-800">
+                                                    <i class="fas fa-question mr-1"></i>
+                                                    Unknown
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="py-4 px-2">
+                                            @if($appointment)
+                                                <a href="{{ route('admin.appointments') }}" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">View Details</a>
+                                            @else
+                                                <span class="text-gray-400 text-sm">No appointment</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="py-8 px-2 text-center text-gray-500">
+                                            <div class="flex flex-col items-center space-y-2">
+                                                <i class="fas fa-calendar-times text-3xl text-gray-300"></i>
+                                                <p class="font-medium">No recent appointments</p>
+                                                <p class="text-sm">Appointments will appear here once patients book services</p>
                                             </div>
-                                            <div>
-                                                <div class="font-semibold text-gray-900">Robert Garcia</div>
-                                                <div class="text-sm text-gray-500">robert.garcia@email.com</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="py-4 px-2">
-                                        <div class="font-medium text-gray-900">02:15 PM</div>
-                                        <div class="text-sm text-gray-500">Today</div>
-                                    </td>
-                                    <td class="py-4 px-2">
-                                        <div class="font-medium text-gray-900">ECG</div>
-                                        <div class="text-sm text-gray-500">Electrocardiogram</div>
-                                    </td>
-                                    <td class="py-4 px-2">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
-                                            <i class="fas fa-calendar mr-1"></i>
-                                            Scheduled
-                                        </span>
-                                    </td>
-                                    <td class="py-4 px-2">
-                                        <button class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">View Details</button>
-                                    </td>
-                                </tr>
+                                        </td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -249,6 +324,11 @@
                         Schedule Test
                     </button>
                     
+                    <a href="{{ route('admin.inventory.index') }}" class="w-full flex items-center justify-center px-4 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors duration-200">
+                        <i class="fas fa-boxes mr-2 text-sm"></i>
+                        Manage Inventory
+                    </a>
+                    
                     <button class="w-full flex items-center justify-center px-4 py-3 bg-slate-600 text-white rounded-lg font-medium hover:bg-slate-700 transition-colors duration-200">
                         <i class="fas fa-file-alt mr-2 text-sm"></i>
                         Generate Report
@@ -271,50 +351,90 @@
                 </div>
                 
                 <div class="p-6 space-y-5">
-                    <div class="flex items-start space-x-4">
-                        <div class="w-3 h-3 bg-emerald-500 rounded-full mt-2 pulse-icon"></div>
-                        <div class="flex-1">
-                            <p class="font-medium text-gray-900 text-sm">New patient registered</p>
-                            <p class="text-xs text-gray-500 mt-1">Sarah Johnson completed registration</p>
-                            <p class="text-xs text-gray-400">2 minutes ago</p>
-                        </div>
-                    </div>
+                    @php
+                        // Get recent activities from different models
+                        $recentPatients = \App\Models\Patient::orderBy('created_at', 'desc')->limit(2)->get();
+                        $recentAppointments = \App\Models\Appointment::where('status', 'approved')->orderBy('updated_at', 'desc')->limit(2)->get();
+                        $recentPreEmployment = \App\Models\PreEmploymentRecord::orderBy('created_at', 'desc')->limit(1)->get();
+                        
+                        // Combine and sort activities
+                        $activities = collect();
+                        
+                        foreach($recentPatients as $patient) {
+                            $activities->push([
+                                'type' => 'patient_registered',
+                                'title' => 'New patient registered',
+                                'description' => $patient->full_name . ' completed registration',
+                                'time' => $patient->created_at,
+                                'color' => 'emerald-500',
+                                'pulse' => true
+                            ]);
+                        }
+                        
+                        foreach($recentAppointments as $appointment) {
+                            $activities->push([
+                                'type' => 'appointment_approved',
+                                'title' => 'Appointment approved',
+                                'description' => 'Appointment for ' . $appointment->appointment_date->format('M d, Y') . ' confirmed',
+                                'time' => $appointment->updated_at,
+                                'color' => 'blue-500',
+                                'pulse' => false
+                            ]);
+                        }
+                        
+                        foreach($recentPreEmployment as $preEmp) {
+                            $activities->push([
+                                'type' => 'pre_employment',
+                                'title' => 'Pre-employment record created',
+                                'description' => ($preEmp->first_name ?? 'New') . ' ' . ($preEmp->last_name ?? 'applicant') . ' submitted application',
+                                'time' => $preEmp->created_at,
+                                'color' => 'purple-500',
+                                'pulse' => false
+                            ]);
+                        }
+                        
+                        // Sort by time and take top 5
+                        $activities = $activities->sortByDesc('time')->take(5);
+                    @endphp
                     
-                    <div class="flex items-start space-x-4">
-                        <div class="w-3 h-3 bg-blue-500 rounded-full mt-2"></div>
-                        <div class="flex-1">
-                            <p class="font-medium text-gray-900 text-sm">Appointment confirmed</p>
-                            <p class="text-xs text-gray-500 mt-1">Dr. Martinez confirmed 3:00 PM slot</p>
-                            <p class="text-xs text-gray-400">8 minutes ago</p>
+                    @forelse($activities as $activity)
+                        <div class="flex items-start space-x-4">
+                            <div class="w-3 h-3 bg-{{ $activity['color'] }} rounded-full mt-2 {{ $activity['pulse'] ? 'pulse-icon' : '' }}"></div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900 text-sm">{{ $activity['title'] }}</p>
+                                <p class="text-xs text-gray-500 mt-1">{{ $activity['description'] }}</p>
+                                <p class="text-xs text-gray-400">{{ $activity['time']->diffForHumans() }}</p>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="flex items-start space-x-4">
-                        <div class="w-3 h-3 bg-amber-500 rounded-full mt-2"></div>
-                        <div class="flex-1">
-                            <p class="font-medium text-gray-900 text-sm">Test results uploaded</p>
-                            <p class="text-xs text-gray-500 mt-1">Blood work for Patient #2847</p>
-                            <p class="text-xs text-gray-400">15 minutes ago</p>
+                    @empty
+                        <!-- Fallback activities if no real data -->
+                        <div class="flex items-start space-x-4">
+                            <div class="w-3 h-3 bg-blue-500 rounded-full mt-2"></div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900 text-sm">System initialized</p>
+                                <p class="text-xs text-gray-500 mt-1">RSS Citi Health Services dashboard ready</p>
+                                <p class="text-xs text-gray-400">{{ now()->diffForHumans() }}</p>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="flex items-start space-x-4">
-                        <div class="w-3 h-3 bg-purple-500 rounded-full mt-2"></div>
-                        <div class="flex-1">
-                            <p class="font-medium text-gray-900 text-sm">Monthly report generated</p>
-                            <p class="text-xs text-gray-500 mt-1">October 2024 analytics ready</p>
-                            <p class="text-xs text-gray-400">1 hour ago</p>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="w-3 h-3 bg-green-500 rounded-full mt-2"></div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900 text-sm">Database connected</p>
+                                <p class="text-xs text-gray-500 mt-1">All systems operational</p>
+                                <p class="text-xs text-gray-400">{{ now()->subMinutes(5)->diffForHumans() }}</p>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="flex items-start space-x-4">
-                        <div class="w-3 h-3 bg-red-500 rounded-full mt-2"></div>
-                        <div class="flex-1">
-                            <p class="font-medium text-gray-900 text-sm">System maintenance</p>
-                            <p class="text-xs text-gray-500 mt-1">Scheduled for tonight 11:00 PM</p>
-                            <p class="text-xs text-gray-400">2 hours ago</p>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="w-3 h-3 bg-purple-500 rounded-full mt-2"></div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900 text-sm">Admin dashboard loaded</p>
+                                <p class="text-xs text-gray-500 mt-1">Ready to manage appointments and patients</p>
+                                <p class="text-xs text-gray-400">{{ now()->subMinutes(10)->diffForHumans() }}</p>
+                            </div>
                         </div>
-                    </div>
+                    @endforelse
                 </div>
             </div>
         </div>

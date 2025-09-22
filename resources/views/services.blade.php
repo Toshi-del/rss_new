@@ -67,8 +67,8 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div>
-                    <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-6">Our Medical Services</h1>
-                    <p class="text-lg text-gray-600 leading-relaxed mb-8">We provide a comprehensive range of diagnostic and preventive healthcare services to ensure your well-being. From routine check-ups to specialized testing, our state-of-the-art facility delivers accurate results with compassionate care.</p>
+                    <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-6">{{ $servicesContent['hero_title']->content_value ?? 'Our Medical Services' }}</h1>
+                    <p class="text-lg text-gray-600 leading-relaxed mb-8">{{ $servicesContent['hero_description']->content_value ?? 'We provide a comprehensive range of diagnostic and preventive healthcare services to ensure your well-being. From routine check-ups to specialized testing, our state-of-the-art facility delivers accurate results with compassionate care.' }}</p>
                     <div class="flex flex-col sm:flex-row gap-4">
                         <a href="#services" class="inline-flex items-center px-6 py-3 rounded-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition">
                             View All Services
@@ -97,145 +97,34 @@
     <section id="services" class="py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-gray-900 mb-4">Our Medical Services</h2>
-                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Comprehensive diagnostic and preventive healthcare services delivered with precision and care</p>
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">{{ $servicesContent['services_title']->content_value ?? 'Our Medical Services' }}</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">{{ $servicesContent['services_subtitle']->content_value ?? 'Comprehensive diagnostic and preventive healthcare services delivered with precision and care' }}</p>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Drug Test Service -->
-                <div class="service-card bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-                    <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-blue-100 text-blue-600 grid place-items-center service-icon">
-                        <i class="fa-solid fa-pills text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Drug Testing</h3>
-                    <p class="text-gray-600 leading-relaxed mb-6">
-                        Comprehensive drug screening services for pre-employment, random testing, and medical purposes. Our laboratory provides accurate results with quick turnaround times.
-                    </p>
-                    <a href="{{ route('register') }}?corporate=1" class="inline-flex items-center px-6 py-3 rounded-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition">
-                        Learn More
-                        <i class="fa-solid fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-
-                <!-- CBC Service -->
-                <div class="service-card bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-                    <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-blue-100 text-blue-600 grid place-items-center service-icon">
-                        <i class="fa-solid fa-tint text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Complete Blood Count (CBC)</h3>
-                    <p class="text-gray-600 leading-relaxed mb-6">
-                        Evaluates overall health and detects a wide range of disorders including anemia, infection, and leukemia through comprehensive blood analysis.
-                    </p>
-                    <a href="{{ route('register') }}?corporate=1" class="inline-flex items-center px-6 py-3 rounded-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition">
-                        Learn More
-                        <i class="fa-solid fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-
-                <!-- Hematology Service -->
-                <div class="service-card bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-                    <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-blue-100 text-blue-600 grid place-items-center service-icon">
-                        <i class="fa-solid fa-microscope text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Hematology</h3>
-                    <p class="text-gray-600 leading-relaxed mb-6">
-                        Specialized blood testing to diagnose blood disorders, assess blood cell production, and monitor blood-related conditions with precision and accuracy.
-                    </p>
-                    <a href="{{ route('register') }}?corporate=1" class="inline-flex items-center px-6 py-3 rounded-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition">
-                        Learn More
-                        <i class="fa-solid fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-
-                <!-- Urine Analysis Service -->
-                <div class="service-card bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-                    <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-blue-100 text-blue-600 grid place-items-center service-icon">
-                        <i class="fa-solid fa-flask text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Urine Analysis</h3>
-                    <p class="text-gray-600 leading-relaxed mb-6">
-                        Complete urinalysis to detect various conditions including urinary tract infections, kidney disease, diabetes, and liver problems.
-                    </p>
-                    <a href="{{ route('register') }}?corporate=1" class="inline-flex items-center px-6 py-3 rounded-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition">
-                        Learn More
-                        <i class="fa-solid fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-
-                <!-- Stool Test Service -->
-                <div class="service-card bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-                    <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-blue-100 text-blue-600 grid place-items-center service-icon">
-                        <i class="fa-solid fa-clipboard-list text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Stool Examination</h3>
-                    <p class="text-gray-600 leading-relaxed mb-6">
-                        Stool analysis for detecting digestive disorders, parasitic infections, and screening for colorectal cancer through occult blood testing.
-                    </p>
-                    <a href="{{ route('register') }}?corporate=1" class="inline-flex items-center px-6 py-3 rounded-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition">
-                        Learn More
-                        <i class="fa-solid fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-
-                <!-- ECG Service -->
-                <div class="service-card bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-                    <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-blue-100 text-blue-600 grid place-items-center service-icon">
-                        <i class="fa-solid fa-heart-pulse text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Electrocardiogram (ECG)</h3>
-                    <p class="text-gray-600 leading-relaxed mb-6">
-                        Non-invasive test that records the electrical activity of your heart to detect heart problems and monitor heart health.
-                    </p>
-                    <a href="{{ route('register') }}?corporate=1" class="inline-flex items-center px-6 py-3 rounded-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition">
-                        Learn More
-                        <i class="fa-solid fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-
-                <!-- X-Ray Service -->
-                <div class="service-card bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-                    <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-blue-100 text-blue-600 grid place-items-center service-icon">
-                        <i class="fa-solid fa-x-ray text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-4">X-Ray Imaging</h3>
-                    <p class="text-gray-600 leading-relaxed mb-6">
-                        Advanced X-ray imaging services for diagnosing bone fractures, lung conditions, and other internal issues with minimal radiation exposure.
-                    </p>
-                    <a href="{{ route('register') }}?corporate=1" class="inline-flex items-center px-6 py-3 rounded-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition">
-                        Learn More
-                        <i class="fa-solid fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-
-                <!-- Vision Test Service -->
-                <div class="service-card bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-                    <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-blue-100 text-blue-600 grid place-items-center service-icon">
-                        <i class="fa-solid fa-eye text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Vision Testing</h3>
-                    <p class="text-gray-600 leading-relaxed mb-6">
-                        Comprehensive eye examinations to assess visual acuity, detect vision problems, and screen for eye diseases such as glaucoma and cataracts.
-                    </p>
-                    <a href="{{ route('register') }}?corporate=1" class="inline-flex items-center px-6 py-3 rounded-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition">
-                        Learn More
-                        <i class="fa-solid fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-
-                <!-- Blood Pressure Service -->
-                <div class="service-card bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-                    <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-blue-100 text-blue-600 grid place-items-center service-icon">
-                        <i class="fa-solid fa-heartbeat text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Blood Pressure Monitoring</h3>
-                    <p class="text-gray-600 leading-relaxed mb-6">
-                        Regular blood pressure checks to monitor cardiovascular health, detect hypertension early, and prevent related health complications.
-                    </p>
-                    <a href="{{ route('register') }}?corporate=1" class="inline-flex items-center px-6 py-3 rounded-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition">
-                        Learn More
-                        <i class="fa-solid fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
+                @php
+                    $serviceCount = 1;
+                    $maxServices = 20; // Maximum number of services to check for
+                @endphp
+                
+                @for($i = 1; $i <= $maxServices; $i++)
+                    @if(isset($servicesContent["service_{$i}_title"]) && $servicesContent["service_{$i}_title"]->is_active)
+                        <!-- Service {{ $i }} -->
+                        <div class="service-card bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
+                            <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-blue-100 text-blue-600 grid place-items-center service-icon">
+                                <i class="fa-solid {{ $servicesContent["service_{$i}_icon"]->content_value ?? 'fa-medical-kit' }} text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-900 mb-4">{{ $servicesContent["service_{$i}_title"]->content_value ?? "Service {$i}" }}</h3>
+                            <p class="text-gray-600 leading-relaxed mb-6">
+                                {{ $servicesContent["service_{$i}_description"]->content_value ?? "Service description for service {$i}." }}
+                            </p>
+                            <a href="{{ route('register') }}?corporate=1" class="inline-flex items-center px-6 py-3 rounded-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition">
+                                Learn More
+                                <i class="fa-solid fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    @endif
+                @endfor
             </div>
         </div>
     </section>
@@ -243,8 +132,8 @@
     <!-- Call to Action Section -->
     <section class="py-16 bg-gradient-to-br from-indigo-700 to-blue-700">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
-            <h2 class="text-3xl md:text-4xl font-bold mb-4">Ready to Schedule Your Appointment?</h2>
-            <p class="text-blue-100 max-w-3xl mx-auto mb-8">Our team of healthcare professionals is ready to provide you with the best care possible. Book your appointment today and take the first step towards better health.</p>
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">{{ $servicesContent['cta_title']->content_value ?? 'Ready to Schedule Your Appointment?' }}</h2>
+            <p class="text-blue-100 max-w-3xl mx-auto mb-8">{{ $servicesContent['cta_description']->content_value ?? 'Our team of healthcare professionals is ready to provide you with the best care possible. Book your appointment today and take the first step towards better health.' }}</p>
             <div class="flex justify-center">
                 <a href="{{ route('register') }}" class="px-8 py-3 rounded-lg bg-white text-indigo-700 font-semibold hover:bg-blue-50 transition">
                     <i class="fa-solid fa-calendar-plus mr-2"></i>

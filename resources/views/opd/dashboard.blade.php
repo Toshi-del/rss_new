@@ -1,131 +1,87 @@
 @extends('layouts.opd')
 
 @section('opd-content')
-<nav aria-label="breadcrumb" class="mb-3">
-  <ol class="breadcrumb mb-0">
-    <li class="breadcrumb-item"><a href="{{ route('opd.dashboard') }}">OPD</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-  </ol>
-  </nav>
-
-<div class="card border-0 shadow-sm mb-4 tile-modern hero-modern">
-  <div class="card-body d-flex align-items-center justify-content-between">
-    <div class="d-flex align-items-center">
-      <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center me-3" style="width:56px;height:56px;">
+<div class="bg-gradient-to-b from-blue-50 to-white border border-blue-100 rounded-xl p-5 mb-6">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center">
+      <div class="w-14 h-14 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-3">
         <i class="fa-solid fa-user"></i>
       </div>
       <div>
-        <h5 class="mb-1">Welcome, {{ Auth::user()->fname ?? 'OPD' }}!</h5>
-        <div class="text-muted small">Walk‑in patient portal</div>
+        <h2 class="text-xl font-semibold text-gray-900">Welcome, {{ Auth::user()->fname ?? 'OPD' }}!</h2>
+        <p class="text-gray-500 text-sm">Walk‑in patient portal</p>
       </div>
     </div>
-    <div class="d-flex gap-2">
-      <a href="{{ route('opd.medical-test-categories') }}" class="btn btn-sm btn-primary">
-        <i class="fa-solid fa-compass me-1"></i> Start browsing
+    <div class="flex gap-2">
+      <a href="{{ route('opd.medical-test-categories') }}" class="inline-flex items-center px-3 py-2 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700 transition">
+        <i class="fa-solid fa-compass mr-2"></i> Start browsing
       </a>
-      <a href="{{ route('opd.incoming-tests') }}" class="btn btn-sm btn-outline-primary">
-        <i class="fa-solid fa-inbox me-1"></i> View Incoming
+      <a href="{{ route('opd.incoming-tests') }}" class="inline-flex items-center px-3 py-2 rounded-lg border border-blue-600 text-blue-700 text-sm hover:bg-blue-50 transition">
+        <i class="fa-solid fa-inbox mr-2"></i> View Incoming
       </a>
+      
     </div>
   </div>
 </div>
 
-<div class="row g-3 align-items-stretch">
-  <div class="col-lg-4 col-md-6 d-flex">
-    <div class="card border-0 shadow-sm h-100 feature-card">
-      <a href="{{ route('opd.medical-test-categories') }}" class="stretched-link text-decoration-none"></a>
-      <div class="card-body d-flex align-items-center gap-3">
-        <div class="feature-icon bg-primary-subtle text-primary">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <a href="{{ route('opd.medical-test-categories') }}" class="block group">
+    <div class="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition h-full">
+      <div class="flex items-center gap-3">
+        <div class="w-14 h-14 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
           <i class="fa-solid fa-folder-tree"></i>
         </div>
-        <div class="flex-grow-1">
-          <div class="text-muted small">Browse</div>
-          <h5 class="mb-1">Medical Test Categories</h5>
-          <div class="text-muted small">Explore tests available for walk‑in patients</div>
+        <div class="flex-1">
+          <p class="text-gray-500 text-xs">Browse</p>
+          <h3 class="text-base font-semibold text-gray-900">Medical Test Categories</h3>
+          <p class="text-gray-500 text-sm">Explore tests available for walk‑in patients</p>
         </div>
-       
       </div>
     </div>
-  </div>
-  
-  <div class="col-lg-4 col-md-6 d-flex">
-    <div class="card border-0 shadow-sm h-100 feature-card">
-      <a href="{{ route('opd.incoming-tests') }}" class="stretched-link text-decoration-none"></a>
-      <div class="card-body d-flex align-items-center gap-3">
-        <div class="feature-icon bg-info-subtle text-info">
+  </a>
+
+  <a href="{{ route('opd.incoming-tests') }}" class="block group">
+    <div class="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition h-full">
+      <div class="flex items-center gap-3">
+        <div class="w-14 h-14 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center">
           <i class="fa-solid fa-inbox"></i>
         </div>
-        <div class="flex-grow-1">
-          <div class="text-muted small">Queue</div>
-          <h5 class="mb-1">Incoming Tests</h5>
-          <div class="text-muted small">Review and manage tests you added</div>
-          <div class="mt-2 d-flex align-items-center gap-2">
-            <span class="badge rounded-pill text-bg-primary">{{ is_countable($incoming ?? []) ? count($incoming ?? []) : 0 }}</span>
-            <span class="small text-muted">Items</span>
+        <div class="flex-1">
+          <p class="text-gray-500 text-xs">Queue</p>
+          <h3 class="text-base font-semibold text-gray-900">Incoming Tests</h3>
+          <p class="text-gray-500 text-sm">Review and manage tests you added</p>
+          <div class="mt-2 flex items-center gap-2">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">{{ is_countable($incoming ?? []) ? count($incoming ?? []) : 0 }}</span>
+            <span class="text-xs text-gray-500">Items</span>
           </div>
         </div>
-        <div class="text-end">
-          <div class="small text-muted">Estimated Total</div>
-          <div class="fw-semibold">₱{{ number_format($total ?? 0, 2) }}</div>
+        <div class="text-right">
+          <div class="text-xs text-gray-500">Estimated Total</div>
+          <div class="font-semibold">₱{{ number_format($total ?? 0, 2) }}</div>
         </div>
       </div>
     </div>
-  </div>
+  </a>
 
-  <div class="col-lg-4 col-md-6 d-flex">
-    <div class="card border-0 shadow-sm h-100 feature-card">
-      <a href="{{ route('opd.result') }}" class="stretched-link text-decoration-none"></a>
-      <div class="card-body d-flex align-items-center gap-3">
-        <div class="feature-icon bg-secondary-subtle text-secondary">
+  <a href="{{ route('opd.result') }}" class="block group">
+    <div class="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition h-full">
+      <div class="flex items-center gap-3">
+        <div class="w-14 h-14 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
           <i class="fa-solid fa-file-medical"></i>
         </div>
-        <div class="flex-grow-1">
-          <div class="text-muted small">Preview</div>
-          <h5 class="mb-1">Result Template</h5>
-          <div class="text-muted small">UI-only sample of result card</div>
+        <div class="flex-1">
+          <p class="text-gray-500 text-xs">Preview</p>
+          <h3 class="text-base font-semibold text-gray-900">Result Template</h3>
+          <p class="text-gray-500 text-sm">UI-only sample of result card</p>
         </div>
         <div>
-          <span class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-file-lines me-1"></i> Open</span>
+          <span class="inline-flex items-center px-3 py-1 rounded-lg border text-sm text-gray-700 border-gray-300"><i class="fa-solid fa-file-lines mr-2"></i> Open</span>
         </div>
       </div>
     </div>
-  </div>
-</div>
+  </a>
 
-
-
-<style>
-  .card-tile { transition: box-shadow .2s ease, transform .15s ease; min-height: 112px; }
-  .card-tile .card-body { padding: .9rem 1rem; }
-  .card-tile:hover { box-shadow: 0 .5rem 1.25rem rgba(31,45,61,.08); transform: translateY(-2px); }
-  .card-tile:active { transform: translateY(0); }
-  .card-tile .btn { transition: all .15s ease; }
-  .tile-icon { transition: background-color .2s ease, transform .2s ease; width:40px !important; height:40px !important; }
-  .card-tile h6 { margin-bottom: .25rem !important; }
-  .card-tile .small { line-height: 1.2; }
-  .card-tile:hover .tile-icon { background-color: rgba(13,110,253,.15) !important; transform: scale(1.05); }
-</style>
-<style>
-  /* Modern aesthetic */
-  .tile-modern { position: relative; border: 1px solid rgba(33,37,41,.06); border-radius: .75rem; background: rgba(255,255,255,.92); backdrop-filter: saturate(160%) blur(6px); }
-  .tile-modern::before { content: ""; position: absolute; left: 0; top: 0; right: 0; height: 3px; background: linear-gradient(90deg, #0d6efd, #6f42c1); }
-  .tile-primary::before { background: linear-gradient(90deg, #0d6efd, #66b2ff); }
-  .tile-info::before { background: linear-gradient(90deg, #20c997, #0d6efd); }
-  .tile-neutral::before { background: linear-gradient(90deg, #6c757d, #adb5bd); }
-  .tile-primary .tile-icon { background-color: rgba(13,110,253,.12) !important; color: #0d6efd; }
-  .tile-info .tile-icon { background-color: rgba(32,201,151,.12) !important; color: #20c997; }
-  .tile-neutral .tile-icon { background-color: rgba(108,117,125,.12) !important; color: #6c757d; }
-  .tile-modern .btn { border-radius: .5rem; }
-  .tile-modern:hover { box-shadow: 0 .75rem 1.75rem rgba(16,24,40,.08); }
-  .hero-modern { background: linear-gradient(180deg, rgba(13,110,253,.06), rgba(255,255,255,1)); border: 1px solid rgba(13,110,253,.08); }
-
-  /* Feature cards */
-  .feature-card { position: relative; border-radius: .75rem; overflow: hidden; border: 1px solid rgba(33,37,41,.06); }
-  .feature-card .card-body { padding: 1rem 1.125rem; }
-  .feature-card::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(13,110,253,.04), rgba(255,255,255,0)); pointer-events: none; }
-  .feature-icon { width: 56px; height: 56px; border-radius: .75rem; display: inline-flex; align-items: center; justify-content: center; font-size: 1.25rem; }
-  .feature-card:hover { box-shadow: 0 .5rem 1.25rem rgba(31,45,61,.08); }
-</style>
+ 
 @endsection
 
 

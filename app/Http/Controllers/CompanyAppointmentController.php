@@ -42,19 +42,34 @@ class CompanyAppointmentController extends Controller
             '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '1:00 PM', '1:30 PM',
             '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM'
         ];
+        
+        // Get booked dates for frontend validation
+        $bookedDates = Appointment::pluck('appointment_date')
+            ->map(function($date) {
+                return Carbon::parse($date)->format('Y-m-d');
+            })
+            ->toArray();
+        
+        // Calculate minimum date (4 days from today)
+        $minDate = Carbon::now()->addDays(4)->format('Y-m-d');
 
-        return view('company.appointments.create', compact('medicalTestCategories', 'timeSlots'));
+        return view('company.appointments.create', compact('medicalTestCategories', 'timeSlots', 'bookedDates', 'minDate'));
     }
 
     public function store(Request $request)
     {
+        // Calculate minimum date (4 days from today)
+        $minDate = Carbon::now()->addDays(4)->format('Y-m-d');
+        
         $request->validate([
-            'appointment_date' => 'nullable|date|after_or_equal:today',
+            'appointment_date' => 'nullable|date|after_or_equal:' . $minDate,
             'time_slot' => 'required|string',
             'medical_test_categories_id' => 'required|exists:medical_test_categories,id',
             'medical_test_id' => 'required|exists:medical_tests,id',
             'notes' => 'nullable|string',
             'excel_file' => 'nullable|file|mimes:xlsx,xls',
+        ], [
+            'appointment_date.after_or_equal' => 'Appointments must be scheduled at least 4 days in advance.',
         ]);
 
         try {
@@ -65,15 +80,19 @@ class CompanyAppointmentController extends Controller
             
             // Ensure the date is in the correct format
             $appointmentDate = Carbon::parse($appointmentDate)->format('Y-m-d');
+            
+            // Check if the selected date is a weekend (Saturday = 6, Sunday = 0)
+            $dayOfWeek = Carbon::parse($appointmentDate)->dayOfWeek;
+            if ($dayOfWeek == 0 || $dayOfWeek == 6) {
+                return back()->withInput()->with('error', 'Appointments cannot be scheduled on weekends (Saturday and Sunday). Please select a weekday.');
+            }
 
-            // Check for duplicate appointment (same date, time slot, and created by same user)
+            // Check if any company has already booked this date (no double booking per day)
             $existingAppointment = Appointment::where('appointment_date', $appointmentDate)
-                ->where('time_slot', $request->time_slot)
-                ->where('created_by', Auth::id())
                 ->first();
 
             if ($existingAppointment) {
-                return back()->withInput()->with('error', 'An appointment already exists for this date and time slot. Please choose a different time.');
+                return back()->withInput()->with('error', 'This date is not available. Another company has already booked an appointment on this date. Please choose a different date.');
             }
 
             // Validate the selected test belongs to the selected category
@@ -261,7 +280,7 @@ class CompanyAppointmentController extends Controller
 
     public function show($id)
     {
-        $appointment = Appointment::with('patients')->where('created_by', Auth::id())
+        $appointment = Appointment::with(['patients', 'medicalTest', 'medicalTestCategory'])->where('created_by', Auth::id())
             ->findOrFail($id);
         
         return view('company.appointments.show', compact('appointment'));
@@ -282,8 +301,19 @@ class CompanyAppointmentController extends Controller
             '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '1:00 PM', '1:30 PM',
             '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM'
         ];
+        
+        // Get booked dates for frontend validation (excluding current appointment)
+        $bookedDates = Appointment::where('id', '!=', $id)
+            ->pluck('appointment_date')
+            ->map(function($date) {
+                return Carbon::parse($date)->format('Y-m-d');
+            })
+            ->toArray();
+        
+        // Calculate minimum date (4 days from today)
+        $minDate = Carbon::now()->addDays(4)->format('Y-m-d');
 
-        return view('company.appointments.edit', compact('appointment', 'medicalTestCategories', 'timeSlots'));
+        return view('company.appointments.edit', compact('appointment', 'medicalTestCategories', 'timeSlots', 'bookedDates', 'minDate'));
     }
 
     public function update(Request $request, $id)
@@ -299,15 +329,27 @@ class CompanyAppointmentController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        // Check for duplicate appointment (same date, time slot, and created by same user, excluding current appointment)
+        // Calculate minimum date (4 days from today)
+        $minDate = Carbon::now()->addDays(4)->format('Y-m-d');
+        
+        // Validate minimum date requirement
+        if ($request->appointment_date < $minDate) {
+            return back()->withInput()->with('error', 'Appointments must be scheduled at least 4 days in advance.');
+        }
+        
+        // Check if the selected date is a weekend (Saturday = 6, Sunday = 0)
+        $dayOfWeek = Carbon::parse($request->appointment_date)->dayOfWeek;
+        if ($dayOfWeek == 0 || $dayOfWeek == 6) {
+            return back()->withInput()->with('error', 'Appointments cannot be scheduled on weekends (Saturday and Sunday). Please select a weekday.');
+        }
+        
+        // Check if any company has already booked this date (no double booking per day, excluding current appointment)
         $existingAppointment = Appointment::where('appointment_date', $request->appointment_date)
-            ->where('time_slot', $request->time_slot)
-            ->where('created_by', Auth::id())
             ->where('id', '!=', $id)
             ->first();
 
         if ($existingAppointment) {
-            return back()->withInput()->with('error', 'An appointment already exists for this date and time slot. Please choose a different time.');
+            return back()->withInput()->with('error', 'This date is not available. Another company has already booked an appointment on this date. Please choose a different date.');
         }
 
         // Validate category/test pairing and get price

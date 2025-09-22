@@ -23,6 +23,7 @@ class MedicalChecklist extends Model
         'patient_id',
         'pre_employment_record_id',
         'annual_physical_examination_id',
+        'opd_examination_id',
         'name',
         'age',
         'number',
@@ -75,5 +76,10 @@ class MedicalChecklist extends Model
     public function radtech(): BelongsTo
     {
         return $this->belongsTo(User::class, 'radtech_id');
+    }
+
+    public function opdExamination(): BelongsTo
+    {
+        return $this->belongsTo(OpdExamination::class);
     }
 }

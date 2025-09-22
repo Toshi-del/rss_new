@@ -63,8 +63,8 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div>
-                    <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-6">About RSS Citi Health Services</h1>
-                    <p class="text-lg text-gray-600 leading-relaxed">Dedicated to providing exceptional, compassionate healthcare services since 2005. We combine modern diagnostics with personalized care to improve community wellness.</p>
+                    <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-6">{{ $aboutContent['hero_title']->content_value ?? 'About RSS Citi Health Services' }}</h1>
+                    <p class="text-lg text-gray-600 leading-relaxed">{{ $aboutContent['hero_description']->content_value ?? 'Dedicated to providing exceptional, compassionate healthcare services since 2005. We combine modern diagnostics with personalized care to improve community wellness.' }}</p>
                     <div class="mt-8 flex flex-col sm:flex-row gap-4">
                         <a href="#leadership" class="inline-flex items-center px-6 py-3 rounded-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition">
                             Meet our leadership
@@ -94,10 +94,10 @@
             <div class="grid lg:grid-cols-2 gap-10 items-center">
                 <img src="{{ asset('images/unnamed.jpg') }}" alt="Company Overview" class="w-full h-[420px] object-cover rounded-2xl shadow-lg" onerror="this.src='{{ asset('images/placeholder.jpg') }}'">
                 <div>
-                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Our Story</h2>
-                    <p class="text-gray-600 leading-7 mb-4">RSS Citi Health Services was established in 2005 with a vision to provide accessible, high-quality healthcare to our community.</p>
-                    <p class="text-gray-600 leading-7 mb-4">From a small clinic to a comprehensive facility serving thousands annually, our growth reflects our commitment to excellence and evolving patient needs.</p>
-                    <p class="text-gray-600 leading-7">Today, we offer a wide range of diagnostic and preventive services, delivered by experienced professionals who prioritize personalized care and attention.</p>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">{{ $aboutContent['story_title']->content_value ?? 'Our Story' }}</h2>
+                    <p class="text-gray-600 leading-7 mb-4">{{ $aboutContent['story_paragraph1']->content_value ?? 'RSS Citi Health Services was established in 2005 with a vision to provide accessible, high-quality healthcare to our community.' }}</p>
+                    <p class="text-gray-600 leading-7 mb-4">{{ $aboutContent['story_paragraph2']->content_value ?? 'From a small clinic to a comprehensive facility serving thousands annually, our growth reflects our commitment to excellence and evolving patient needs.' }}</p>
+                    <p class="text-gray-600 leading-7">{{ $aboutContent['story_paragraph3']->content_value ?? 'Today, we offer a wide range of diagnostic and preventive services, delivered by experienced professionals who prioritize personalized care and attention.' }}</p>
                 </div>
             </div>
         </div>
@@ -115,7 +115,7 @@
                         </div>
                         <h3 class="text-xl font-semibold text-gray-900">Our Mission</h3>
                     </div>
-                    <p class="text-gray-700 leading-7">To provide accessible, high-quality healthcare services that promote wellness and improve the quality of life for our patients. We deliver compassionate care addressing physical, emotional, and spiritual needs.</p>
+                    <p class="text-gray-700 leading-7">{{ $aboutContent['mission_text']->content_value ?? 'To provide accessible, high-quality healthcare services that promote wellness and improve the quality of life for our patients. We deliver compassionate care addressing physical, emotional, and spiritual needs.' }}</p>
                 </div>
                 <div class="rounded-2xl border border-gray-100 shadow-sm p-8 bg-gradient-to-br from-indigo-50 to-white">
                     <div class="flex items-center mb-4">
@@ -124,7 +124,7 @@
                         </div>
                         <h3 class="text-xl font-semibold text-gray-900">Our Vision</h3>
                     </div>
-                    <p class="text-gray-700 leading-7">To be the leading healthcare provider in our region, recognized for excellence in diagnostics, preventive care, and patient satisfaction, continuously innovating to deliver the highest standards.</p>
+                    <p class="text-gray-700 leading-7">{{ $aboutContent['vision_text']->content_value ?? 'To be the leading healthcare provider in our region, recognized for excellence in diagnostics, preventive care, and patient satisfaction, continuously innovating to deliver the highest standards.' }}</p>
                 </div>
             </div>
         </div>
@@ -140,21 +140,21 @@
                         <i class="fa-solid fa-heart-pulse text-2xl"></i>
                     </div>
                     <h4 class="text-xl font-semibold mb-2">Compassion</h4>
-                    <p class="text-gray-600">We treat every patient with kindness, empathy, and respect, recognizing their unique needs and concerns.</p>
+                    <p class="text-gray-600">{{ $aboutContent['compassion_value']->content_value ?? 'We treat every patient with kindness, empathy, and respect, recognizing their unique needs and concerns.' }}</p>
                 </div>
                 <div class="h-full rounded-2xl bg-white border border-gray-100 shadow-sm p-8 text-center">
                     <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-100 text-blue-600 grid place-items-center">
                         <i class="fa-solid fa-shield-heart text-2xl"></i>
                     </div>
                     <h4 class="text-xl font-semibold mb-2">Excellence</h4>
-                    <p class="text-gray-600">We are committed to delivering the highest standard of care through continuous learning and improvement.</p>
+                    <p class="text-gray-600">{{ $aboutContent['excellence_value']->content_value ?? 'We are committed to delivering the highest standard of care through continuous learning and improvement.' }}</p>
                 </div>
                 <div class="h-full rounded-2xl bg-white border border-gray-100 shadow-sm p-8 text-center">
                     <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-100 text-blue-600 grid place-items-center">
                         <i class="fa-solid fa-scale-balanced text-2xl"></i>
                     </div>
                     <h4 class="text-xl font-semibold mb-2">Integrity</h4>
-                    <p class="text-gray-600">We uphold high ethical standards in all interactions, ensuring transparency and honesty in everything we do.</p>
+                    <p class="text-gray-600">{{ $aboutContent['integrity_value']->content_value ?? 'We uphold high ethical standards in all interactions, ensuring transparency and honesty in everything we do.' }}</p>
                 </div>
             </div>
         </div>

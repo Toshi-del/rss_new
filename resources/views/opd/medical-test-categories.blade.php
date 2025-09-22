@@ -1,48 +1,50 @@
 @extends('layouts.opd')
 
 @section('opd-content')
-<div class="card border-0 shadow-sm mb-3">
-  <div class="card-header bg-white d-flex justify-content-between align-items-center">
-    <div class="d-flex align-items-center">
-      <a href="{{ route('opd.dashboard') }}" class="btn btn-sm btn-outline-secondary me-2">
-        <i class="fa-solid fa-arrow-left me-1"></i> Back
+<div class="bg-white border border-gray-200 rounded-xl overflow-hidden mb-4">
+  <div class="px-4 sm:px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+    <div class="flex items-center">
+      <a href="{{ route('opd.dashboard') }}" class="inline-flex items-center px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 hover:bg-gray-50 transition mr-3">
+        <i class="fa-solid fa-arrow-left mr-2"></i> Back
       </a>
-      <h5 class="mb-0"><i class="fa-solid fa-folder-tree me-2 text-primary"></i>Medical Test Categories</h5>
+      <h2 class="m-0 flex items-center text-base font-semibold text-gray-900">
+        <i class="fa-solid fa-folder-tree text-blue-600 mr-2"></i>
+        Medical Test Categories
+      </h2>
     </div>
   </div>
-  <div class="card-body">
-    <div class="row g-2 mb-3">
-      <div class="col-md-4">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text"><i class="fa-solid fa-search"></i></span>
-          <input id="categoryFilter" type="text" class="form-control" placeholder="Filter categories and tests...">
+  <div class="p-4 sm:p-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+      <div>
+        <label class="sr-only" for="categoryFilter">Filter</label>
+        <div class="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+          <span class="px-3 text-gray-500"><i class="fa-solid fa-search"></i></span>
+          <input id="categoryFilter" type="text" class="w-full px-3 py-2 text-sm outline-none" placeholder="Filter categories and tests...">
         </div>
       </div>
-      <div class="col-md-8">
-        <div class="row g-2">
-          <div class="col-sm-3">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text"><i class="fa-solid fa-calendar-day"></i></span>
-              <input type="date" id="opdAppointmentDate" class="form-control" placeholder="Date">
-            </div>
+      <div>
+        <div class="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+          <span class="px-3 text-gray-500"><i class="fa-solid fa-calendar-day"></i></span>
+          <input type="date" id="opdAppointmentDate" class="w-full px-3 py-2 text-sm outline-none" placeholder="Date">
+        </div>
+      </div>
+      <div>
+        <div class="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+          <span class="px-3 text-gray-500"><i class="fa-solid fa-clock"></i></span>
+          <input type="time" id="opdAppointmentTime" class="w-full px-3 py-2 text-sm outline-none" placeholder="Time">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <div class="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+            <span class="px-3 text-gray-500"><i class="fa-solid fa-user"></i></span>
+            <input type="text" id="opdCustomerName" class="w-full px-3 py-2 text-sm outline-none" placeholder="Full name">
           </div>
-          <div class="col-sm-3">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text"><i class="fa-solid fa-clock"></i></span>
-              <input type="time" id="opdAppointmentTime" class="form-control" placeholder="Time">
-            </div>
-          </div>
-          <div class="col-sm-3">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
-              <input type="text" id="opdCustomerName" class="form-control" placeholder="Full name">
-            </div>
-          </div>
-          <div class="col-sm-3">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text"><i class="fa-solid fa-envelope"></i></span>
-              <input type="email" id="opdCustomerEmail" class="form-control" placeholder="Email">
-            </div>
+        </div>
+        <div>
+          <div class="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+            <span class="px-3 text-gray-500"><i class="fa-solid fa-envelope"></i></span>
+            <input type="email" id="opdCustomerEmail" class="w-full px-3 py-2 text-sm outline-none" placeholder="Email">
           </div>
         </div>
       </div>
@@ -71,48 +73,48 @@
     @endphp
     <div id="categoryList">
       @forelse($categoryItems as $category)
-        <div class="mb-4 category-card" data-cat-name="{{ strtolower($category->name) }}" data-cat-desc="{{ strtolower($category->description ?? '') }}">
-          <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="mb-6 category-card" data-cat-name="{{ strtolower($category->name) }}" data-cat-desc="{{ strtolower($category->description ?? '') }}">
+          <div class="flex items-center justify-between mb-2">
             <div>
-              <h6 class="mb-0">{{ $category->name }}</h6>
+              <h3 class="text-sm font-semibold text-gray-900">{{ $category->name }}</h3>
               @if($category->description)
-                <small class="text-muted">{{ $category->description }}</small>
+                <p class="text-xs text-gray-500">{{ $category->description }}</p>
               @endif
             </div>
             @php $uniqueTests = $category->medicalTests->unique(function($t){ return strtolower($t->name ?? ''); }); @endphp
-            <span class="badge text-bg-primary">{{ $uniqueTests->count() }} tests</span>
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">{{ $uniqueTests->count() }} tests</span>
           </div>
 
           @if($uniqueTests->count() > 0)
-          <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             @foreach($uniqueTests as $test)
-              <div class="col">
-                <div class="border rounded p-3 h-100 d-flex flex-column test-item" data-test-name="{{ strtolower($test->name) }}" data-test-desc="{{ strtolower($test->description ?? '') }}">
-                  <div class="d-flex align-items-start justify-content-between">
-                    <div class="d-flex align-items-center">
-                      <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center me-2" style="width:36px;height:36px;">
+              <div>
+                <div class="border border-gray-200 rounded-lg p-3 h-full flex flex-col test-item" data-test-name="{{ strtolower($test->name) }}" data-test-desc="{{ strtolower($test->description ?? '') }}">
+                  <div class="flex items-start justify-between">
+                    <div class="flex items-center">
+                      <div class="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mr-2">
                         <i class="{{ opd_icon_for_test($test->name) }}"></i>
                       </div>
                       <div>
-                        <div class="fw-semibold small">{{ $test->name }}</div>
+                        <div class="font-semibold text-sm text-gray-900">{{ $test->name }}</div>
                         @if($test->description)
-                          <div class="text-muted small">{{ Str::limit($test->description, 80) }}</div>
+                          <div class="text-xs text-gray-500">{{ Str::limit($test->description, 80) }}</div>
                         @endif
                       </div>
                     </div>
                     @if(!is_null($test->price))
-                      <span class="small fw-semibold text-primary">₱{{ number_format($test->price, 2) }}</span>
+                      <span class="text-xs font-semibold text-blue-700">₱{{ number_format($test->price, 2) }}</span>
                     @endif
                   </div>
-                  <div class="mt-auto pt-2 text-end">
-                    <form method="POST" action="{{ route('opd.incoming-tests.add', $test->id) }}" class="opd-add-form">
+                  <div class="mt-2 pt-2 text-right">
+                    <form method="POST" action="{{ route('opd.incoming-tests.add', $test->id) }}" class="opd-add-form inline">
                       @csrf
                       <input type="hidden" name="appointment_date" value="">
                       <input type="hidden" name="appointment_time" value="">
                       <input type="hidden" name="customer_name" value="">
                       <input type="hidden" name="customer_email" value="">
-                      <button class="btn btn-sm btn-outline-primary">
-                        <i class="fa-solid fa-plus me-1"></i>Add to Incoming
+                      <button class="inline-flex items-center px-3 py-1.5 rounded-lg border border-blue-600 text-blue-700 text-sm hover:bg-blue-50">
+                        <i class="fa-solid fa-plus mr-2"></i>Add to Incoming
                       </button>
                     </form>
                   </div>
@@ -121,22 +123,21 @@
             @endforeach
           </div>
           @else
-            <div class="text-muted small">No tests in this category.</div>
+            <div class="text-xs text-gray-500">No tests in this category.</div>
           @endif
-          <hr class="mt-3">
+          <div class="mt-3 border-t"></div>
         </div>
       @empty
-        <div class="text-center text-muted py-5">No categories found.</div>
+        <div class="text-center text-gray-500 py-10">No categories found.</div>
       @endforelse
     </div>
-
     @if(method_exists($categories, 'total'))
-    <div class="d-flex justify-content-between align-items-center mt-3">
-      <small class="text-muted">
+    <div class="flex items-center justify-between mt-4">
+      <small class="text-gray-500">
         Showing {{ $categories->firstItem() }} to {{ $categories->lastItem() }} of {{ $categories->total() }} results
       </small>
-      <div>
-        {{ $categories->onEachSide(1)->links('pagination::bootstrap-5') }}
+      <div class="text-sm">
+        {{ $categories->onEachSide(1)->links() }}
       </div>
     </div>
     @endif

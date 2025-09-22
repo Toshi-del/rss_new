@@ -32,6 +32,113 @@
         </div>
     </div>
 
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+        <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-check-circle text-green-400"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-700">{{ session('success') }}</p>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-circle text-red-400"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-red-700">{{ session('error') }}</p>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-red-400"></i>
+                </div>
+                <div class="ml-3">
+                    <div class="text-sm text-red-700">
+                        <ul class="list-disc list-inside">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Pending Company Account Notifications -->
+    @if($pendingCompanyUsers->count() > 0)
+    <div class="content-card rounded-lg p-6 bg-yellow-50 border-l-4 border-yellow-400">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+                </div>
+            </div>
+            <div class="ml-4 flex-1">
+                <h3 class="text-lg font-medium text-yellow-800 mb-2">
+                    Pending Company Account Approvals ({{ $pendingCompanyUsers->count() }})
+                </h3>
+                <p class="text-sm text-yellow-700 mb-4">
+                    The following company accounts are waiting for approval:
+                </p>
+                
+                <div class="space-y-3">
+                    @foreach($pendingCompanyUsers as $pendingUser)
+                    <div class="bg-white rounded-lg p-4 border border-yellow-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-user text-gray-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900">{{ $pendingUser->fname }} {{ $pendingUser->lname }}</h4>
+                                        <p class="text-sm text-gray-600">{{ $pendingUser->email }}</p>
+                                        @if($pendingUser->company)
+                                            <p class="text-xs text-gray-500">Company: {{ $pendingUser->company }}</p>
+                                        @endif
+                                        <p class="text-xs text-gray-400">Registered: {{ $pendingUser->created_at->format('M j, Y g:i A') }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <form method="POST" action="{{ route('admin.company-accounts.approve', $pendingUser->id) }}" class="inline">
+                                    @csrf
+                                    <button type="submit" 
+                                            class="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors duration-200 flex items-center space-x-1"
+                                            onclick="return confirm('Are you sure you want to approve this company account?')">
+                                        <i class="fas fa-check text-xs"></i>
+                                        <span>Approve</span>
+                                    </button>
+                                </form>
+                                <button onclick="openRejectModal({{ $pendingUser->id }}, '{{ $pendingUser->fname }} {{ $pendingUser->lname }}')"
+                                        class="px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors duration-200 flex items-center space-x-1">
+                                    <i class="fas fa-times text-xs"></i>
+                                    <span>Reject</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Companies List -->
     <div class="space-y-4">
         @foreach($companyData as $idx => $entry)
@@ -279,12 +386,73 @@
     </div>
 </div>
 
-<!-- Delete Company Modal -->
-<div id="deleteCompanyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-        <div class="p-6">
+<!-- Edit Company Modal -->
+<div id="editCompanyModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+    <div class="relative top-10 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-900">Delete Company</h3>
+                <h3 class="text-lg font-medium text-gray-900">Edit Company Account</h3>
+                <button onclick="closeModal('editCompanyModal')" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="editCompanyForm" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="space-y-4">
+                    <div>
+                        <label for="edit_fname" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                        <input type="text" name="fname" id="edit_fname" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label for="edit_lname" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                        <input type="text" name="lname" id="edit_lname" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label for="edit_email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" name="email" id="edit_email" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label for="edit_company" class="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+                        <input type="text" name="company" id="edit_company" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label for="edit_phone" class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                        <input type="text" name="phone" id="edit_phone" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="closeModal('editCompanyModal')" 
+                            class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors duration-200">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                        Update Company
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Company Modal -->
+<div id="deleteCompanyModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Delete Company</h3>
                 <button onclick="closeModal('deleteCompanyModal')" class="text-gray-400 hover:text-gray-600">
                     <i class="fas fa-times"></i>
                 </button>
@@ -295,20 +463,82 @@
                         <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
                     </div>
                     <div>
-                        <p class="text-gray-900 font-medium">Are you sure you want to delete this company?</p>
-                        <p class="text-sm text-gray-500">This action cannot be undone.</p>
+                        <p class="text-gray-900 font-medium">Are you sure you want to delete <span id="deleteCompanyName"></span>?</p>
+                        <p class="text-sm text-gray-500">This action cannot be undone and will delete all associated data.</p>
                     </div>
                 </div>
             </div>
-            <div class="flex justify-end space-x-3">
-                <button type="button" onclick="closeModal('deleteCompanyModal')" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors duration-200">Cancel</button>
-                <button type="button" onclick="confirmDeleteCompany()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">Delete</button>
+            
+            <form id="deleteCompanyForm" method="POST">
+                @csrf
+                @method('DELETE')
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeModal('deleteCompanyModal')" 
+                            class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors duration-200">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
+                        Delete Company
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Company Account Modal -->
+<div id="rejectCompanyModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Reject Company Account</h3>
+                <button onclick="closeRejectModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
+            
+            <form id="rejectCompanyForm" method="POST">
+                @csrf
+                <div class="mb-4">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user-times text-red-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-900 font-medium">Reject account for <span id="rejectUserName"></span>?</p>
+                            <p class="text-sm text-gray-500">This will prevent them from accessing company features.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="rejection_reason" class="block text-sm font-medium text-gray-700 mb-2">
+                        Reason for Rejection (Optional)
+                    </label>
+                    <textarea name="reason" id="rejection_reason" rows="3" 
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-vertical"
+                              placeholder="Enter reason for rejection..."></textarea>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeRejectModal()" 
+                            class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors duration-200">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
+                        Reject Account
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <script>
+// Company Management JavaScript - Updated {{ now() }}
+console.log('JavaScript loaded at:', new Date().toISOString());
 // Toggle company details
 function toggleCompanyDetails(idx) {
     const details = document.getElementById(`company-details-${idx}`);
@@ -347,31 +577,91 @@ function switchTab(companyIdx, tabName) {
     activeButton.classList.remove('border-transparent', 'text-gray-500');
 }
 
-// Modal functions
-function openAddCompanyModal() {
-    document.getElementById('addCompanyModal').classList.remove('hidden');
-    document.getElementById('addCompanyModal').classList.add('flex');
-}
-
-function openDeleteCompanyModal(idx) {
-    document.getElementById('deleteCompanyModal').classList.remove('hidden');
-    document.getElementById('deleteCompanyModal').classList.add('flex');
-    window.currentDeleteCompanyIdx = idx;
+// Modal management functions
+function openModal(modalId) {
+    document.getElementById(modalId).classList.remove('hidden');
 }
 
 function closeModal(modalId) {
     document.getElementById(modalId).classList.add('hidden');
-    document.getElementById(modalId).classList.remove('flex');
 }
 
-function confirmDeleteCompany() {
-    // Add your delete logic here
-    console.log('Deleting company:', window.currentDeleteCompanyIdx);
-    closeModal('deleteCompanyModal');
+function openAddCompanyModal() {
+    openModal('addCompanyModal');
 }
+
+// Company account rejection functions
+function openRejectModal(userId, userName) {
+    document.getElementById('rejectUserName').textContent = userName;
+    document.getElementById('rejectCompanyForm').action = `/admin/company-accounts/${userId}/reject`;
+    document.getElementById('rejectCompanyModal').classList.remove('hidden');
+}
+
+function closeRejectModal() {
+    document.getElementById('rejectCompanyModal').classList.add('hidden');
+    document.getElementById('rejection_reason').value = '';
+}
+
+// Company management functions
+function openEditCompanyModal(idx) {
+    const companyData = @json($companyData);
+    const company = companyData[idx].company;
+    
+    // Populate form fields
+    document.getElementById('edit_fname').value = company.fname || '';
+    document.getElementById('edit_lname').value = company.lname || '';
+    document.getElementById('edit_email').value = company.email || '';
+    document.getElementById('edit_company').value = company.company || '';
+    document.getElementById('edit_phone').value = company.phone || '';
+    
+    // Set form action
+    document.getElementById('editCompanyForm').action = `/admin/company-accounts/${company.id}/update`;
+    
+    // Show modal
+    openModal('editCompanyModal');
+}
+
+function openDeleteCompanyModal(idx) {
+    const companyData = @json($companyData);
+    const company = companyData[idx].company;
+    
+    console.log('=== DELETE COMPANY DEBUG ===');
+    console.log('Delete company:', company);
+    console.log('Company ID:', company.id);
+    console.log('Index:', idx);
+    
+    // Set company name in modal
+    document.getElementById('deleteCompanyName').textContent = company.company || `${company.fname} ${company.lname}`;
+    
+    // Set form action - CORRECTED URL WITHOUT /delete
+    const formAction = `/admin/company-accounts/${company.id}`;
+    const form = document.getElementById('deleteCompanyForm');
+    form.action = formAction;
+    
+    console.log('Form action set to:', formAction);
+    console.log('Form element:', form);
+    console.log('Form method:', form.method);
+    console.log('Current timestamp:', new Date().getTime());
+    
+    // Show modal
+    openModal('deleteCompanyModal');
+}
+
+// Add form submit debugging
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteForm = document.getElementById('deleteCompanyForm');
+    if (deleteForm) {
+        deleteForm.addEventListener('submit', function(e) {
+            console.log('=== FORM SUBMIT DEBUG ===');
+            console.log('Form action:', this.action);
+            console.log('Form method:', this.method);
+            console.log('Form elements:', this.elements);
+            console.log('Submitting form...');
+        });
+    }
+});
 
 // Placeholder functions for other modals
-function openEditCompanyModal(idx) { console.log('Edit company:', idx); }
 function openAddPatientModal(idx) { console.log('Add patient to company:', idx); }
 function openEditPatientModal(companyIdx, patientIdx) { console.log('Edit patient:', companyIdx, patientIdx); }
 function openDeletePatientModal(companyIdx, patientIdx) { console.log('Delete patient:', companyIdx, patientIdx); }

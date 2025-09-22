@@ -86,6 +86,11 @@
                     <span class="font-medium">Pre-Employment</span>
                 </a>
                 
+                <a href="{{ route('pathologist.opd') }}" 
+                   class="sidebar-item flex items-center px-6 py-3 text-white hover:bg-teal-800 transition-all duration-300 {{ request()->routeIs('pathologist.opd*') ? 'active' : '' }}">
+                    <i class="fas fa-walking mr-3 text-lg"></i>
+                    <span class="font-medium">OPD Walk-ins</span>
+                </a>
                 
                 <a href="{{ route('pathologist.messages') }}" 
                    class="sidebar-item flex items-center px-6 py-3 text-white hover:bg-teal-800 transition-all duration-300 {{ request()->routeIs('pathologist.messages*') ? 'active' : '' }}">

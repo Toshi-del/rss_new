@@ -22,8 +22,17 @@
 
                 <!-- Appointment Date -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Appointment Date</label>
-                    <input type="date" name="appointment_date" value="{{ old('appointment_date', $appointment->appointment_date->format('Y-m-d')) }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-calendar mr-2 text-blue-600"></i>Appointment Date
+                    </label>
+                    <input type="date" 
+                           name="appointment_date" 
+                           value="{{ old('appointment_date', $appointment->appointment_date->format('Y-m-d')) }}" 
+                           min="{{ $minDate }}"
+                           id="appointment_date"
+                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                           required>
+                    <div id="date-availability-message" class="mt-2 text-sm" style="display: none;"></div>
                     @error('appointment_date')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -35,7 +44,7 @@
                     <div class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
                         <p class="text-sm text-blue-800">
                             <i class="fas fa-info-circle mr-1"></i>
-                            <strong>Duplicate Prevention:</strong> Appointments for the same date and time slot are not allowed.
+                            <strong>Scheduling Rules:</strong> Appointments must be scheduled at least 4 days in advance. Only one company can book per day. No weekend appointments.
                         </p>
                     </div>
                     <select name="time_slot" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
@@ -62,14 +71,18 @@
                         @endphp
                         @foreach($medicalTestCategories as $category)
                             @php $categoryName = strtolower(trim($category->name)); @endphp
-                            @if($categoryName === 'pre-employment')
+                            @if($categoryName !== 'appointment' && $categoryName !== 'blood chemistry')
                                 @continue
                             @endif
                             <div>
                                 <h3 class="text-lg font-semibold text-red-800 mb-3">{{ $category->name }}</h3>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
                                     @foreach($category->medicalTests as $test)
-                                        <label for="test{{ $test->id }}" class="cursor-pointer block border rounded-xl p-5 hover:shadow transition bg-white">
+                                        @php
+                                            $isPackage = str_contains(strtolower($test->name), 'package');
+                                            $cardClass = $isPackage ? 'cursor-pointer block border-2 border-emerald-200 rounded-xl p-6 hover:shadow-lg hover:border-emerald-300 transition bg-gradient-to-br from-emerald-50 to-white' : 'cursor-pointer block border rounded-xl p-5 hover:shadow transition bg-white';
+                                        @endphp
+                                        <label for="test{{ $test->id }}" class="{{ $cardClass }}">
                                             <div class="flex items-start">
                                                 <input
                                                     id="test{{ $test->id }}"
@@ -79,10 +92,25 @@
                                                     class="mt-1 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                                     {{ in_array($test->id, $selectedTests) ? 'checked' : '' }}
                                                 >
-                                                <div class="ml-3">
+                                                <div class="ml-3 w-full">
                                                     <p class="text-base font-semibold text-gray-900">{{ $test->name }}</p>
-                                                    <p class="text-sm text-gray-500">{{ $test->description ?? $category->name }}</p>
-                                                    <p class="mt-2 text-sm font-semibold text-emerald-600">₱{{ number_format((float)($test->price ?? 0), 2) }}</p>
+                                                    @if($test->description)
+                                                        @if($isPackage)
+                                                            <p class="text-sm text-gray-600 mt-1 leading-relaxed">{{ $test->description }}</p>
+                                                        @else
+                                                            <p class="text-sm text-gray-500">{{ Str::limit($test->description, 50) }}</p>
+                                                        @endif
+                                                    @endif
+                                                    @if(!is_null($test->price) && $test->price > 0)
+                                                        <div class="mt-3 flex items-center justify-between">
+                                                            <p class="text-xl font-bold text-emerald-600">₱{{ number_format((float)$test->price, 2) }}</p>
+                                                            @if($isPackage)
+                                                                <span class="bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Package</span>
+                                                            @endif
+                                                        </div>
+                                                    @elseif(!is_null($test->price) && $test->price == 0)
+                                                        <p class="mt-2 text-sm font-medium text-blue-600">Individual Test</p>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </label>
@@ -111,6 +139,7 @@
                             Cancel
                         </a>
                         <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i class="fas fa-save mr-2"></i>
                             Update Appointment
                         </button>
                     </div>
@@ -119,4 +148,119 @@
         </div>
     </div>
 </div>
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Booked dates and minimum date from backend
+    const bookedDates = @json($bookedDates);
+    const minDate = '{{ $minDate }}';
+    const appointmentDateInput = document.getElementById('appointment_date');
+    const dateAvailabilityMessage = document.getElementById('date-availability-message');
+    
+    // Function to check date availability
+    function checkDateAvailability(selectedDate) {
+        if (!selectedDate) {
+            dateAvailabilityMessage.style.display = 'none';
+            return;
+        }
+        
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Check if selected date is today or in the past
+        if (selectedDate <= today) {
+            dateAvailabilityMessage.innerHTML = '<i class="fas fa-ban text-gray-500 mr-1"></i><span class="text-gray-600">Cannot schedule appointments for today or past dates.</span>';
+            dateAvailabilityMessage.style.display = 'block';
+            return false;
+        }
+        
+        // Check if selected date is a weekend
+        const selectedDateObj = new Date(selectedDate);
+        const dayOfWeek = selectedDateObj.getDay(); // 0 = Sunday, 6 = Saturday
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+            const dayName = dayOfWeek === 0 ? 'Sunday' : 'Saturday';
+            dateAvailabilityMessage.innerHTML = '<i class="fas fa-calendar-times text-gray-500 mr-1"></i><span class="text-gray-600">Appointments cannot be scheduled on weekends (' + dayName + '). Please select a weekday.</span>';
+            dateAvailabilityMessage.style.display = 'block';
+            return false;
+        }
+        
+        if (selectedDate < minDate) {
+            dateAvailabilityMessage.innerHTML = '<i class="fas fa-exclamation-triangle text-yellow-500 mr-1"></i><span class="text-yellow-600">Appointments must be scheduled at least 4 days in advance.</span>';
+            dateAvailabilityMessage.style.display = 'block';
+            return false;
+        }
+        
+        if (bookedDates.includes(selectedDate)) {
+            dateAvailabilityMessage.innerHTML = '<i class="fas fa-times-circle text-red-500 mr-1"></i><span class="text-red-600">Date not available - Another company has already booked this date.</span>';
+            dateAvailabilityMessage.style.display = 'block';
+            return false;
+        }
+        
+        dateAvailabilityMessage.innerHTML = '<i class="fas fa-check-circle text-green-500 mr-1"></i><span class="text-green-600">Date is available for booking.</span>';
+        dateAvailabilityMessage.style.display = 'block';
+        return true;
+    }
+    
+    // Check date availability when date changes
+    appointmentDateInput.addEventListener('change', function() {
+        checkDateAvailability(this.value);
+    });
+    
+    // Check initial date if pre-filled
+    if (appointmentDateInput.value) {
+        checkDateAvailability(appointmentDateInput.value);
+    }
+    
+    // Disable dates that are too early (today and next 3 days) and weekends
+    function disableInvalidDates() {
+        // Add CSS to grey out disabled dates and weekends
+        const style = document.createElement('style');
+        style.textContent = `
+            input[type="date"]::-webkit-calendar-picker-indicator {
+                filter: invert(0.8);
+            }
+            input[type="date"] {
+                position: relative;
+            }
+            /* Hide weekend dates in some browsers */
+            input[type="date"]::-webkit-datetime-edit-day-field[disabled],
+            input[type="date"]::-webkit-datetime-edit-month-field[disabled],
+            input[type="date"]::-webkit-datetime-edit-year-field[disabled] {
+                color: #9ca3af;
+                background-color: #f3f4f6;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Add event listener to prevent weekend selection
+        appointmentDateInput.addEventListener('input', function(e) {
+            const selectedDate = e.target.value;
+            if (selectedDate) {
+                const selectedDateObj = new Date(selectedDate);
+                const dayOfWeek = selectedDateObj.getDay();
+                
+                // If weekend is selected, clear the input and show message
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    e.target.value = '';
+                    const dayName = dayOfWeek === 0 ? 'Sunday' : 'Saturday';
+                    dateAvailabilityMessage.innerHTML = '<i class="fas fa-calendar-times text-gray-500 mr-1"></i><span class="text-gray-600">Weekends (' + dayName + ') are not available for appointments. Please select a weekday.</span>';
+                    dateAvailabilityMessage.style.display = 'block';
+                }
+            }
+        });
+    }
+    
+    disableInvalidDates();
+    
+    // Prevent form submission if date is not available
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const selectedDate = appointmentDateInput.value;
+        if (!checkDateAvailability(selectedDate)) {
+            e.preventDefault();
+            alert('Please select an available date before updating the appointment.');
+        }
+    });
+});
+</script>
+@endpush
 @endsection
