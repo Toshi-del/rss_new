@@ -9,29 +9,38 @@
     
     <!-- Success Message -->
     @if(session('success'))
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div class="px-8 py-6 bg-gradient-to-r from-emerald-600 to-emerald-700">
-            <div class="flex items-center">
-                <i class="fas fa-check-circle text-white text-xl mr-3"></i>
-                <span class="text-white font-medium">{{ session('success') }}</span>
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-emerald-600">
+        <div class="px-8 py-6 bg-emerald-600">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-check-circle text-white text-xl"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-white font-medium">{{ session('success') }}</p>
+                    </div>
+                </div>
+                <button type="button" class="text-emerald-200 hover:text-white transition-colors duration-200" onclick="this.parentElement.parentElement.parentElement.style.display='none'">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
         </div>
     </div>
     @endif
     
     <!-- Header Section -->
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div class="px-8 py-6 bg-gradient-to-r from-orange-600 to-orange-700">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-violet-600">
+        <div class="px-8 py-6 bg-violet-600">
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold text-white mb-2" style="font-family: 'Poppins', sans-serif;">
                         <i class="fas fa-briefcase mr-3"></i>Pre-Employment Medical Examination
                     </h1>
-                    <p class="text-orange-100">Employment medical screening and health assessment certificate</p>
+                    <p class="text-violet-100">Employment medical screening and health assessment certificate</p>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <div class="bg-orange-500 rounded-lg px-4 py-2">
-                        <p class="text-orange-100 text-sm font-medium">Exam ID</p>
+                    <div class="bg-violet-700 rounded-lg px-4 py-2">
+                        <p class="text-violet-200 text-sm font-medium">Exam ID</p>
                         <p class="text-white text-lg font-bold">#{{ $preEmployment->id }}</p>
                     </div>
                 </div>
@@ -43,7 +52,7 @@
     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
         <!-- Applicant Information Section -->
         @if($preEmployment->preEmploymentRecord)
-        <div class="px-8 py-6 bg-gradient-to-r from-violet-600 to-violet-700 border-l-4 border-violet-800">
+        <div class="px-8 py-6 bg-violet-600 border-l-4 border-violet-700">
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
@@ -56,19 +65,19 @@
         
         <div class="p-8 bg-violet-50">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="bg-white rounded-lg p-4 border-l-4 border-violet-600">
+                <div class="bg-white rounded-lg p-4 border-l-4 border-violet-600 hover:shadow-md transition-shadow duration-200">
                     <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Full Name</label>
                     <div class="text-lg font-bold text-violet-900">{{ $preEmployment->preEmploymentRecord->full_name ?? ($preEmployment->preEmploymentRecord->first_name . ' ' . $preEmployment->preEmploymentRecord->last_name) }}</div>
                 </div>
-                <div class="bg-white rounded-lg p-4 border-l-4 border-emerald-600">
+                <div class="bg-white rounded-lg p-4 border-l-4 border-emerald-600 hover:shadow-md transition-shadow duration-200">
                     <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Age</label>
                     <div class="text-lg font-bold text-emerald-900">{{ $preEmployment->preEmploymentRecord->age }} years</div>
                 </div>
-                <div class="bg-white rounded-lg p-4 border-l-4 border-blue-600">
+                <div class="bg-white rounded-lg p-4 border-l-4 border-blue-600 hover:shadow-md transition-shadow duration-200">
                     <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Sex</label>
                     <div class="text-lg font-bold text-blue-900">{{ $preEmployment->preEmploymentRecord->sex }}</div>
                 </div>
-                <div class="bg-white rounded-lg p-4 border-l-4 border-orange-600">
+                <div class="bg-white rounded-lg p-4 border-l-4 border-orange-600 hover:shadow-md transition-shadow duration-200">
                     <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Company</label>
                     <div class="text-sm font-semibold text-orange-900 truncate">{{ $preEmployment->preEmploymentRecord->company_name }}</div>
                 </div>
@@ -83,11 +92,14 @@
                 @method('PATCH')
                 
                 <!-- Medical History Section -->
-                <div class="bg-emerald-50 rounded-xl p-6 border-l-4 border-emerald-600">
-                    <div class="flex items-center mb-6">
-                        <i class="fas fa-notes-medical text-emerald-600 text-xl mr-3"></i>
-                        <h3 class="text-lg font-bold text-emerald-900" style="font-family: 'Poppins', sans-serif;">Medical History Review</h3>
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-emerald-600">
+                    <div class="px-6 py-4 bg-emerald-600">
+                        <div class="flex items-center">
+                            <i class="fas fa-notes-medical text-white text-xl mr-3"></i>
+                            <h3 class="text-lg font-bold text-white" style="font-family: 'Poppins', sans-serif;">Medical History Review</h3>
+                        </div>
                     </div>
+                    <div class="p-6 bg-emerald-50">
                     
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                         <div class="bg-white rounded-lg p-4 border border-gray-200">
@@ -133,13 +145,17 @@
                             @endforeach
                         </div>
                     </div>
+                    </div>
                 </div>
                 <!-- Personal History Section -->
-                <div class="bg-blue-50 rounded-xl p-6 border-l-4 border-blue-600">
-                    <div class="flex items-center mb-6">
-                        <i class="fas fa-user-check text-blue-600 text-xl mr-3"></i>
-                        <h3 class="text-lg font-bold text-blue-900" style="font-family: 'Poppins', sans-serif;">Personal History & Habits</h3>
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-blue-600">
+                    <div class="px-6 py-4 bg-blue-600">
+                        <div class="flex items-center">
+                            <i class="fas fa-user-check text-white text-xl mr-3"></i>
+                            <h3 class="text-lg font-bold text-white" style="font-family: 'Poppins', sans-serif;">Personal History & Habits</h3>
+                        </div>
                     </div>
+                    <div class="p-6 bg-blue-50">
                     
                     <div class="bg-white rounded-lg p-4">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -160,13 +176,17 @@
                             @endforeach
                         </div>
                     </div>
+                    </div>
                 </div>
                 <!-- Physical Examination Section -->
-                <div class="bg-orange-50 rounded-xl p-6 border-l-4 border-orange-600">
-                    <div class="flex items-center mb-6">
-                        <i class="fas fa-stethoscope text-orange-600 text-xl mr-3"></i>
-                        <h3 class="text-lg font-bold text-orange-900" style="font-family: 'Poppins', sans-serif;">Physical Examination Results</h3>
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-orange-600">
+                    <div class="px-6 py-4 bg-orange-600">
+                        <div class="flex items-center">
+                            <i class="fas fa-stethoscope text-white text-xl mr-3"></i>
+                            <h3 class="text-lg font-bold text-white" style="font-family: 'Poppins', sans-serif;">Physical Examination Results</h3>
+                        </div>
                     </div>
+                    <div class="p-6 bg-orange-50">
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         @php 
@@ -192,26 +212,34 @@
                             </div>
                         @endforeach
                     </div>
+                    </div>
                 </div>
                 <!-- Skin Identification Marks Section -->
-                <div class="bg-pink-50 rounded-xl p-6 border-l-4 border-pink-600">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-search text-pink-600 text-xl mr-3"></i>
-                        <h3 class="text-lg font-bold text-pink-900" style="font-family: 'Poppins', sans-serif;">Skin Identification Marks</h3>
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-pink-600">
+                    <div class="px-6 py-4 bg-pink-600">
+                        <div class="flex items-center">
+                            <i class="fas fa-search text-white text-xl mr-3"></i>
+                            <h3 class="text-lg font-bold text-white" style="font-family: 'Poppins', sans-serif;">Skin Identification Marks</h3>
+                        </div>
                     </div>
+                    <div class="p-6 bg-pink-50">
                     
                     <div class="bg-white rounded-lg p-4">
                         <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 text-sm text-gray-700 min-h-[4rem]">
                             {{ $preEmployment->skin_marks ?: 'No identifying marks, scars, or tattoos recorded' }}
                         </div>
                     </div>
+                    </div>
                 </div>
                 <!-- Visual Assessment & Findings Section -->
-                <div class="bg-indigo-50 rounded-xl p-6 border-l-4 border-indigo-600">
-                    <div class="flex items-center mb-6">
-                        <i class="fas fa-eye text-indigo-600 text-xl mr-3"></i>
-                        <h3 class="text-lg font-bold text-indigo-900" style="font-family: 'Poppins', sans-serif;">Visual Assessment & General Findings</h3>
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-indigo-600">
+                    <div class="px-6 py-4 bg-indigo-600">
+                        <div class="flex items-center">
+                            <i class="fas fa-eye text-white text-xl mr-3"></i>
+                            <h3 class="text-lg font-bold text-white" style="font-family: 'Poppins', sans-serif;">Visual Assessment & General Findings</h3>
+                        </div>
                     </div>
+                    <div class="p-6 bg-indigo-50">
                     
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="bg-white rounded-lg p-4 border-l-4 border-blue-500">
@@ -238,6 +266,7 @@
                                 {{ $preEmployment->findings ?: 'No significant findings recorded' }}
                             </div>
                         </div>
+                    </div>
                     </div>
                 </div>
                 <!-- Laboratory Examination Report Section -->

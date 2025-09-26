@@ -1,18 +1,20 @@
 @extends('layouts.doctor')
 
-@section('title', 'Edit Annual Physical Examination')
+@section('title', 'Edit Annual Physical Examination - RSS Citi Health Services')
 @section('page-title', 'Edit Annual Physical Examination')
 @section('page-description', 'Update and manage comprehensive health examination results')
 
 @section('content')
-<div class="space-y-8" style="font-family: 'Poppins', sans-serif;">
+<div class="space-y-8">
     
     <!-- Success Message -->
     @if(session('success'))
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div class="px-8 py-6 bg-gradient-to-r from-emerald-600 to-emerald-700">
+    <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+        <div class="px-8 py-4 bg-green-600">
             <div class="flex items-center">
-                <i class="fas fa-check-circle text-white text-xl mr-3"></i>
+                <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-check-circle text-white"></i>
+                </div>
                 <span class="text-white font-medium">{{ session('success') }}</span>
             </div>
         </div>
@@ -20,57 +22,59 @@
     @endif
     
     <!-- Header Section -->
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div class="px-8 py-6 bg-gradient-to-r from-emerald-600 to-emerald-700">
+    <div class="bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
+        <div class="px-8 py-6 bg-purple-600">
             <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-2xl font-bold text-white mb-2" style="font-family: 'Poppins', sans-serif;">
-                        <i class="fas fa-file-medical mr-3"></i>Annual Physical Examination
-                    </h1>
-                    <p class="text-emerald-100">Comprehensive health assessment and medical evaluation</p>
-                </div>
                 <div class="flex items-center space-x-4">
-                    <div class="bg-emerald-500 rounded-lg px-4 py-2">
-                        <p class="text-emerald-100 text-sm font-medium">Patient ID</p>
-                        <p class="text-white text-lg font-bold">#{{ $annualPhysical->id }}</p>
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center border border-white border-opacity-30">
+                        <i class="fas fa-file-medical text-white text-xl"></i>
                     </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-white mb-1">Edit Annual Physical Examination</h1>
+                        <p class="text-purple-100 text-sm">Comprehensive health assessment and medical evaluation</p>
+                    </div>
+                </div>
+                <div class="bg-white bg-opacity-20 rounded-xl px-6 py-4 border border-white border-opacity-30">
+                    <p class="text-purple-100 text-sm font-medium">Patient ID</p>
+                    <p class="text-white text-2xl font-bold">#{{ $annualPhysical->id }}</p>
                 </div>
             </div>
         </div>
     </div>
     
     <!-- Main Form Container -->
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+    <div class="bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
         <!-- Patient Information Section -->
         @if($annualPhysical->patient)
-        <div class="px-8 py-6 bg-gradient-to-r from-violet-600 to-violet-700 border-l-4 border-violet-800">
-            <div class="flex items-center justify-between">
+        <div class="px-8 py-6 bg-purple-600">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center border border-white border-opacity-30">
+                    <i class="fas fa-user-injured text-white"></i>
+                </div>
                 <div>
-                    <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
-                        <i class="fas fa-user-injured mr-3"></i>Patient Information
-                    </h2>
-                    <p class="text-violet-100 mt-1">Basic patient details and contact information</p>
+                    <h2 class="text-xl font-bold text-white">Patient Information</h2>
+                    <p class="text-purple-100 text-sm">Basic patient details and contact information</p>
                 </div>
             </div>
         </div>
         
-        <div class="p-8 bg-violet-50">
+        <div class="p-8 bg-gray-50">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="bg-white rounded-lg p-4 border-l-4 border-violet-600">
+                <div class="bg-white rounded-xl p-6 border-l-4 border-purple-500 shadow-sm">
                     <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Patient Name</label>
-                    <div class="text-lg font-bold text-violet-900">{{ $annualPhysical->patient->full_name }}</div>
+                    <div class="text-lg font-bold text-gray-900">{{ $annualPhysical->patient->full_name }}</div>
                 </div>
-                <div class="bg-white rounded-lg p-4 border-l-4 border-emerald-600">
+                <div class="bg-white rounded-xl p-6 border-l-4 border-green-500 shadow-sm">
                     <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Age</label>
-                    <div class="text-lg font-bold text-emerald-900">{{ $annualPhysical->patient->age }} years</div>
+                    <div class="text-lg font-bold text-gray-900">{{ $annualPhysical->patient->age }} years</div>
                 </div>
-                <div class="bg-white rounded-lg p-4 border-l-4 border-blue-600">
+                <div class="bg-white rounded-xl p-6 border-l-4 border-blue-500 shadow-sm">
                     <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Sex</label>
-                    <div class="text-lg font-bold text-blue-900">{{ $annualPhysical->patient->sex }}</div>
+                    <div class="text-lg font-bold text-gray-900">{{ $annualPhysical->patient->sex }}</div>
                 </div>
-                <div class="bg-white rounded-lg p-4 border-l-4 border-orange-600">
+                <div class="bg-white rounded-xl p-6 border-l-4 border-orange-500 shadow-sm">
                     <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Email</label>
-                    <div class="text-sm font-semibold text-orange-900 truncate">{{ $annualPhysical->patient->email }}</div>
+                    <div class="text-sm font-semibold text-gray-900 truncate">{{ $annualPhysical->patient->email }}</div>
                 </div>
             </div>
         </div>
@@ -83,66 +87,75 @@
                 @method('PATCH')
                 
                 <!-- Medical History Section -->
-                <div class="bg-emerald-50 rounded-xl p-6 border-l-4 border-emerald-600">
-                    <div class="flex items-center mb-6">
-                        <i class="fas fa-notes-medical text-emerald-600 text-xl mr-3"></i>
-                        <h3 class="text-lg font-bold text-emerald-900" style="font-family: 'Poppins', sans-serif;">Medical History</h3>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                        <div class="bg-white rounded-lg p-4">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-hospital mr-2 text-emerald-600"></i>Illness / Hospitalization
-                            </label>
-                            <textarea name="illness_history" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm" placeholder="Enter illness history or hospitalizations...">{{ old('illness_history', $annualPhysical->illness_history) }}</textarea>
-                        </div>
-                        <div class="bg-white rounded-lg p-4">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-user-injured mr-2 text-orange-600"></i>Accidents / Operations
-                            </label>
-                            <textarea name="accidents_operations" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm" placeholder="Enter accidents or surgical operations...">{{ old('accidents_operations', $annualPhysical->accidents_operations) }}</textarea>
-                        </div>
-                        <div class="bg-white rounded-lg p-4">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-clipboard-list mr-2 text-blue-600"></i>Past Medical History
-                            </label>
-                            <textarea name="past_medical_history" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm" placeholder="Enter past medical conditions...">{{ old('past_medical_history', $annualPhysical->past_medical_history) }}</textarea>
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 bg-green-600">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-notes-medical text-white"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-white">Medical History</h3>
                         </div>
                     </div>
+                    <div class="p-6">
                     
-                    <div class="bg-white rounded-lg p-4">
-                        <label class="block text-sm font-semibold text-gray-700 mb-4">
-                            <i class="fas fa-users mr-2 text-violet-600"></i>Family Medical History
-                        </label>
-                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                            @php
-                                $family = $annualPhysical->family_history ?? [];
-                                $options = ['asthma','arthritis','migraine','diabetes','heart_disease','tuberculosis','allergies','anemia','cancer','insanity','hypertension','epilepsy'];
-                            @endphp
-                            @foreach($options as $opt)
-                                <label class="inline-flex items-center p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-emerald-50 hover:border-emerald-300 cursor-pointer transition-colors duration-200">
-                                    <input type="checkbox" name="family_history[]" value="{{ $opt }}" class="mr-3 text-emerald-600 focus:ring-emerald-500" {{ in_array($opt, $family ?? []) ? 'checked' : '' }}>
-                                    <span class="text-sm font-medium text-gray-700">{{ str_replace('_', ' ', ucwords($opt)) }}</span>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-hospital mr-2 text-green-600"></i>Illness / Hospitalization
                                 </label>
-                            @endforeach
+                                <textarea name="illness_history" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm" placeholder="Enter illness history or hospitalizations...">{{ old('illness_history', $annualPhysical->illness_history) }}</textarea>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-user-injured mr-2 text-orange-600"></i>Accidents / Operations
+                                </label>
+                                <textarea name="accidents_operations" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm" placeholder="Enter accidents or surgical operations...">{{ old('accidents_operations', $annualPhysical->accidents_operations) }}</textarea>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-clipboard-list mr-2 text-blue-600"></i>Past Medical History
+                                </label>
+                                <textarea name="past_medical_history" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm" placeholder="Enter past medical conditions...">{{ old('past_medical_history', $annualPhysical->past_medical_history) }}</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <label class="block text-sm font-semibold text-gray-700 mb-4">
+                                <i class="fas fa-users mr-2 text-purple-600"></i>Family Medical History
+                            </label>
+                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                @php
+                                    $family = $annualPhysical->family_history ?? [];
+                                    $options = ['asthma','arthritis','migraine','diabetes','heart_disease','tuberculosis','allergies','anemia','cancer','insanity','hypertension','epilepsy'];
+                                @endphp
+                                @foreach($options as $opt)
+                                    <label class="inline-flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:bg-green-50 hover:border-green-300 cursor-pointer transition-colors duration-200">
+                                        <input type="checkbox" name="family_history[]" value="{{ $opt }}" class="mr-3 text-green-600 focus:ring-green-500" {{ in_array($opt, $family ?? []) ? 'checked' : '' }}>
+                                        <span class="text-sm font-medium text-gray-700">{{ str_replace('_', ' ', ucwords($opt)) }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
                 </div>
                 <!-- Personal History Section -->
-                <div class="bg-blue-50 rounded-xl p-6 border-l-4 border-blue-600">
-                    <div class="flex items-center mb-6">
-                        <i class="fas fa-user-check text-blue-600 text-xl mr-3"></i>
-                        <h3 class="text-lg font-bold text-blue-900" style="font-family: 'Poppins', sans-serif;">Personal History & Habits</h3>
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 bg-blue-600">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-user-check text-white"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-white">Personal History & Habits</h3>
+                        </div>
                     </div>
-                    
-                    <div class="bg-white rounded-lg p-4">
+                    <div class="p-6">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             @php
                                 $habits = $annualPhysical->personal_habits ?? [];
                                 $habitOptions = [
                                     'alcohol' => ['icon' => 'fas fa-wine-bottle', 'color' => 'red'],
                                     'cigarettes' => ['icon' => 'fas fa-smoking', 'color' => 'orange'],
-                                    'coffee_tea' => ['icon' => 'fas fa-coffee', 'color' => 'amber']
+                                    'coffee_tea' => ['icon' => 'fas fa-coffee', 'color' => 'yellow']
                                 ];
                             @endphp
                             @foreach($habitOptions as $habit => $config)
@@ -156,33 +169,39 @@
                     </div>
                 </div>
                 <!-- Physical Examination Section -->
-                <div class="bg-orange-50 rounded-xl p-6 border-l-4 border-orange-600">
-                    <div class="flex items-center mb-6">
-                        <i class="fas fa-stethoscope text-orange-600 text-xl mr-3"></i>
-                        <h3 class="text-lg font-bold text-orange-900" style="font-family: 'Poppins', sans-serif;">Physical Examination</h3>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        @php 
-                            $phys = $annualPhysical->physical_exam ?? [];
-                            $vitals = [
-                                'temp' => ['label' => 'Temperature', 'icon' => 'fas fa-thermometer-half', 'unit' => '°C', 'color' => 'red'],
-                                'height' => ['label' => 'Height', 'icon' => 'fas fa-ruler-vertical', 'unit' => 'cm', 'color' => 'blue'],
-                                'heart_rate' => ['label' => 'Heart Rate', 'icon' => 'fas fa-heartbeat', 'unit' => 'bpm', 'color' => 'pink'],
-                                'weight' => ['label' => 'Weight', 'icon' => 'fas fa-weight', 'unit' => 'kg', 'color' => 'green']
-                            ];
-                        @endphp
-                        @foreach($vitals as $key => $vital)
-                            <div class="bg-white rounded-lg p-4 border-l-4 border-{{ $vital['color'] }}-500">
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="{{ $vital['icon'] }} text-{{ $vital['color'] }}-600 mr-2"></i>{{ $vital['label'] }}
-                                </label>
-                                <div class="relative">
-                                    <input type="text" name="physical_exam[{{ $key }}]" class="w-full px-3 py-2 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm" value="{{ old('physical_exam.'.$key, data_get($phys, $key, '')) }}" placeholder="Enter {{ strtolower($vital['label']) }}">
-                                    <span class="absolute right-3 top-2 text-xs text-gray-500 font-medium">{{ $vital['unit'] }}</span>
-                                </div>
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 bg-orange-600">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-stethoscope text-white"></i>
                             </div>
-                        @endforeach
+                            <h3 class="text-lg font-bold text-white">Physical Examination</h3>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                    
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            @php 
+                                $phys = $annualPhysical->physical_exam ?? [];
+                                $vitals = [
+                                    'temp' => ['label' => 'Temperature', 'icon' => 'fas fa-thermometer-half', 'unit' => '°C', 'color' => 'red'],
+                                    'height' => ['label' => 'Height', 'icon' => 'fas fa-ruler-vertical', 'unit' => 'cm', 'color' => 'blue'],
+                                    'heart_rate' => ['label' => 'Heart Rate', 'icon' => 'fas fa-heartbeat', 'unit' => 'bpm', 'color' => 'pink'],
+                                    'weight' => ['label' => 'Weight', 'icon' => 'fas fa-weight', 'unit' => 'kg', 'color' => 'green']
+                                ];
+                            @endphp
+                            @foreach($vitals as $key => $vital)
+                                <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-{{ $vital['color'] }}-500">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <i class="{{ $vital['icon'] }} text-{{ $vital['color'] }}-600 mr-2"></i>{{ $vital['label'] }}
+                                    </label>
+                                    <div class="relative">
+                                        <input type="text" name="physical_exam[{{ $key }}]" class="w-full px-3 py-2 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm" value="{{ old('physical_exam.'.$key, data_get($phys, $key, '')) }}" placeholder="Enter {{ strtolower($vital['label']) }}">
+                                        <span class="absolute right-3 top-2 text-xs text-gray-500 font-medium">{{ $vital['unit'] }}</span>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
                 <!-- Skin Identification Marks Section -->
@@ -389,31 +408,35 @@
                 </div>
                 
                 <!-- Physician Signature & Submit Section -->
-                <div class="bg-gray-50 rounded-xl p-6 border-l-4 border-gray-600">
-                    <div class="flex items-center justify-between mb-6">
-                        <div>
-                            <h3 class="text-lg font-bold text-gray-900" style="font-family: 'Poppins', sans-serif;">
-                                <i class="fas fa-user-md text-gray-600 mr-3"></i>Physician Authorization
-                            </h3>
-                            <p class="text-gray-600 text-sm mt-1">Complete examination and authorize results</p>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-                        <div class="bg-white rounded-lg p-4">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-signature text-gray-600 mr-2"></i>Physician's Signature
-                            </label>
-                            <div class="border-b-2 border-gray-300 pb-4">
-                                <p class="text-xs text-gray-500">Digital signature will be applied upon submission</p>
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 bg-purple-600">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-user-md text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">Physician Authorization</h3>
+                                <p class="text-purple-100 text-sm">Complete examination and authorize results</p>
                             </div>
                         </div>
-                        
-                        <div class="flex justify-end">
-                            <button type="submit" class="inline-flex items-center px-8 py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl">
-                                <i class="fas fa-save mr-3"></i>
-                                Save Examination Results
-                            </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-signature text-purple-600 mr-2"></i>Physician's Signature
+                                </label>
+                                <div class="border-b-2 border-gray-300 pb-4">
+                                    <p class="text-xs text-gray-500">Digital signature will be applied upon submission</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-end">
+                                <button type="submit" class="inline-flex items-center px-8 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl">
+                                    <i class="fas fa-save mr-3"></i>
+                                    Save Examination Results
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

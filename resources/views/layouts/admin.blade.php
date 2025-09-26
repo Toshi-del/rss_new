@@ -51,23 +51,26 @@
         
         
         .sidebar-glass {
-            background: rgba(31, 41, 55, 0.95);
+            background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(10px);
-            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            border-right: 2px solid #e5e7eb;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
         }
         
         .nav-item {
             transition: all 0.2s ease;
+            color: #374151;
         }
         
         .nav-item:hover {
-            background: var(--glass-bg);
+            background: #f3f4f6;
             backdrop-filter: blur(10px);
         }
         
         .nav-item.active {
             background: var(--primary-color);
-            box-shadow: 0 2px 8px rgba(31, 41, 55, 0.3);
+            color: white;
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3);
         }
         
         .stat-card {
@@ -118,64 +121,64 @@
         <!-- Sidebar -->
         <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-72 sidebar-glass transform -translate-x-full transition-all duration-500 ease-out lg:translate-x-0 lg:static lg:inset-0 flex flex-col custom-scrollbar">
             <!-- Sidebar header -->
-            <div class="flex items-center justify-between h-20 px-6 border-b border-white/10">
+            <div class="flex items-center justify-between h-20 px-6 border-b border-gray-200">
                 <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 rounded-2xl glass-morphism flex items-center justify-center floating-icon">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center">
                         <i class="fas fa-heartbeat text-white text-xl"></i>
                     </div>
                     <div>
-                        <span class="text-white font-bold text-lg gradient-text">RSS Citi Health</span>
-                        <p class="text-white/60 text-xs font-medium">Admin Portal</p>
+                        <span class="text-gray-900 font-bold text-lg">RSS Citi Health</span>
+                        <p class="text-gray-600 text-xs font-medium">Admin Portal</p>
                     </div>
                 </div>
-                <button id="sidebar-close" class="lg:hidden text-white/80 hover:text-white glass-morphism p-2 rounded-xl transition-all duration-300 hover:scale-110">
+                <button id="sidebar-close" class="lg:hidden text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 p-2 rounded-xl transition-all duration-300">
                     <i class="fas fa-times text-lg"></i>
                 </button>
             </div>
             
             <!-- Navigation -->
             <nav class="flex-1 px-4 py-6 space-y-3 overflow-y-auto custom-scrollbar">
-                <div class="text-white/40 text-xs font-semibold uppercase tracking-wider px-4 mb-4">Main Menu</div>
+                <div class="text-gray-500 text-xs font-semibold uppercase tracking-wider px-4 mb-4">Main Menu</div>
                 
-                <a href="{{ route('admin.dashboard') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                    <i class="fas fa-tachometer-alt text-lg mr-4 floating-icon"></i>
+                <a href="{{ route('admin.dashboard') }}" class="nav-item flex items-center px-4 py-4 rounded-2xl font-medium {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                    <i class="fas fa-tachometer-alt text-lg mr-4"></i>
                     <span>Dashboard</span>
                     <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
                 </a>
                 
-                <a href="{{ route('admin.patients') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('admin.patients*') ? 'active' : '' }}">
+                <a href="{{ route('admin.patients') }}" class="nav-item flex items-center px-4 py-4 rounded-2xl font-medium {{ request()->routeIs('admin.patients*') ? 'active' : '' }}">
                     <i class="fas fa-users text-lg mr-4"></i>
                     <span>Patients</span>
                     <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
                 </a>
                 
-                <a href="{{ route('admin.appointments') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('admin.appointments*') ? 'active' : '' }}">
+                <a href="{{ route('admin.appointments') }}" class="nav-item flex items-center px-4 py-4 rounded-2xl font-medium {{ request()->routeIs('admin.appointments*') ? 'active' : '' }}">
                     <i class="fas fa-calendar-check text-lg mr-4"></i>
                     <span>Appointments</span>
                     <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
                 </a>
                 
-                <a href="{{ route('admin.pre-employment') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('admin.pre-employment*') ? 'active' : '' }}">
+                <a href="{{ route('admin.pre-employment') }}" class="nav-item flex items-center px-4 py-4 rounded-2xl font-medium {{ request()->routeIs('admin.pre-employment*') ? 'active' : '' }}">
                     <i class="fas fa-file-medical text-lg mr-4"></i>
                     <span>Pre-Employment</span>
                     <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
                 </a>
                 
-                <a href="{{ route('admin.tests') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('admin.tests*') ? 'active' : '' }}">
+                <a href="{{ route('admin.tests') }}" class="nav-item flex items-center px-4 py-4 rounded-2xl font-medium {{ request()->routeIs('admin.tests*') ? 'active' : '' }}">
                     <i class="fas fa-vial text-lg mr-4"></i>
                     <span>Medical Tests</span>
                     <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
                 </a>
                 
-                <a href="{{ route('medical-test-categories.index') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('medical-test-categories*') ? 'active' : '' }}">
+                <a href="{{ route('medical-test-categories.index') }}" class="nav-item flex items-center px-4 py-4 rounded-2xl font-medium {{ request()->routeIs('medical-test-categories*') ? 'active' : '' }}">
                     <i class="fas fa-list-alt text-lg mr-4"></i>
                     <span>Test Categories</span>
                     <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
                 </a>
                 
-                <div class="text-white/40 text-xs font-semibold uppercase tracking-wider px-4 mt-8 mb-4">Communication</div>
+                <div class="text-gray-500 text-xs font-semibold uppercase tracking-wider px-4 mt-8 mb-4">Communication</div>
                 
-                <a href="{{ route('admin.messages') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('admin.messages*') ? 'active' : '' }}">
+                <a href="{{ route('admin.messages') }}" class="nav-item flex items-center px-4 py-4 rounded-2xl font-medium {{ request()->routeIs('admin.messages*') ? 'active' : '' }}">
                     <i class="fas fa-comments text-lg mr-4"></i>
                     <span>Messages</span>
                     <div class="ml-auto flex items-center space-x-2">
@@ -184,41 +187,41 @@
                     </div>
                 </a>
                 
-                <a href="{{ route('admin.report') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('admin.report*') ? 'active' : '' }}">
+                <a href="{{ route('admin.report') }}" class="nav-item flex items-center px-4 py-4 rounded-2xl font-medium {{ request()->routeIs('admin.report*') ? 'active' : '' }}">
                     <i class="fas fa-chart-line text-lg mr-4"></i>
                     <span>Reports</span>
                     <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
                 </a>
                 
-                <div class="text-white/40 text-xs font-semibold uppercase tracking-wider px-4 mt-8 mb-4">Management</div>
+                <div class="text-gray-500 text-xs font-semibold uppercase tracking-wider px-4 mt-8 mb-4">Management</div>
                 
-                <a href="{{ route('admin.accounts-and-patients') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('admin.accounts-and-patients') ? 'active' : '' }}">
+                <a href="{{ route('admin.accounts-and-patients') }}" class="nav-item flex items-center px-4 py-4 rounded-2xl font-medium {{ request()->routeIs('admin.accounts-and-patients') ? 'active' : '' }}">
                     <i class="fas fa-building text-lg mr-4"></i>
                     <span>Company Accounts</span>
                     <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
                 </a>
                 
-                <a href="{{ route('admin.opd', ['filter' => request('filter','pending')]) }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('admin.opd*') ? 'active' : '' }}">
+                <a href="{{ route('admin.opd', ['filter' => request('filter','pending')]) }}" class="nav-item flex items-center px-4 py-4 rounded-2xl font-medium {{ request()->routeIs('admin.opd*') ? 'active' : '' }}">
                     <i class="fas fa-hospital text-lg mr-4"></i>
                     <span>OPD Entries</span>
                     <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
                 </a>
                 
-                <a href="{{ route('admin.medical-staff') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('admin.medical-staff*') ? 'active' : '' }}">
+                <a href="{{ route('admin.medical-staff') }}" class="nav-item flex items-center px-4 py-4 rounded-2xl font-medium {{ request()->routeIs('admin.medical-staff*') ? 'active' : '' }}">
                     <i class="fas fa-user-md text-lg mr-4"></i>
                     <span>Medical Staff</span>
                     <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
                 </a>
                 
-                <a href="{{ route('admin.inventory.index') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('admin.inventory*') ? 'active' : '' }}">
+                <a href="{{ route('admin.inventory.index') }}" class="nav-item flex items-center px-4 py-4 rounded-2xl font-medium {{ request()->routeIs('admin.inventory*') ? 'active' : '' }}">
                     <i class="fas fa-boxes text-lg mr-4"></i>
                     <span>Inventory Management</span>
                     <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
                 </a>
                 
-                <div class="text-white/40 text-xs font-semibold uppercase tracking-wider px-4 mt-8 mb-4">Content Management</div>
+                <div class="text-gray-500 text-xs font-semibold uppercase tracking-wider px-4 mt-8 mb-4">Content Management</div>
                 
-                <a href="{{ route('admin.page-contents.index') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('admin.page-contents*') ? 'active' : '' }}">
+                <a href="{{ route('admin.page-contents.index') }}" class="nav-item flex items-center px-4 py-4 rounded-2xl font-medium {{ request()->routeIs('admin.page-contents*') ? 'active' : '' }}">
                     <i class="fas fa-edit text-lg mr-4"></i>
                     <span>Page Contents</span>
                     <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
@@ -226,21 +229,21 @@
             </nav>
             
             <!-- User profile section -->
-            <div class="p-6 border-t border-white/10">
-                <div class="glass-morphism rounded-2xl p-4">
+            <div class="p-6 border-t border-gray-200">
+                <div class="bg-gray-50 rounded-2xl p-4 border border-gray-200">
                     <div class="flex items-center space-x-3">
-                        <div class="w-12 h-12 rounded-2xl bg-purple-500 flex items-center justify-center text-white font-bold text-lg pulse-icon">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
                             {{ substr(Auth::user()->fname ?? 'A', 0, 1) }}
                         </div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-white font-semibold text-sm truncate">
+                            <p class="text-gray-900 font-semibold text-sm truncate">
                                 {{ Auth::user()->fname ?? 'Admin' }} {{ Auth::user()->lname ?? 'User' }}
                             </p>
-                            <p class="text-white/60 text-xs">System Administrator</p>
+                            <p class="text-gray-600 text-xs">System Administrator</p>
                         </div>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="text-white/80 hover:text-white glass-morphism p-2 rounded-xl transition-all duration-300 hover:scale-110">
+                            <button type="submit" class="text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-100 p-2 rounded-xl transition-all duration-300 border border-gray-200">
                                 <i class="fas fa-sign-out-alt text-lg"></i>
                             </button>
                         </form>
@@ -252,17 +255,17 @@
         <!-- Main content -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <!-- Top header -->
-            <header class="glass-morphism border-b border-white/20 backdrop-blur-xl">
+            <header class="bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-sm">
                 <div class="flex items-center justify-between px-6 py-5">
                     <div class="flex items-center space-x-4">
-                        <button id="sidebar-toggle" class="lg:hidden text-white/80 hover:text-white glass-morphism p-3 rounded-2xl transition-all duration-300 hover:scale-110">
+                        <button id="sidebar-toggle" class="lg:hidden text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 p-3 rounded-2xl transition-all duration-300">
                             <i class="fas fa-bars text-xl"></i>
                         </button>
                         <div>
-                            <h1 class="text-2xl font-bold text-white">
+                            <h1 class="text-2xl font-bold text-gray-900">
                                 @yield('page-title', 'Dashboard')
                             </h1>
-                            <p class="text-white/60 text-sm font-medium">Welcome back, {{ Auth::user()->fname ?? 'Admin' }}!</p>
+                            <p class="text-gray-600 text-sm font-medium">Welcome back, {{ Auth::user()->fname ?? 'Admin' }}!</p>
                         </div>
                     </div>
                     
@@ -272,22 +275,22 @@
                         <div class="hidden md:block">
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <i class="fas fa-search text-white/60"></i>
+                                    <i class="fas fa-search text-gray-400"></i>
                                 </div>
                                 <input type="text" 
-                                       class="glass-morphism pl-12 pr-4 py-3 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300 w-80" 
+                                       class="bg-gray-50 border border-gray-200 pl-12 pr-4 py-3 rounded-2xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 w-80" 
                                        placeholder="Search patients, appointments...">
                             </div>
                         </div>
                         
                         <!-- Notifications -->
-                        <button class="relative glass-morphism p-3 rounded-2xl text-white/80 hover:text-white transition-all duration-300 hover:scale-110">
+                        <button class="relative bg-gray-50 hover:bg-gray-100 border border-gray-200 p-3 rounded-2xl text-gray-600 hover:text-gray-900 transition-all duration-300">
                             <i class="fas fa-bell text-lg"></i>
                             <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white font-bold">5</span>
                         </button>
                         
                         <!-- Settings -->
-                        <button class="glass-morphism p-3 rounded-2xl text-white/80 hover:text-white transition-all duration-300 hover:scale-110">
+                        <button class="bg-gray-50 hover:bg-gray-100 border border-gray-200 p-3 rounded-2xl text-gray-600 hover:text-gray-900 transition-all duration-300">
                             <i class="fas fa-cog text-lg"></i>
                         </button>
                     </div>
