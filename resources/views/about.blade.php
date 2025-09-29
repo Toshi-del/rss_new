@@ -64,7 +64,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div>
                     <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-6">{{ $aboutContent['hero_title']->content_value ?? 'About RSS Citi Health Services' }}</h1>
-                    <p class="text-lg text-gray-600 leading-relaxed">{{ $aboutContent['hero_description']->content_value ?? 'Dedicated to providing exceptional, compassionate healthcare services since 2005. We combine modern diagnostics with personalized care to improve community wellness.' }}</p>
+                    <p class="text-lg text-gray-600 leading-relaxed">{{ $aboutContent['hero_description']->content_value ?? 'Dedicated to providing exceptional, compassionate healthcare services since 1997. We combine modern diagnostics with personalized care to improve community wellness.' }}</p>
                     <div class="mt-8 flex flex-col sm:flex-row gap-4">
                         <a href="#leadership" class="inline-flex items-center px-6 py-3 rounded-lg border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition">
                             Meet our leadership
@@ -95,7 +95,7 @@
                 <img src="{{ asset('images/unnamed.jpg') }}" alt="Company Overview" class="w-full h-[420px] object-cover rounded-2xl shadow-lg" onerror="this.src='{{ asset('images/placeholder.jpg') }}'">
                 <div>
                     <h2 class="text-3xl font-bold text-gray-900 mb-4">{{ $aboutContent['story_title']->content_value ?? 'Our Story' }}</h2>
-                    <p class="text-gray-600 leading-7 mb-4">{{ $aboutContent['story_paragraph1']->content_value ?? 'RSS Citi Health Services was established in 2005 with a vision to provide accessible, high-quality healthcare to our community.' }}</p>
+                    <p class="text-gray-600 leading-7 mb-4">{{ $aboutContent['story_paragraph1']->content_value ?? 'RSS Citi Health Services was established in 1997 with a vision to provide accessible, high-quality healthcare to our community.' }}</p>
                     <p class="text-gray-600 leading-7 mb-4">{{ $aboutContent['story_paragraph2']->content_value ?? 'From a small clinic to a comprehensive facility serving thousands annually, our growth reflects our commitment to excellence and evolving patient needs.' }}</p>
                     <p class="text-gray-600 leading-7">{{ $aboutContent['story_paragraph3']->content_value ?? 'Today, we offer a wide range of diagnostic and preventive services, delivered by experienced professionals who prioritize personalized care and attention.' }}</p>
                 </div>
@@ -348,7 +348,7 @@
                         <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
                             <i class="fa-solid fa-award text-white text-xl"></i>
                         </div>
-                        <h3 class="text-3xl md:text-4xl font-bold text-white mb-2 counter" data-target="15">0</h3>
+                        <h3 class="text-3xl md:text-4xl font-bold text-white mb-2 counter" data-target="28">0</h3>
                         <p class="text-blue-100 font-medium">Years of Experience</p>
                     </div>
                 </div>
@@ -376,7 +376,7 @@
                         </div>
                         <span class="text-xl font-bold">RSS Citi Health Services</span>
                     </div>
-                    <p class="text-gray-600 max-w-md">Providing quality healthcare services since 2005. Compassionate care and modern diagnostics for our community.</p>
+                    <p class="text-gray-600 max-w-md">Providing quality healthcare services since 1997. Compassionate care and modern diagnostics for our community.</p>
                     <div class="mt-4 flex space-x-4 text-gray-600">
                         <a href="#" class="w-10 h-10 grid place-items-center rounded-lg bg-gray-200 hover:bg-blue-600 hover:text-white transition"><i class="fa-brands fa-facebook-f"></i></a>
                         <a href="#" class="w-10 h-10 grid place-items-center rounded-lg bg-gray-200 hover:bg-blue-600 hover:text-white transition"><i class="fa-brands fa-x-twitter"></i></a>

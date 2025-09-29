@@ -81,4 +81,12 @@ class OpdExamination extends Model
     {
         return $query->where('status', 'approved');
     }
+
+    /**
+     * Get drug test result for this OPD examination
+     */
+    public function drugTestResult()
+    {
+        return $this->hasOne(\App\Models\DrugTestResult::class);
+    }
 }

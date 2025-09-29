@@ -97,21 +97,7 @@
                                         Edit
                                     </a>
                                     
-                                    <!-- Send to Doctor -->
-                                    @if($canSendToDoctor)
-                                        <form action="{{ route('pathologist.opd.send-to-doctor', $patient->id) }}" method="POST" class="inline">
-                                            @csrf
-                                            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-full transition-all duration-200 flex items-center text-sm font-medium shadow-sm hover:shadow-md" title="Send to Doctor">
-                                                <i class="fas fa-paper-plane mr-2 text-sm"></i>
-                                                Send
-                                            </button>
-                                        </form>
-                                    @else
-                                        <button type="button" class="bg-gray-400 text-white px-3 py-2 rounded-full cursor-not-allowed opacity-60 flex items-center text-sm font-medium shadow-sm" title="Complete lab tests first" disabled>
-                                            <i class="fas fa-paper-plane mr-2 text-sm"></i>
-                                            Send
-                                        </button>
-                                    @endif
+                                   
                                     
                                     <!-- Medical Checklist -->
                                     <a href="{{ route('pathologist.medical-checklist.opd', $patient->id) }}" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-full transition-all duration-200 flex items-center text-sm font-medium shadow-sm hover:shadow-md" title="Medical Checklist">

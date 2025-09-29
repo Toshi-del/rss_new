@@ -446,7 +446,7 @@
                             </a>
                             
                             <!-- General Registration -->
-                            <a href="{{ route('register') }}" class="group flex items-center justify-center px-4 py-3 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg">
+                            <a href="{{ route('register') }}" class="group flex items-center justify-center px-4 py-3 bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg">
                                 <div class="flex items-center space-x-2">
                                     <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
                                         <i class="fa-solid fa-user-plus text-sm"></i>
@@ -615,7 +615,7 @@
                         <span class="text-2xl font-bold text-gray-900">RSS Citi Health Services</span>
                     </div>
                     <p class="text-gray-600 mb-6 leading-relaxed max-w-md">
-                        Providing quality healthcare services since 2005. Our mission is to deliver compassionate care and promote wellness in our community.
+                        Providing quality healthcare services since 1997. Our mission is to deliver compassionate care and promote wellness in our community.
                     </p>
                     <div class="flex space-x-4">
                         <a href="#" class="w-10 h-10 bg-gray-200 hover:bg-blue-600 text-gray-600 hover:text-white rounded-lg flex items-center justify-center transition-all duration-200 transform hover:scale-110">

@@ -109,4 +109,12 @@ class Appointment extends Model
     {
         return $this->patients()->count();
     }
+
+    /**
+     * Get drug test results for this appointment
+     */
+    public function drugTestResults()
+    {
+        return $this->hasMany(\App\Models\DrugTestResult::class);
+    }
 }

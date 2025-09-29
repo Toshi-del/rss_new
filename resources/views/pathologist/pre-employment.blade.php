@@ -172,13 +172,7 @@
                                     Edit
                                 </a>
                                 
-                                <!-- Send to Doctor -->
-                                <button onclick="sendToDoctor({{ $preEmployment->id }})" 
-                                        class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-full transition-all duration-200 flex items-center text-sm font-medium shadow-sm hover:shadow-md" 
-                                        title="Send to Doctor">
-                                    <i class="fas fa-paper-plane mr-2 text-sm"></i>
-                                    Send
-                                </button>
+                                
                                 
                                 <!-- Medical Checklist -->
                                 <a href="{{ route('pathologist.medical-checklist') }}?pre_employment_record_id={{ $preEmployment->id }}&examination_type=pre_employment" 

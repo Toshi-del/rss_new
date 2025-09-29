@@ -134,66 +134,6 @@ class EcgtechController extends Controller
         return view('ecgtech.opd', compact('opdPatients'));
     }
 
-    /**
-     * Send ECG tech pre-employment to doctor
-     */
-    public function sendPreEmploymentToDoctor($recordId)
-    {
-        $record = PreEmploymentRecord::findOrFail($recordId);
-        $exam = PreEmploymentExamination::firstOrCreate(
-            ['pre_employment_record_id' => $recordId],
-            [
-                'user_id' => $record->created_by,
-                'name' => $record->full_name,
-                'company_name' => $record->company_name,
-                'date' => now()->toDateString(),
-                'status' => $record->status,
-            ]
-        );
-        $exam->update(['status' => 'Approved']);
-        return redirect()->route('ecgtech.pre-employment')->with('success', 'Pre-employment sent to doctor.');
-    }
-
-    /**
-     * Send ECG tech annual physical to doctor
-     */
-    public function sendAnnualPhysicalToDoctor($patientId)
-    {
-        $patient = Patient::findOrFail($patientId);
-        $exam = AnnualPhysicalExamination::firstOrCreate(
-            ['patient_id' => $patientId],
-            [
-                'user_id' => Auth::id(),
-                'name' => $patient->full_name,
-                'date' => now()->toDateString(),
-                'status' => 'Pending',
-            ]
-        );
-        // Mark as completed from ECG tech to send up to doctor
-        $exam->update(['status' => 'completed']);
-        return redirect()->route('ecgtech.annual-physical')->with('success', 'Annual physical sent to doctor.');
-    }
-
-    /**
-     * Send ECG tech OPD to doctor
-     */
-    public function sendOpdToDoctor($userId)
-    {
-        $opdPatient = User::where('role', 'opd')->findOrFail($userId);
-        $exam = OpdExamination::firstOrCreate(
-            ['user_id' => $userId],
-            [
-                'name' => trim(($opdPatient->fname ?? '') . ' ' . ($opdPatient->lname ?? '')),
-                'date' => now()->toDateString(),
-                'status' => 'pending',
-            ]
-        );
-        
-        // Mark as completed from ECG tech to send up to doctor
-        $exam->update(['status' => 'completed']);
-        
-        return redirect()->route('ecgtech.opd')->with('success', 'OPD examination sent to doctor.');
-    }
 
     /**
      * Show medical checklist for pre-employment

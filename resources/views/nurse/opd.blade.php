@@ -228,19 +228,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center space-x-2">
-                                            <!-- Send to Doctor -->
-                                            @if($canSendToDoctor)
-                                                <form action="{{ route('nurse.opd.send-to-doctor', $patient->id) }}" method="POST" class="inline">
-                                                    @csrf
-                                                    <button type="submit" class="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors" title="Send to Doctor">
-                                                        <i class="fas fa-paper-plane"></i>
-                                                    </button>
-                                                </form>
-                                            @else
-                                                <button type="button" class="p-2 text-gray-400 cursor-not-allowed rounded-lg" title="Complete examination and medical checklist first" disabled>
-                                                    <i class="fas fa-paper-plane"></i>
-                                                </button>
-                                            @endif
+                                          
 
                                             <!-- Examination -->
                                             @if($opdExam)

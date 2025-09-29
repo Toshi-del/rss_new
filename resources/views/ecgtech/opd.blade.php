@@ -160,20 +160,6 @@
                         </td>
                         <td class="px-6 py-6 whitespace-nowrap text-sm">
                             <div class="flex items-center space-x-2">
-                                @if($canSendToDoctor)
-                                    <form action="{{ route('ecgtech.opd.send-to-doctor', $patient->id) }}" method="POST" class="inline">
-                                        @csrf
-                                        <button type="submit" class="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors duration-200 group" title="Send to Doctor">
-                                            <i class="fas fa-paper-plane mr-1 group-hover:translate-x-0.5 transition-transform"></i>
-                                            Send
-                                        </button>
-                                    </form>
-                                @else
-                                    <button type="button" class="inline-flex items-center px-3 py-2 bg-gray-400 text-white text-xs font-semibold rounded-lg cursor-not-allowed" title="Complete ECG examination first" disabled>
-                                        <i class="fas fa-paper-plane mr-1"></i>
-                                        Send
-                                    </button>
-                                @endif
                                 
                                 @if($opdExam)
                                     <a href="{{ route('ecgtech.opd.edit', $opdExam->id) }}" class="inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg transition-colors duration-200 group" title="Edit ECG Results">

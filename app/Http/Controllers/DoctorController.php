@@ -49,16 +49,20 @@ class DoctorController extends Controller
      */
     public function preEmployment()
     {
-        // Show only records that have been explicitly submitted to the doctor
-        // by staff (nurse/plebo/radtech/pathologist) via PreEmploymentExamination status 'Approved'.
-        $preEmployments = \App\Models\PreEmploymentRecord::where('status', 'approved')
-            ->whereHas('preEmploymentExamination', function ($q) {
-                $q->where('status', 'Approved');
-            })
+        // Show pre-employment examinations that are ready for doctor review
+        // Temporarily showing all examinations for debugging
+        $preEmploymentExaminations = \App\Models\PreEmploymentExamination::with(['preEmploymentRecord.medicalTest', 'preEmploymentRecord.medicalTestCategory', 'user'])
             ->latest()
             ->get();
         
-        return view('doctor.pre-employment', compact('preEmployments'));
+        // Debug: Also check all examinations to see what statuses exist
+        $allExaminations = \App\Models\PreEmploymentExamination::all();
+        \Log::info('All Pre-Employment Examinations:', [
+            'count' => $allExaminations->count(),
+            'statuses' => $allExaminations->pluck('status')->unique()->toArray()
+        ]);
+        
+        return view('doctor.pre-employment', compact('preEmploymentExaminations'));
     }
 
     /**
@@ -91,7 +95,7 @@ class DoctorController extends Controller
     public function annualPhysical()
     {
         // Show patients that have examinations ready for doctor (status 'completed' by pathologist)
-        // Exclude those already sent by the doctor (status 'sent_to_company')
+        // Exclude those already sent by the doctor (status 'sent_to_admin' or 'sent_to_company')
         $patients = Patient::with(['appointment', 'annualPhysicalExamination'])
             ->where('status', 'approved')
             ->whereHas('annualPhysicalExamination', function ($q) {
@@ -398,8 +402,8 @@ class DoctorController extends Controller
                 ->with('error', 'Please complete the medical checklist and enter both physical and laboratory results before sending to admin.');
         }
 
-        // Mark as sent to company/admin so it no longer appears in the doctor list
-        $examination->update(['status' => 'sent_to_company']);
+        // Mark as sent to admin so it no longer appears in the doctor list
+        $examination->update(['status' => 'sent_to_admin']);
 
         return redirect()->route('doctor.annual-physical')->with('success', 'Annual physical submitted to admin.');
     }

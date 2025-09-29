@@ -152,42 +152,4 @@ class RadtechController extends Controller
         return redirect()->back()->with('success', 'Medical checklist created successfully.');
     }
 
-    /**
-     * Send pre-employment to doctor (marks exam Approved)
-     */
-    public function sendPreEmploymentToDoctor($recordId)
-    {
-        $record = PreEmploymentRecord::findOrFail($recordId);
-        $exam = PreEmploymentExamination::firstOrCreate(
-            ['pre_employment_record_id' => $recordId],
-            [
-                'user_id' => $record->created_by,
-                'name' => $record->first_name . ' ' . $record->last_name,
-                'company_name' => $record->company_name,
-                'date' => now()->toDateString(),
-                'status' => $record->status,
-            ]
-        );
-        $exam->update(['status' => 'Approved']);
-        return redirect()->route('radtech.dashboard')->with('success', 'Pre-employment sent to doctor.');
-    }
-
-    /**
-     * Send annual physical to doctor (marks exam completed)
-     */
-    public function sendAnnualPhysicalToDoctor($patientId)
-    {
-        $patient = Patient::findOrFail($patientId);
-        $exam = AnnualPhysicalExamination::firstOrCreate(
-            ['patient_id' => $patientId],
-            [
-                'user_id' => Auth::id(),
-                'name' => $patient->full_name,
-                'date' => now()->toDateString(),
-                'status' => 'Pending',
-            ]
-        );
-        $exam->update(['status' => 'completed']);
-        return redirect()->route('radtech.dashboard')->with('success', 'Annual physical sent to doctor.');
-    }
 }

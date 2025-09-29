@@ -188,26 +188,7 @@
                                     Barcode
                                 </button>
                                 
-                                <!-- Send to Doctor -->
-                                @if($hasExamination && $hasMedicalChecklist)
-                                    <form action="{{ route('plebo.opd.send-to-doctor', $patient->id) }}" method="POST" class="inline">
-                                        @csrf
-                                        <button type="submit" 
-                                                class="inline-flex items-center px-3 py-1 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-colors duration-200"
-                                                title="Send to Doctor for Review"
-                                                onclick="return confirm('Send this record to the doctor for review?')">
-                                            <i class="fas fa-paper-plane mr-2"></i>
-                                            Send
-                                        </button>
-                                    </form>
-                                @else
-                                    <button disabled 
-                                            class="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-400 cursor-not-allowed rounded-lg"
-                                            title="Complete blood collection first">
-                                        <i class="fas fa-paper-plane mr-2"></i>
-                                        Send
-                                    </button>
-                                @endif
+                               
                             </div>
                         </td>
                     </tr>

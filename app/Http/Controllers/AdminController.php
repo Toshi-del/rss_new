@@ -285,15 +285,13 @@ class AdminController extends Controller
      */
     public function tests()
     {
-        // Only show examinations that have been completed/submitted by doctors
-        // For PreEmploymentExamination: show 'Approved' status (doctor has completed the examination)
-        // For AnnualPhysicalExamination: show 'completed' status (doctor has completed the examination)
-        $preEmploymentResults = \App\Models\PreEmploymentExamination::where('status', 'Approved')
-            ->orWhere('status', 'sent_to_company')
-            ->get();
-        $annualPhysicalResults = \App\Models\AnnualPhysicalExamination::where('status', 'completed')
-            ->orWhere('status', 'sent_to_company')
-            ->get();
+        // Only show examinations that have been submitted by doctors to admin
+        // Pre-Employment: Doctor submits with status 'Approved' -> Admin can send to company
+        // Annual Physical: Doctor submits with status 'sent_to_admin' -> Admin can send to company
+        
+        $preEmploymentResults = \App\Models\PreEmploymentExamination::where('status', 'Approved')->get();
+        $annualPhysicalResults = \App\Models\AnnualPhysicalExamination::where('status', 'sent_to_admin')->get();
+        
         return view('admin.tests', compact('preEmploymentResults', 'annualPhysicalResults'));
     }
 
@@ -1007,5 +1005,190 @@ class AdminController extends Controller
         ]);
         
         return redirect()->back()->with('success', 'Test assignment updated successfully.');
+    }
+
+    /**
+     * Get billing information for pre-employment examination
+     */
+    public function getPreEmploymentBilling($id)
+    {
+        try {
+            $examination = PreEmploymentExamination::with(['preEmploymentRecord.medicalTest', 'preEmploymentRecord.creator'])
+                ->findOrFail($id);
+            
+            $record = $examination->preEmploymentRecord;
+            
+            if (!$record) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pre-employment record not found'
+                ]);
+            }
+            
+            // Get patient name
+            $patientName = $examination->name ?: ($record->first_name . ' ' . $record->last_name);
+            
+            // Get company name
+            $companyName = $examination->company_name ?: $record->company_name;
+            
+            // Get test name and price
+            $testName = $record->medicalTest ? $record->medicalTest->name : 'Unknown Test';
+            $totalAmount = $record->total_price ?: 0;
+            
+            return response()->json([
+                'success' => true,
+                'patient_name' => $patientName,
+                'company_name' => $companyName,
+                'test_name' => $testName,
+                'total_amount' => $totalAmount,
+                'examination_date' => $examination->date ? $examination->date->format('M d, Y') : 'N/A'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error getting pre-employment billing: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load billing information'
+            ]);
+        }
+    }
+
+    /**
+     * Get billing information for annual physical examination
+     */
+    public function getAnnualPhysicalBilling($id)
+    {
+        try {
+            $examination = AnnualPhysicalExamination::with(['patient.appointment.medicalTest', 'patient.appointment.creator'])
+                ->findOrFail($id);
+            
+            $patient = $examination->patient;
+            $appointment = $patient ? $patient->appointment : null;
+            
+            if (!$patient || !$appointment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Patient or appointment not found'
+                ]);
+            }
+            
+            // Get patient name
+            $patientName = $examination->name ?: $patient->full_name;
+            
+            // Get company name from appointment creator
+            $companyName = $appointment->creator ? $appointment->creator->company : 'Unknown Company';
+            
+            // Get test name and calculate total amount
+            $testName = $appointment->medicalTest ? $appointment->medicalTest->name : 'Unknown Test';
+            $totalAmount = $appointment->calculateTotalPrice();
+            
+            return response()->json([
+                'success' => true,
+                'patient_name' => $patientName,
+                'company_name' => $companyName,
+                'test_name' => $testName,
+                'total_amount' => $totalAmount,
+                'examination_date' => $examination->date ? $examination->date->format('M d, Y') : 'N/A'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error getting annual physical billing: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load billing information'
+            ]);
+        }
+    }
+
+    /**
+     * Send pre-employment examination to company with billing confirmation
+     */
+    public function sendPreEmploymentExaminationWithBilling($id)
+    {
+        try {
+            $examination = PreEmploymentExamination::with(['preEmploymentRecord'])
+                ->findOrFail($id);
+            
+            if ($examination->status === 'sent_to_company') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Examination has already been sent to company'
+                ]);
+            }
+            
+            // Update examination status
+            $examination->update(['status' => 'sent_to_company']);
+            
+            // Log the billing transaction
+            \Log::info('Pre-employment examination sent to company', [
+                'examination_id' => $examination->id,
+                'patient_name' => $examination->name,
+                'company_name' => $examination->company_name,
+                'total_amount' => $examination->preEmploymentRecord ? $examination->preEmploymentRecord->total_price : 0,
+                'sent_by' => Auth::id(),
+                'sent_at' => now()
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Pre-employment examination sent to company successfully'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error sending pre-employment examination: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send examination to company'
+            ]);
+        }
+    }
+
+    /**
+     * Send annual physical examination to company with billing confirmation
+     */
+    public function sendAnnualPhysicalExaminationWithBilling($id)
+    {
+        try {
+            $examination = AnnualPhysicalExamination::with(['patient.appointment'])
+                ->findOrFail($id);
+            
+            if ($examination->status === 'sent_to_company') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Examination has already been sent to company'
+                ]);
+            }
+            
+            // Update examination status
+            $examination->update(['status' => 'sent_to_company']);
+            
+            // Get company name and total amount for logging
+            $patient = $examination->patient;
+            $appointment = $patient ? $patient->appointment : null;
+            $companyName = $appointment && $appointment->creator ? $appointment->creator->company : 'Unknown Company';
+            $totalAmount = $appointment ? $appointment->calculateTotalPrice() : 0;
+            
+            // Log the billing transaction
+            \Log::info('Annual physical examination sent to company', [
+                'examination_id' => $examination->id,
+                'patient_name' => $examination->name,
+                'company_name' => $companyName,
+                'total_amount' => $totalAmount,
+                'sent_by' => Auth::id(),
+                'sent_at' => now()
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Annual physical examination sent to company successfully'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error sending annual physical examination: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send examination to company'
+            ]);
+        }
     }
 }

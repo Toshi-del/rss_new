@@ -115,4 +115,12 @@ class PreEmploymentRecord extends Model
 
         return collect($tests);
     }
+
+    /**
+     * Get drug test result for this pre-employment record
+     */
+    public function drugTestResult()
+    {
+        return $this->hasOne(\App\Models\DrugTestResult::class);
+    }
 }

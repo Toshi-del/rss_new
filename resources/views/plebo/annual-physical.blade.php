@@ -175,20 +175,7 @@
                                     Barcode
                                 </button>
                                 
-                                <!-- Send to Doctor -->
-                                @php
-                                    $hasMedicalChecklist = \App\Models\MedicalChecklist::where('patient_id', $patient->id)->exists();
-                                @endphp
-                                <form action="{{ route('plebo.annual-physical.send-to-doctor', $patient->id) }}" method="POST" class="inline">
-                                    @csrf
-                                    <button type="submit" 
-                                            class="inline-flex items-center px-3 py-1 rounded-lg transition-colors duration-200 {{ $hasMedicalChecklist ? 'bg-purple-100 hover:bg-purple-200 text-purple-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed' }}"
-                                            title="{{ $hasMedicalChecklist ? 'Send to Doctor for Review' : 'Complete blood collection first' }}"
-                                            {{ $hasMedicalChecklist ? 'onclick="return confirm(\'Send this record to the doctor for review?\')"' : 'disabled' }}>
-                                        <i class="fas fa-paper-plane mr-2"></i>
-                                        Send
-                                    </button>
-                                </form>
+                              
                             </div>
                         </td>
                     </tr>

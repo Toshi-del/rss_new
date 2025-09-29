@@ -367,61 +367,6 @@ class PathologistController extends Controller
         }
     }
 
-    /**
-     * Send pathologist annual physical to doctor
-     */
-    public function sendAnnualPhysicalToDoctor($patientId)
-    {
-        try {
-            $patient = Patient::findOrFail($patientId);
-            
-            $exam = AnnualPhysicalExamination::firstOrCreate(
-                ['patient_id' => $patientId],
-                [
-                    'user_id' => Auth::id(),
-                    'name' => $patient->full_name,
-                    'date' => now()->toDateString(),
-                    'status' => 'Pending',
-                ]
-            );
-            
-            // Mark as completed from pathologist to send up to doctor
-            $exam->update(['status' => 'completed']);
-            
-            return redirect()->route('pathologist.annual-physical')->with('success', 'Annual physical sent to doctor successfully.');
-            
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to send annual physical: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Send pathologist pre-employment to doctor
-     */
-    public function sendPreEmploymentToDoctor($recordId)
-    {
-        try {
-            $record = PreEmploymentRecord::findOrFail($recordId);
-            
-            $exam = PreEmploymentExamination::firstOrCreate(
-                ['pre_employment_record_id' => $recordId],
-                [
-                    'user_id' => $record->created_by,
-                    'name' => $record->full_name,
-                    'company_name' => $record->company_name,
-                    'date' => now()->toDateString(),
-                    'status' => $record->status,
-                ]
-            );
-            
-            $exam->update(['status' => 'Approved']);
-            
-            return redirect()->route('pathologist.pre-employment')->with('success', 'Pre-employment sent to doctor successfully.');
-            
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to send pre-employment: ' . $e->getMessage());
-        }
-    }
 
     /**
      * Show pathologist messages view

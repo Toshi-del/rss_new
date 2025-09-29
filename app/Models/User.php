@@ -231,4 +231,20 @@ class User extends Authenticatable
     {
         return $this->hasOne(\App\Models\OpdExamination::class);
     }
+
+    /**
+     * Get drug test results as patient
+     */
+    public function drugTestResults(): HasMany
+    {
+        return $this->hasMany(\App\Models\DrugTestResult::class, 'user_id');
+    }
+
+    /**
+     * Get drug test results conducted by this nurse
+     */
+    public function conductedDrugTests(): HasMany
+    {
+        return $this->hasMany(\App\Models\DrugTestResult::class, 'nurse_id');
+    }
 }

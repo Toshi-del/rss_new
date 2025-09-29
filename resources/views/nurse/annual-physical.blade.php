@@ -221,19 +221,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center space-x-2">
-                                            <!-- Send to Doctor -->
-                                            @if($canSendToDoctor)
-                                                <form action="{{ route('nurse.annual-physical.send-to-doctor', $patient->id) }}" method="POST" class="inline">
-                                                    @csrf
-                                                    <button type="submit" class="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors" title="Send to Doctor">
-                                                        <i class="fas fa-paper-plane"></i>
-                                                    </button>
-                                                </form>
-                                            @else
-                                                <button type="button" class="p-2 text-gray-400 cursor-not-allowed rounded-lg" title="Complete examination and medical checklist first" disabled>
-                                                    <i class="fas fa-paper-plane"></i>
-                                                </button>
-                                            @endif
+                                           
 
                                             <!-- Examination -->
                                             @if($annualPhysicalExam)
@@ -241,9 +229,15 @@
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                             @else
-                                                <a href="{{ route('nurse.annual-physical.create', ['patient_id' => $patient->id]) }}" class="p-2 text-emerald-600 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg transition-colors" title="Create Examination">
-                                                    <i class="fas fa-plus"></i>
-                                                </a>
+                                                @if($medicalChecklist && !empty($medicalChecklist->physical_exam_done_by))
+                                                    <a href="{{ route('nurse.annual-physical.create', ['patient_id' => $patient->id]) }}" class="p-2 text-emerald-600 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg transition-colors" title="Create Examination">
+                                                        <i class="fas fa-plus"></i>
+                                                    </a>
+                                                @else
+                                                    <button class="p-2 text-gray-400 cursor-not-allowed rounded-lg" title="Complete medical checklist first" disabled>
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                @endif
                                             @endif
 
                                             <!-- Medical Checklist -->

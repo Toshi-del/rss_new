@@ -35,8 +35,8 @@
                     </div>
                 </div>
                 <div class="bg-white bg-opacity-20 rounded-xl px-6 py-4 border border-white border-opacity-30">
-                    <p class="text-green-100 text-sm font-medium">Total Applicants</p>
-                    <p class="text-white text-2xl font-bold">{{ $preEmployments->count() }}</p>
+                    <p class="text-green-100 text-sm font-medium">Total Examinations</p>
+                    <p class="text-white text-2xl font-bold">{{ $preEmploymentExaminations->count() }}</p>
                 </div>
             </div>
         </div>
@@ -55,16 +55,27 @@
                     </div>
                 </div>
                 <div class="bg-white bg-opacity-20 rounded-lg px-4 py-2 border border-white border-opacity-30">
-                    <p class="text-green-100 text-xs font-medium">Active Applicants</p>
-                    <p class="text-white text-lg font-bold">{{ $preEmployments->count() }}</p>
+                    <p class="text-green-100 text-xs font-medium">Ready for Review</p>
+                    <p class="text-white text-lg font-bold">{{ $preEmploymentExaminations->count() }}</p>
                 </div>
             </div>
         </div>
         
-        @if($preEmployments->count() > 0)
+        <!-- Debug Info -->
+        @if(config('app.debug'))
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+            <p class="text-sm text-yellow-800">Debug: Found {{ $preEmploymentExaminations->count() }} examinations</p>
+            @if($preEmploymentExaminations->count() > 0)
+                <p class="text-xs text-yellow-600">Statuses: {{ $preEmploymentExaminations->pluck('status')->unique()->implode(', ') }}</p>
+            @endif
+        </div>
+        @endif
+        
+        @if($preEmploymentExaminations->count() > 0)
         <div class="p-8">
             <div class="space-y-6">
-                @foreach($preEmployments as $preEmployment)
+                @foreach($preEmploymentExaminations as $examination)
+                @php $preEmployment = $examination->preEmploymentRecord; @endphp
                 <div class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200">
                     <!-- Applicant Header -->
                     <div class="flex items-start justify-between mb-6">
@@ -124,6 +135,42 @@
                         </div>
                     </div>
                     
+                    <!-- Examination Details -->
+                    <div class="bg-blue-50 rounded-lg p-4 mb-6">
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-stethoscope text-blue-600 mr-2"></i>
+                            <span class="text-sm font-medium text-blue-800">Nurse Examination Results</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <p class="text-gray-600">Examination Date:</p>
+                                <p class="font-semibold">{{ $examination->date ? \Carbon\Carbon::parse($examination->date)->format('M d, Y') : 'Not set' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600">Status:</p>
+                                <p class="font-semibold text-green-600">{{ ucfirst($examination->status) }}</p>
+                            </div>
+                            @if($examination->physical_exam && is_array($examination->physical_exam))
+                            <div class="col-span-2">
+                                <p class="text-gray-600">Physical Examination:</p>
+                                <div class="mt-1 text-xs space-y-1">
+                                    @foreach($examination->physical_exam as $key => $value)
+                                        @if($value)
+                                        <span class="inline-block bg-gray-100 px-2 py-1 rounded">{{ ucfirst(str_replace('_', ' ', $key)) }}: {{ $value }}</span>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                        @if($examination->findings)
+                        <div class="mt-3 pt-3 border-t border-blue-200">
+                            <p class="text-gray-600 text-sm">Findings:</p>
+                            <p class="text-gray-900 font-medium">{{ $examination->findings }}</p>
+                        </div>
+                        @endif
+                    </div>
+                    
                     <!-- Action Buttons -->
                     <div class="flex items-center justify-between space-x-3 mb-4">
                         <!-- Send to Admin -->
@@ -137,12 +184,12 @@
                             </button>
                         </form>
                         
-                        <!-- Edit Results -->
-                        <a href="{{ route('doctor.pre-employment.examination.edit', $preEmployment->id) }}" 
+                        <!-- View Full Examination -->
+                        <a href="{{ route('doctor.pre-employment.examination.edit', $examination->id) }}" 
                            class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 text-sm font-medium flex items-center justify-center" 
-                           title="Edit Results">
-                            <i class="fas fa-pencil-alt mr-2"></i>
-                            Update Results
+                           title="View/Edit Examination">
+                            <i class="fas fa-eye mr-2"></i>
+                            View Examination
                         </a>
                         
                         <!-- Medical Checklist -->
@@ -158,12 +205,12 @@
                     <div class="pt-4 border-t border-gray-200">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center text-sm text-gray-600">
-                                <i class="fas fa-calendar text-gray-400 mr-2"></i>
-                                <span>Last Updated: {{ $preEmployment->updated_at->format('M d, Y') }}</span>
+                                <i class="fas fa-user-nurse text-gray-400 mr-2"></i>
+                                <span>Examined by: {{ $examination->user ? ($examination->user->fname . ' ' . $examination->user->lname) : 'Nurse' }}</span>
                             </div>
                             <div class="flex items-center space-x-2">
-                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                                <span class="text-green-600 font-medium text-sm">Active Screening</span>
+                                <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                <span class="text-blue-600 font-medium text-sm">Ready for Review</span>
                             </div>
                         </div>
                     </div>
@@ -172,9 +219,9 @@
             </div>
             
             <!-- Pagination if needed -->
-            @if(method_exists($preEmployments, 'links'))
+            @if(method_exists($preEmploymentExaminations, 'links'))
             <div class="mt-8">
-                {{ $preEmployments->links() }}
+                {{ $preEmploymentExaminations->links() }}
             </div>
             @endif
         </div>

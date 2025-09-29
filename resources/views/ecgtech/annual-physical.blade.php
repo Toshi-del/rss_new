@@ -129,13 +129,7 @@
                         </td>
                         <td class="px-6 py-6 whitespace-nowrap text-sm">
                             <div class="flex items-center space-x-2">
-                                <form action="{{ route('ecgtech.annual-physical.send-to-doctor', $patient->id) }}" method="POST" class="inline">
-                                    @csrf
-                                    <button type="submit" class="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors duration-200 group" title="Send to Doctor">
-                                        <i class="fas fa-paper-plane mr-1 group-hover:translate-x-0.5 transition-transform"></i>
-                                        Send
-                                    </button>
-                                </form>
+                                
                                 <a href="{{ route('ecgtech.medical-checklist-page.annual-physical', $patient->id) }}" class="inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg transition-colors duration-200 group" title="ECG Checklist">
                                     <i class="fas fa-heartbeat mr-1 group-hover:scale-110 transition-transform"></i>
                                     ECG

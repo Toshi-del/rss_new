@@ -8,6 +8,8 @@ use App\Models\Patient;
 use App\Models\PreEmploymentRecord;
 use App\Models\User;
 use App\Models\OpdExamination;
+use App\Models\DrugTestResult;
+use App\Services\MedicalWorkflowService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,18 +20,26 @@ class NurseController extends Controller
      */
     public function dashboard()
     {
-        // Get patients
-        $patients = Patient::where('status', 'approved')->latest()->take(5)->get();
-        $patientCount = Patient::where('status', 'approved')->count();
+        // Get patients that don't have annual physical examinations yet
+        $patients = Patient::where('status', 'approved')
+            ->whereDoesntHave('annualPhysicalExamination')
+            ->latest()->take(5)->get();
+        $patientCount = Patient::where('status', 'approved')
+            ->whereDoesntHave('annualPhysicalExamination')
+            ->count();
 
         // Get appointments with linked medical tests
         $appointments = Appointment::with(['patients', 'medicalTestCategory', 'medicalTest'])->latest()->take(5)->get();
         $appointmentCount = Appointment::count();
 
-        // Get pre-employment records
+        // Get pre-employment records that don't have examinations yet
         $preEmployments = PreEmploymentRecord::with(['medicalTestCategory','medicalTest'])
-            ->where('status', 'approved')->latest()->take(5)->get();
-        $preEmploymentCount = PreEmploymentRecord::where('status', 'approved')->count();
+            ->where('status', 'approved')
+            ->whereDoesntHave('preEmploymentExamination')
+            ->latest()->take(5)->get();
+        $preEmploymentCount = PreEmploymentRecord::where('status', 'approved')
+            ->whereDoesntHave('preEmploymentExamination')
+            ->count();
 
         // Get OPD walk-in patients (users with 'opd' role)
         $opdPatients = User::where('role', 'opd')->latest()->take(5)->get();
@@ -58,70 +68,29 @@ class NurseController extends Controller
 
 
 
-
     /**
      * Show pre-employment records
      */
     public function preEmployment()
     {
-        $preEmployments = PreEmploymentRecord::with(['medicalTestCategory','medicalTest'])
-            ->whereIn('status', ['Approved', 'approved'])
-            ->whereDoesntHave('preEmploymentExamination', function ($q) {
-                $q->whereIn('status', ['Approved', 'sent_to_company']);
-            })
-            ->latest()->get();
+        $preEmployments = PreEmploymentRecord::with(['medicalTestCategory', 'medicalTest'])
+            ->where('status', 'approved')
+            ->whereDoesntHave('preEmploymentExamination')
+            ->latest()->paginate(15);
         
         return view('nurse.pre-employment', compact('preEmployments'));
     }
 
     /**
-     * Show annual physical examination patients
+     * Show annual physical patients
      */
     public function annualPhysical()
     {
         $patients = Patient::where('status', 'approved')
-            ->whereDoesntHave('annualPhysicalExamination', function ($q) {
-                $q->whereIn('status', ['completed', 'sent_to_company']);
-            })
-            ->latest()->get();
+            ->whereDoesntHave('annualPhysicalExamination')
+            ->latest()->paginate(15);
         
         return view('nurse.annual-physical', compact('patients'));
-    }
-
-    /** Send nurse annual physical to doctor */
-    public function sendAnnualPhysicalToDoctor($patientId)
-    {
-        $patient = Patient::findOrFail($patientId);
-        $exam = \App\Models\AnnualPhysicalExamination::firstOrCreate(
-            ['patient_id' => $patientId],
-            [
-                'user_id' => Auth::id(),
-                'name' => $patient->full_name,
-                'date' => now()->toDateString(),
-                'status' => 'Pending',
-            ]
-        );
-        // Mark as completed from nurse to send up to doctor
-        $exam->update(['status' => 'completed']);
-        return redirect()->route('nurse.annual-physical')->with('success', 'Annual physical sent to doctor.');
-    }
-
-    /** Send nurse pre-employment to doctor */
-    public function sendPreEmploymentToDoctor($recordId)
-    {
-        $record = PreEmploymentRecord::findOrFail($recordId);
-        $exam = \App\Models\PreEmploymentExamination::firstOrCreate(
-            ['pre_employment_record_id' => $recordId],
-            [
-                'user_id' => $record->created_by,
-                'name' => $record->full_name,
-                'company_name' => $record->company_name,
-                'date' => now()->toDateString(),
-                'status' => $record->status,
-            ]
-        );
-        $exam->update(['status' => 'Approved']);
-        return redirect()->route('nurse.pre-employment')->with('success', 'Pre-employment sent to doctor.');
     }
 
     /**
@@ -253,7 +222,11 @@ class NurseController extends Controller
 
         $validated['user_id'] = Auth::id();
 
-        \App\Models\MedicalChecklist::create($validated);
+        $checklist = \App\Models\MedicalChecklist::create($validated);
+
+        // Trigger automatic workflow check
+        $workflowService = new MedicalWorkflowService();
+        $workflowService->onMedicalChecklistUpdated($checklist);
 
         // Redirect out of the checklist page back to the appropriate list
         $redirectRoute = match($validated['examination_type']) {
@@ -284,6 +257,10 @@ class NurseController extends Controller
         ]);
 
         $medicalChecklist->update($validated);
+
+        // Trigger automatic workflow check
+        $workflowService = new MedicalWorkflowService();
+        $workflowService->onMedicalChecklistUpdated($medicalChecklist);
 
         // Redirect out of the checklist page back to the appropriate list
         $redirectRoute = match($request->input('examination_type')) {
@@ -390,6 +367,16 @@ class NurseController extends Controller
         $recordId = $request->query('record_id');
         $preEmploymentRecord = PreEmploymentRecord::with(['medicalTest'])->findOrFail($recordId);
         
+        // Check if medical checklist exists and is completed
+        $medicalChecklist = \App\Models\MedicalChecklist::where('pre_employment_record_id', $recordId)
+            ->where('examination_type', 'pre-employment')
+            ->first();
+        
+        if (!$medicalChecklist || empty($medicalChecklist->physical_exam_done_by)) {
+            return redirect()->route('nurse.medical-checklist.pre-employment', $recordId)
+                ->with('error', 'Please complete the medical checklist before creating the examination form.');
+        }
+        
         return view('nurse.pre-employment-create', compact('preEmploymentRecord'));
     }
 
@@ -461,12 +448,23 @@ class NurseController extends Controller
         $validated['name'] = $record->first_name . ' ' . $record->last_name;
         $validated['company_name'] = $record->company_name;
         $validated['date'] = now()->toDateString();
-        // Ensure new examinations are not sent to the doctor on create
-        $validated['status'] = 'Pending';
+        // Set status to make immediately visible to doctor
+        $validated['status'] = 'Approved';
         
-        \App\Models\PreEmploymentExamination::create($validated);
+        $examination = \App\Models\PreEmploymentExamination::create($validated);
 
-        return redirect()->route('nurse.pre-employment')->with('success', 'Pre-employment examination saved. Not yet sent to doctor.');
+        // Handle drug test form if present
+        $this->handleDrugTestForm($request, [
+            'user_id' => $validated['user_id'],
+            'pre_employment_record_id' => $validated['pre_employment_record_id'],
+            'patient_name' => $validated['name']
+        ]);
+
+        // Trigger automatic workflow check
+        $workflowService = new MedicalWorkflowService();
+        $workflowService->onExaminationUpdated($examination, 'pre_employment');
+
+        return redirect()->route('nurse.pre-employment')->with('success', 'Pre-employment examination saved successfully.');
     }
 
     /**
@@ -476,6 +474,16 @@ class NurseController extends Controller
     {
         $patientId = $request->query('patient_id');
         $patient = Patient::with(['appointment.medicalTest'])->findOrFail($patientId);
+        
+        // Check if medical checklist exists and is completed
+        $medicalChecklist = \App\Models\MedicalChecklist::where('patient_id', $patientId)
+            ->where('examination_type', 'annual-physical')
+            ->first();
+        
+        if (!$medicalChecklist || empty($medicalChecklist->physical_exam_done_by)) {
+            return redirect()->route('nurse.medical-checklist.annual-physical', $patientId)
+                ->with('error', 'Please complete the medical checklist before creating the examination form.');
+        }
         
         return view('nurse.annual-physical-create', compact('patient'));
     }
@@ -541,9 +549,20 @@ class NurseController extends Controller
         $validated['user_id'] = Auth::id();
         $validated['name'] = $patient->full_name;
         $validated['date'] = now()->toDateString();
-        $validated['status'] = 'Pending';
+        $validated['status'] = 'completed';
         
-        \App\Models\AnnualPhysicalExamination::create($validated);
+        $examination = \App\Models\AnnualPhysicalExamination::create($validated);
+
+        // Handle drug test form if present
+        $this->handleDrugTestForm($request, [
+            'user_id' => $patient->user_id ?? Auth::id(),
+            'appointment_id' => $patient->appointment->id ?? null,
+            'patient_name' => $validated['name']
+        ]);
+
+        // Trigger automatic workflow check
+        $workflowService = new MedicalWorkflowService();
+        $workflowService->onExaminationUpdated($examination, 'annual_physical');
 
         return redirect()->route('nurse.annual-physical')->with('success', 'Annual physical examination created successfully.');
     }
@@ -614,9 +633,20 @@ class NurseController extends Controller
         $opdPatient = User::findOrFail($validated['user_id']);
         $validated['name'] = trim(($opdPatient->fname ?? '') . ' ' . ($opdPatient->lname ?? ''));
         $validated['date'] = now()->toDateString();
-        $validated['status'] = 'pending';
+        $validated['status'] = 'completed';
         
-        OpdExamination::create($validated);
+        $examination = OpdExamination::create($validated);
+
+        // Handle drug test form if present
+        $this->handleDrugTestForm($request, [
+            'user_id' => $validated['user_id'],
+            'opd_examination_id' => $examination->id,
+            'patient_name' => $validated['name']
+        ]);
+
+        // Trigger automatic workflow check
+        $workflowService = new MedicalWorkflowService();
+        $workflowService->onExaminationUpdated($examination, 'opd');
 
         return redirect()->route('nurse.opd')->with('success', 'OPD examination created successfully.');
     }
@@ -696,5 +726,85 @@ class NurseController extends Controller
         $date = now()->format('Y-m-d');
         
         return view('nurse.medical-checklist', compact('medicalChecklist', 'opdPatient', 'opdExamination', 'examinationType', 'number', 'name', 'age', 'date'));
+    }
+
+    /**
+     * Handle drug test form submission
+     */
+    private function handleDrugTestForm(Request $request, array $context)
+    {
+        // Check if drug test data is present in the request
+        if (!$request->has('drug_test') || empty($request->input('drug_test'))) {
+            return;
+        }
+
+        $drugTestData = $request->input('drug_test');
+        
+        // Skip if no results are provided
+        if (empty($drugTestData['methamphetamine_result']) && empty($drugTestData['marijuana_result'])) {
+            return;
+        }
+
+        // Validate drug test data
+        $validatedDrugTest = $request->validate([
+            'drug_test.patient_name' => 'required|string|max:255',
+            'drug_test.address' => 'required|string',
+            'drug_test.age' => 'required|integer|min:1|max:150',
+            'drug_test.gender' => 'required|in:Male,Female',
+            'drug_test.examination_datetime' => 'required|date',
+            'drug_test.admission_date' => 'nullable|date',
+            'drug_test.last_intake_date' => 'nullable|date',
+            'drug_test.test_method' => 'required|string|max:255',
+            'drug_test.methamphetamine_result' => 'required|in:Negative,Positive',
+            'drug_test.methamphetamine_remarks' => 'nullable|string',
+            'drug_test.marijuana_result' => 'required|in:Negative,Positive',
+            'drug_test.marijuana_remarks' => 'nullable|string',
+        ], [
+            'drug_test.patient_name.required' => 'Patient name is required for drug test.',
+            'drug_test.address.required' => 'Patient address is required for drug test.',
+            'drug_test.age.required' => 'Patient age is required for drug test.',
+            'drug_test.gender.required' => 'Patient gender is required for drug test.',
+            'drug_test.examination_datetime.required' => 'Examination date and time is required for drug test.',
+            'drug_test.test_method.required' => 'Test method is required for drug test.',
+            'drug_test.methamphetamine_result.required' => 'Methamphetamine test result is required.',
+            'drug_test.marijuana_result.required' => 'Marijuana test result is required.',
+        ]);
+
+        // Prepare drug test result data
+        $drugTestResult = array_merge($validatedDrugTest['drug_test'], [
+            'user_id' => $context['user_id'],
+            'nurse_id' => Auth::id(),
+            'pre_employment_record_id' => $context['pre_employment_record_id'] ?? null,
+            'appointment_id' => $context['appointment_id'] ?? null,
+            'opd_examination_id' => $context['opd_examination_id'] ?? null,
+            'test_conducted_by' => Auth::user()->full_name,
+            'status' => 'completed',
+            'completed_at' => now(),
+        ]);
+
+        // Create drug test result
+        DrugTestResult::create($drugTestResult);
+    }
+
+    /**
+     * Check if a medical test requires drug testing
+     */
+    private function requiresDrugTest($medicalTestName): bool
+    {
+        $drugTestRequiredTests = [
+            // Pre-Employment Tests
+            'pre-employment with drug test',
+            'pre-employment with ecg and drug test',
+            'pre-employment with drug test and audio and ishihara',
+            'drug test only (bring valid i.d)',
+            
+            // Annual Physical Tests
+            'annual medical with drug test',
+            'annual medical with drug test and ecg',
+            'annual medical examination with drug test',
+            'annual medical examination with drug test and ecg',
+        ];
+
+        return in_array(strtolower($medicalTestName), $drugTestRequiredTests);
     }
 }
