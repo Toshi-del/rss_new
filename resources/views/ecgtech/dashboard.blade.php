@@ -15,20 +15,20 @@
     <!-- Pre-Employment Records Card -->
     <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-gray-800">Pre-Employment Records</h3>
+            <h3 class="text-lg font-semibold text-gray-800">Pre-Employment with ECG & Drug Test</h3>
             <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $preEmploymentCount }}</span>
         </div>
-        <p class="text-gray-600 text-sm mb-4">Manage ECG information for pre-employment examinations</p>
+        <p class="text-gray-600 text-sm mb-4">Manage ECG information for pre-employment examinations with ECG and drug test</p>
         <a href="#pre-employment-section" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Records →</a>
     </div>
 
     <!-- Annual Physical Patients Card -->
     <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-gray-800">Annual Physical Patients</h3>
+            <h3 class="text-lg font-semibold text-gray-800">Annual Physical with ECG & Drug Test</h3>
             <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $patientCount }}</span>
         </div>
-        <p class="text-gray-600 text-sm mb-4">Manage ECG information for annual physical examinations</p>
+        <p class="text-gray-600 text-sm mb-4">Patients with Annual Medical Examination including ECG and Drug Test</p>
         <a href="#annual-physical-section" class="text-green-600 hover:text-green-800 text-sm font-medium">View Patients →</a>
     </div>
 
@@ -46,8 +46,8 @@
 <!-- Pre-Employment Records Section -->
 <div id="pre-employment-section" class="bg-white rounded-lg shadow-sm mb-8">
     <div class="p-6 border-b border-gray-200">
-        <h2 class="text-xl font-semibold text-gray-800">Pre-Employment Records</h2>
-        <p class="text-gray-600 text-sm mt-1">Click on a record to access the medical checklist and add ECG information</p>
+        <h2 class="text-xl font-semibold text-gray-800">Pre-Employment with ECG & Drug Test</h2>
+        <p class="text-gray-600 text-sm mt-1">Pre-employment examinations requiring ECG and drug test - Click on a record to access the medical checklist and add ECG information</p>
     </div>
     <div class="overflow-x-auto">
         <table class="w-full">
@@ -98,7 +98,7 @@
                 @empty
                     <tr>
                         <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
-                            No pre-employment records found
+                            No pre-employment records with ECG and drug test found
                         </td>
                     </tr>
                 @endforelse
@@ -110,8 +110,8 @@
 <!-- Annual Physical Patients Section -->
 <div id="annual-physical-section" class="bg-white rounded-lg shadow-sm mb-8">
     <div class="p-6 border-b border-gray-200">
-        <h2 class="text-xl font-semibold text-gray-800">Annual Physical Patients</h2>
-        <p class="text-gray-600 text-sm mt-1">Click on a patient to access the medical checklist and add ECG information</p>
+        <h2 class="text-xl font-semibold text-gray-800">Annual Physical with ECG & Drug Test</h2>
+        <p class="text-gray-600 text-sm mt-1">Patients scheduled for Annual Medical Examination with ECG and Drug Test - Click to access medical checklist</p>
     </div>
     <div class="overflow-x-auto">
         <table class="w-full">
@@ -121,6 +121,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AGE</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SEX</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">EMAIL</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TEST TYPE</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
                 </tr>
             </thead>
@@ -133,6 +134,11 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->age }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->sex }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->email }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                Annual Medical with ECG & Drug Test
+                            </span>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             <form action="{{ route('ecgtech.annual-physical.send-to-doctor', $patient->id) }}" method="POST" class="inline">
                                 @csrf
@@ -147,8 +153,8 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
-                            No annual physical patients found
+                        <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                            No patients with Annual Medical Examination including ECG and Drug Test found
                         </td>
                     </tr>
                 @endforelse
@@ -157,51 +163,6 @@
     </div>
 </div>
 
-<!-- ECG Reports Section -->
-<div id="ecg-reports-section" class="bg-white rounded-lg shadow-sm mb-8">
-    <div class="p-6 border-b border-gray-200">
-        <h2 class="text-xl font-semibold text-gray-800">Recent ECG Reports</h2>
-        <p class="text-gray-600 text-sm mt-1">View recent ECG examination activities</p>
-    </div>
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PATIENT</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DATE</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ECG RESULT</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($ecgReports as $report)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {{ $report->patient_name ?? 'N/A' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $report->date ?? 'N/A' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $report->ecg_result ?? 'Pending' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @php
-                                $statusClass = match($report->status ?? 'pending') {
-                                    'completed' => 'bg-green-100 text-green-800',
-                                    'cancelled' => 'bg-red-100 text-red-800',
-                                    'pending' => 'bg-yellow-100 text-yellow-800',
-                                    default => 'bg-gray-100 text-gray-800'
-                                };
-                            @endphp
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
-                                {{ ucfirst($report->status ?? 'pending') }}
-                            </span>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
-                            No ECG reports found
-                        </td>
-                    </tr>
-                @endforelse
             </tbody>
         </table>
     </div>

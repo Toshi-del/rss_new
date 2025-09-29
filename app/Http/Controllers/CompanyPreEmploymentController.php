@@ -96,6 +96,18 @@ class CompanyPreEmploymentController extends Controller
             $totalPrice += $test->price ?? 0;
         }
 
+        \Log::info('Selected tests breakdown', [
+            'selected_tests' => array_map(function($test) {
+                return [
+                    'id' => $test->id,
+                    'name' => $test->name,
+                    'price' => $test->price,
+                    'category_id' => $test->medical_test_category_id
+                ];
+            }, $selectedTests),
+            'total_price_per_patient' => $totalPrice
+        ]);
+
         \Log::info('Validation passed successfully', [
             'validated_data' => $validated,
             'selected_tests_count' => count($selectedTests),

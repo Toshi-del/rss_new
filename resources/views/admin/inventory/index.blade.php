@@ -84,11 +84,101 @@
             </div>
         </div>
 
+        <!-- Critical Stock Alert Section -->
+        @php
+            $criticalItems = $inventories->filter(function($item) {
+                return $item->item_quantity <= $item->minimum_stock && $item->item_status === 'active';
+            });
+        @endphp
+        
+        @if($criticalItems->count() > 0)
+            <div class="mb-8">
+                <div class="bg-red-50 border border-red-200 rounded-2xl overflow-hidden">
+                    <div class="bg-red-600 px-6 py-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-exclamation-triangle text-white text-lg animate-pulse"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">Critical Stock Alert</h3>
+                                <p class="text-red-100 text-sm">{{ $criticalItems->count() }} {{ Str::plural('item', $criticalItems->count()) }} need immediate restocking</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            @foreach($criticalItems->take(6) as $item)
+                                <div class="bg-white border-2 border-red-300 rounded-xl p-4 hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h4 class="font-bold text-gray-900 text-sm truncate">{{ $item->item_name }}</h4>
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 animate-pulse">
+                                            <i class="fas fa-circle mr-1 text-xs"></i>
+                                            CRITICAL
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="space-y-2 mb-3">
+                                        <div class="flex justify-between text-sm">
+                                            <span class="text-gray-600">Current Stock:</span>
+                                            <span class="font-bold text-red-600">{{ $item->item_quantity }}</span>
+                                        </div>
+                                        <div class="flex justify-between text-sm">
+                                            <span class="text-gray-600">Minimum Required:</span>
+                                            <span class="font-bold text-gray-900">{{ $item->minimum_stock }}</span>
+                                        </div>
+                                        <div class="flex justify-between text-sm">
+                                            <span class="text-gray-600">Units Needed:</span>
+                                            <span class="font-bold text-red-600">{{ max(0, $item->minimum_stock - $item->item_quantity) }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                            <span>Stock Level</span>
+                                            <span>{{ $item->minimum_stock > 0 ? round(($item->item_quantity / $item->minimum_stock) * 100) : 0 }}%</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-3">
+                                            @php
+                                                $percentage = $item->minimum_stock > 0 ? min(($item->item_quantity / $item->minimum_stock) * 100, 100) : 0;
+                                            @endphp
+                                            <div class="bg-red-500 h-3 rounded-full transition-all duration-1000 animate-pulse" style="width: {{ $percentage }}%"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex space-x-2">
+                                        <a href="{{ route('admin.inventory.edit', $item) }}" 
+                                           class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+                                            <i class="fas fa-edit mr-2"></i>
+                                            Restock
+                                        </a>
+                                        <a href="{{ route('admin.inventory.show', $item) }}" 
+                                           class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+                                            <i class="fas fa-eye mr-2"></i>
+                                            View
+                                        </a>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                        
+                        @if($criticalItems->count() > 6)
+                            <div class="mt-4 text-center">
+                                <p class="text-red-600 font-medium text-sm">
+                                    Showing 6 of {{ $criticalItems->count() }} critical items. Scroll down to see all inventory items.
+                                </p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Inventory Grid -->
         @if($inventories->count() > 0)
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($inventories as $index => $item)
-                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="bg-white rounded-2xl shadow-lg border {{ $item->is_low_stock && $item->item_status === 'active' ? 'border-red-300 ring-2 ring-red-100' : 'border-gray-100' }} overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                         <!-- Card Header -->
                         <div class="p-6 border-b border-gray-100">
                             <div class="flex items-start justify-between">
@@ -142,7 +232,10 @@
                                          style="width: {{ $percentage }}%"></div>
                                 </div>
                                 @if($item->is_low_stock)
-                                    <p class="text-xs text-red-600 mt-1 font-medium">⚠️ Low Stock Alert</p>
+                                    <p class="text-xs text-red-600 mt-1 font-bold animate-pulse">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                        {{ $item->item_quantity <= $item->minimum_stock ? 'CRITICAL STOCK ALERT' : 'Low Stock Alert' }}
+                                    </p>
                                 @endif
                             </div>
 

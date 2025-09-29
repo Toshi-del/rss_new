@@ -167,6 +167,20 @@
                     <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
                 </a>
                 
+                <a href="{{ route('admin.test-assignments') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('admin.test-assignments*') ? 'active' : '' }}">
+                    <i class="fas fa-tasks text-lg mr-4"></i>
+                    <span>Test Assignments</span>
+                    @php
+                        $pendingAssignments = \App\Models\AppointmentTestAssignment::where('status', 'pending')->count();
+                    @endphp
+                    @if($pendingAssignments > 0)
+                        <span class="ml-2 inline-flex items-center justify-center w-5 h-5 bg-orange-500 text-white rounded-full text-xs font-bold animate-pulse">
+                            {{ $pendingAssignments }}
+                        </span>
+                    @endif
+                    <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
+                </a>
+                
                 <a href="{{ route('medical-test-categories.index') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('medical-test-categories*') ? 'active' : '' }}">
                     <i class="fas fa-list-alt text-lg mr-4"></i>
                     <span>Test Categories</span>
@@ -213,7 +227,12 @@
                 <a href="{{ route('admin.inventory.index') }}" class="nav-item flex items-center px-4 py-4 text-white/90 rounded-2xl font-medium {{ request()->routeIs('admin.inventory*') ? 'active' : '' }}">
                     <i class="fas fa-boxes text-lg mr-4"></i>
                     <span>Inventory Management</span>
-                    <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
+                    <div class="ml-auto flex items-center space-x-2">
+                        @if(isset($criticalStockCount) && $criticalStockCount > 0)
+                            <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">{{ $criticalStockCount }}</span>
+                        @endif
+                        <i class="fas fa-chevron-right text-xs opacity-60"></i>
+                    </div>
                 </a>
                 
                 <div class="text-white/40 text-xs font-semibold uppercase tracking-wider px-4 mt-8 mb-4">Content Management</div>
@@ -281,10 +300,71 @@
                         </div>
                         
                         <!-- Notifications -->
-                        <button class="relative glass-morphism p-3 rounded-2xl text-white/80 hover:text-white transition-all duration-300 hover:scale-110">
-                            <i class="fas fa-bell text-lg"></i>
-                            <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white font-bold">5</span>
-                        </button>
+                        <div class="relative">
+                            <button id="notifications-btn" class="relative glass-morphism p-3 rounded-2xl text-white/80 hover:text-white transition-all duration-300 hover:scale-110">
+                                <i class="fas fa-bell text-lg"></i>
+                                @if(isset($criticalStockCount) && $criticalStockCount > 0)
+                                    <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white font-bold animate-pulse">{{ $criticalStockCount }}</span>
+                                @else
+                                    <span class="absolute -top-1 -right-1 w-5 h-5 bg-gray-500 rounded-full text-xs flex items-center justify-center text-white font-bold">0</span>
+                                @endif
+                            </button>
+                            
+                            <!-- Notifications Dropdown -->
+                            <div id="notifications-dropdown" class="absolute right-0 mt-2 w-80 bg-gray-800 rounded-2xl shadow-xl border border-gray-700 z-50 hidden">
+                                <div class="p-4 border-b border-gray-700">
+                                    <h3 class="text-white font-semibold text-sm">Critical Stock Alerts</h3>
+                                    <p class="text-gray-300 text-xs">Items requiring immediate attention</p>
+                                </div>
+                                
+                                <div class="max-h-64 overflow-y-auto custom-scrollbar">
+                                    @if(isset($criticalStockItems) && $criticalStockItems->count() > 0)
+                                        @foreach($criticalStockItems as $item)
+                                            <div class="p-4 border-b border-gray-700 hover:bg-gray-700 transition-colors duration-200">
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center">
+                                                        <i class="fas fa-exclamation-triangle text-red-400 text-sm"></i>
+                                                    </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <p class="text-white font-medium text-sm truncate">{{ $item->item_name }}</p>
+                                                        <p class="text-gray-400 text-xs">
+                                                            Stock: {{ $item->item_quantity }} / Min: {{ $item->minimum_stock }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="text-right">
+                                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400">
+                                                            Critical
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                        
+                                        @if($criticalStockCount > 5)
+                                            <div class="p-4 text-center">
+                                                <a href="{{ route('admin.inventory.index') }}" class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                                                    View {{ $criticalStockCount - 5 }} more critical items
+                                                </a>
+                                            </div>
+                                        @endif
+                                    @else
+                                        <div class="p-6 text-center">
+                                            <div class="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                                <i class="fas fa-check text-green-400 text-lg"></i>
+                                            </div>
+                                            <p class="text-white font-medium text-sm">All Good!</p>
+                                            <p class="text-gray-400 text-xs">No critical stock alerts</p>
+                                        </div>
+                                    @endif
+                                </div>
+                                
+                                <div class="p-4 border-t border-gray-700">
+                                    <a href="{{ route('admin.inventory.index') }}" class="block w-full text-center py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-colors duration-200">
+                                        Manage Inventory
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                         
                         <!-- Settings -->
                         <button class="glass-morphism p-3 rounded-2xl text-white/80 hover:text-white transition-all duration-300 hover:scale-110">
@@ -349,6 +429,31 @@
             });
             
             // Navigation items are now ready without stagger animation
+            
+            // Notifications dropdown functionality
+            const notificationsBtn = document.getElementById('notifications-btn');
+            const notificationsDropdown = document.getElementById('notifications-dropdown');
+            
+            if (notificationsBtn && notificationsDropdown) {
+                notificationsBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    notificationsDropdown.classList.toggle('hidden');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!notificationsBtn.contains(e.target) && !notificationsDropdown.contains(e.target)) {
+                        notificationsDropdown.classList.add('hidden');
+                    }
+                });
+                
+                // Close dropdown on escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        notificationsDropdown.classList.add('hidden');
+                    }
+                });
+            }
         });
     </script>
     @stack('scripts')

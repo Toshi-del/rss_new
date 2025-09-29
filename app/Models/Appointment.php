@@ -47,6 +47,11 @@ class Appointment extends Model
         return $this->hasMany(Patient::class);
     }
 
+    public function testAssignments(): HasMany
+    {
+        return $this->hasMany(AppointmentTestAssignment::class);
+    }
+
     public function getFormattedTimeSlotAttribute(): string
     {
         return $this->time_slot;
@@ -55,5 +60,53 @@ class Appointment extends Model
     public function getFormattedDateAttribute(): string
     {
         return $this->appointment_date->format('M d, Y');
+    }
+
+    /**
+     * Check if appointment has test assignments
+     */
+    public function hasTestAssignments(): bool
+    {
+        return $this->testAssignments()->exists();
+    }
+
+    /**
+     * Get test assignments grouped by staff role
+     */
+    public function getTestAssignmentsByStaffRole(): array
+    {
+        return $this->testAssignments()
+                   ->with('medicalTest')
+                   ->get()
+                   ->groupBy('staff_role')
+                   ->toArray();
+    }
+
+    /**
+     * Calculate total price based on medical test price and patient count
+     */
+    public function calculateTotalPrice(): float
+    {
+        $testPrice = $this->medicalTest ? $this->medicalTest->price : 0;
+        $patientCount = $this->patients()->count();
+        
+        return $testPrice * $patientCount;
+    }
+
+    /**
+     * Get formatted total price
+     */
+    public function getFormattedTotalPriceAttribute(): string
+    {
+        $totalPrice = $this->calculateTotalPrice();
+        return '₱' . number_format($totalPrice, 2);
+    }
+
+    /**
+     * Get patient count
+     */
+    public function getPatientCountAttribute(): int
+    {
+        return $this->patients()->count();
     }
 }

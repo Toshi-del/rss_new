@@ -388,7 +388,7 @@ class NurseController extends Controller
     public function createPreEmployment(Request $request)
     {
         $recordId = $request->query('record_id');
-        $preEmploymentRecord = PreEmploymentRecord::findOrFail($recordId);
+        $preEmploymentRecord = PreEmploymentRecord::with(['medicalTest'])->findOrFail($recordId);
         
         return view('nurse.pre-employment-create', compact('preEmploymentRecord'));
     }
@@ -398,37 +398,62 @@ class NurseController extends Controller
      */
     public function storePreEmployment(Request $request)
     {
-        $validated = $request->validate([
+        // Get pre-employment record with medical test information to determine validation rules
+        $preEmploymentRecord = PreEmploymentRecord::with(['medicalTest'])->findOrFail($request->pre_employment_record_id);
+        $medicalTestName = $preEmploymentRecord->medicalTest->name ?? '';
+        $isAudiometryIshiharaOnly = strtolower($medicalTestName) === 'audiometry and ishihara only';
+        $showIshiharaTest = in_array(strtolower($medicalTestName), [
+            'audiometry and ishihara only',
+            'pre-employment with drug test and audio and ishihara'
+        ]);
+
+        // Dynamic validation rules based on medical test type
+        $validationRules = [
             'pre_employment_record_id' => 'required|exists:pre_employment_records,id',
             'illness_history' => 'nullable|string',
             'accidents_operations' => 'nullable|string',
             'past_medical_history' => 'nullable|string',
             'family_history' => 'nullable|array',
             'personal_habits' => 'nullable|array',
-            'physical_exam' => 'required|array',
-            'physical_exam.temp' => 'required|string',
-            'physical_exam.height' => 'required|string',
-            'physical_exam.weight' => 'required|string',
-            'physical_exam.heart_rate' => 'required|string',
-            'skin_marks' => 'required|string',
-            'visual' => 'required|string',
-            'ishihara_test' => 'required|string',
+            'physical_exam' => $isAudiometryIshiharaOnly ? 'nullable|array' : 'required|array',
+            'physical_exam.temp' => $isAudiometryIshiharaOnly ? 'nullable|string' : 'required|string',
+            'physical_exam.height' => $isAudiometryIshiharaOnly ? 'nullable|string' : 'required|string',
+            'physical_exam.weight' => $isAudiometryIshiharaOnly ? 'nullable|string' : 'required|string',
+            'physical_exam.heart_rate' => $isAudiometryIshiharaOnly ? 'nullable|string' : 'required|string',
+            'skin_marks' => $isAudiometryIshiharaOnly ? 'nullable|string' : 'required|string',
+            'visual' => $isAudiometryIshiharaOnly ? 'nullable|string' : 'required|string',
+            'ishihara_test' => $showIshiharaTest ? 'required|string' : 'nullable|string',
             'findings' => 'required|string',
             'lab_report' => 'nullable|array',
             'physical_findings' => 'nullable|array',
             'lab_findings' => 'nullable|array',
             'ecg' => 'nullable|string',
-        ], [
-            'physical_exam.required' => 'Physical examination data is required.',
-            'physical_exam.temp.required' => 'Temperature is required.',
-            'physical_exam.height.required' => 'Height is required.',
-            'physical_exam.weight.required' => 'Weight is required.',
-            'physical_exam.heart_rate.required' => 'Heart rate is required.',
-            'skin_marks.required' => 'Skin marks/tattoos are required.',
-            'visual.required' => 'Visual acuity is required.',
-            'ishihara_test.required' => 'Ishihara test is required.',
+        ];
+
+        // Dynamic validation messages
+        $validationMessages = [
             'findings.required' => 'Findings are required.',
-        ]);
+        ];
+
+        // Add validation messages only for fields that are required
+        if (!$isAudiometryIshiharaOnly) {
+            $validationMessages = array_merge($validationMessages, [
+                'physical_exam.required' => 'Physical examination data is required.',
+                'physical_exam.temp.required' => 'Temperature is required.',
+                'physical_exam.height.required' => 'Height is required.',
+                'physical_exam.weight.required' => 'Weight is required.',
+                'physical_exam.heart_rate.required' => 'Heart rate is required.',
+                'skin_marks.required' => 'Skin marks/tattoos are required.',
+                'visual.required' => 'Visual acuity is required.',
+            ]);
+        }
+
+        // Add Ishihara test validation message only if it's required
+        if ($showIshiharaTest) {
+            $validationMessages['ishihara_test.required'] = 'Ishihara test is required.';
+        }
+
+        $validated = $request->validate($validationRules, $validationMessages);
 
         // Auto-populate linkage fields from the source record
         $record = PreEmploymentRecord::findOrFail($validated['pre_employment_record_id']);
@@ -450,7 +475,7 @@ class NurseController extends Controller
     public function createAnnualPhysical(Request $request)
     {
         $patientId = $request->query('patient_id');
-        $patient = Patient::findOrFail($patientId);
+        $patient = Patient::with(['appointment.medicalTest'])->findOrFail($patientId);
         
         return view('nurse.annual-physical-create', compact('patient'));
     }
@@ -460,7 +485,17 @@ class NurseController extends Controller
      */
     public function storeAnnualPhysical(Request $request)
     {
-        $validated = $request->validate([
+        // Get patient with medical test information to determine validation rules
+        $patient = Patient::with(['appointment.medicalTest'])->findOrFail($request->patient_id);
+        $medicalTestName = $patient->appointment->medicalTest->name ?? '';
+        $isAnnualMedicalExam = in_array(strtolower($medicalTestName), [
+            'annual medical examination',
+            'annual medical examination with drug test',
+            'annual medical examination with drug test and ecg'
+        ]);
+
+        // Dynamic validation rules based on medical test type
+        $validationRules = [
             'patient_id' => 'required|exists:patients,id',
             'illness_history' => 'nullable|string',
             'accidents_operations' => 'nullable|string',
@@ -474,13 +509,16 @@ class NurseController extends Controller
             'physical_exam.weight' => 'required|string',
             'skin_marks' => 'required|string',
             'visual' => 'required|string',
-            'ishihara_test' => 'required|string',
+            'ishihara_test' => $isAnnualMedicalExam ? 'nullable|string' : 'required|string',
             'findings' => 'required|string',
             'lab_report' => 'nullable|array',
             'physical_findings' => 'nullable|array',
             'lab_findings' => 'nullable|array',
             'ecg' => 'nullable|string',
-        ], [
+        ];
+
+        // Dynamic validation messages
+        $validationMessages = [
             'physical_exam.required' => 'Physical examination data is required.',
             'physical_exam.temp.required' => 'Temperature is required.',
             'physical_exam.height.required' => 'Height is required.',
@@ -488,9 +526,15 @@ class NurseController extends Controller
             'physical_exam.weight.required' => 'Weight is required.',
             'skin_marks.required' => 'Skin identification marks are required.',
             'visual.required' => 'Visual examination is required.',
-            'ishihara_test.required' => 'Ishihara test is required.',
             'findings.required' => 'Findings are required.',
-        ]);
+        ];
+
+        // Add Ishihara test validation message only if it's required
+        if (!$isAnnualMedicalExam) {
+            $validationMessages['ishihara_test.required'] = 'Ishihara test is required.';
+        }
+
+        $validated = $request->validate($validationRules, $validationMessages);
 
         // Auto-populate linkage fields from the patient
         $patient = Patient::findOrFail($validated['patient_id']);

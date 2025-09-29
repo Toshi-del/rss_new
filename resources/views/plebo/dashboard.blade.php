@@ -65,7 +65,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MEDICAL CATEGORY</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MEDICAL TEST</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
-                
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -93,22 +93,42 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @php
-                                $statusClass = match($preEmployment->status) {
-                                    'approved' => 'bg-green-100 text-green-800',
-                                    'declined' => 'bg-red-100 text-red-800',
-                                    'pending' => 'bg-yellow-100 text-yellow-800',
-                                    default => 'bg-gray-100 text-gray-800'
-                                };
+                                $hasMedicalChecklist = \App\Models\MedicalChecklist::where('pre_employment_record_id', $preEmployment->id)->exists();
+                                
+                                if ($hasMedicalChecklist) {
+                                    $statusClass = 'bg-green-100 text-green-800';
+                                    $statusText = 'Completed';
+                                } else {
+                                    $statusClass = 'bg-yellow-100 text-yellow-800';
+                                    $statusText = 'Pending';
+                                }
                             @endphp
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
-                                {{ ucfirst($preEmployment->status) }}
+                                {{ $statusText }}
                             </span>
                         </td>
-                      
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex items-center space-x-2">
+                                <a href="{{ route('plebo.medical-checklist.pre-employment', $preEmployment->id) }}" 
+                                   class="text-blue-600 hover:text-blue-900">
+                                    <i class="fas fa-clipboard-list"></i> Checklist
+                                </a>
+                                @if($hasMedicalChecklist)
+                                    <form action="{{ route('plebo.pre-employment.send-to-doctor', $preEmployment->id) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit" 
+                                                class="text-green-600 hover:text-green-900 ml-3"
+                                                onclick="return confirm('Are you sure you want to send this to the doctor?')">
+                                            <i class="fas fa-paper-plane"></i> Send
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                        <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">
                             No pre-employment records found
                         </td>
                     </tr>
@@ -134,7 +154,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MEDICAL CATEGORY</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MEDICAL TEST</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
-                  
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -162,22 +182,42 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @php
-                                $statusClass = match($patient->status) {
-                                    'approved' => 'bg-green-100 text-green-800',
-                                    'declined' => 'bg-red-100 text-red-800',
-                                    'pending' => 'bg-yellow-100 text-yellow-800',
-                                    default => 'bg-gray-100 text-gray-800'
-                                };
+                                $hasMedicalChecklist = \App\Models\MedicalChecklist::where('patient_id', $patient->id)->exists();
+                                
+                                if ($hasMedicalChecklist) {
+                                    $statusClass = 'bg-green-100 text-green-800';
+                                    $statusText = 'Completed';
+                                } else {
+                                    $statusClass = 'bg-yellow-100 text-yellow-800';
+                                    $statusText = 'Pending';
+                                }
                             @endphp
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
-                                {{ ucfirst($patient->status) }}
+                                {{ $statusText }}
                             </span>
                         </td>
-                      
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex items-center space-x-2">
+                                <a href="{{ route('plebo.medical-checklist.annual-physical', $patient->id) }}" 
+                                   class="text-green-600 hover:text-green-900">
+                                    <i class="fas fa-clipboard-list"></i> Checklist
+                                </a>
+                                @if($hasMedicalChecklist)
+                                    <form action="{{ route('plebo.annual-physical.send-to-doctor', $patient->id) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit" 
+                                                class="text-green-600 hover:text-green-900 ml-3"
+                                                onclick="return confirm('Are you sure you want to send this to the doctor?')">
+                                            <i class="fas fa-paper-plane"></i> Send
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                        <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">
                             No annual physical patients found
                         </td>
                     </tr>

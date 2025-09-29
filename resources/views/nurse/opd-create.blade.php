@@ -91,6 +91,31 @@
         @csrf
         <input type="hidden" name="user_id" value="{{ $opdPatient->id }}">
         
+        <!-- Drug Test Selection Card -->
+        <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-pills text-red-600"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Drug Test Requirement</h3>
+                    <p class="text-gray-600 text-sm">Specify if drug testing is required for this OPD examination</p>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                <div class="flex items-center space-x-4">
+                    <input type="checkbox" id="requires_drug_test" name="requires_drug_test" value="1" 
+                           class="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500 focus:ring-2" 
+                           onchange="toggleDrugTestForm()" {{ old('requires_drug_test') ? 'checked' : '' }}>
+                    <label for="requires_drug_test" class="text-sm font-semibold text-gray-700">
+                        This OPD examination requires drug testing
+                    </label>
+                </div>
+                <p class="text-xs text-gray-500 mt-2 ml-9">Check this box if the patient needs to undergo drug testing as part of their OPD examination</p>
+            </div>
+        </div>
+        
         <!-- Medical History Card -->
         <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">
             <div class="flex items-center space-x-3 mb-6">
@@ -233,6 +258,233 @@
             </div>
         </div>
 
+        <!-- Drug Test Form Card -->
+        <div id="drug_test_form" class="content-card rounded-xl p-8 shadow-lg border border-gray-200" style="display: none;">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-pills text-red-600"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Drug Test Result (DT Form 2)</h3>
+                    <p class="text-gray-600 text-sm">Urine drug screening examination form</p>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Patient Information Section -->
+                <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Patient Information</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Patient Name <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="drug_test[patient_name]" 
+                                   value="{{ old('drug_test.patient_name', $opdPatient->fname . ' ' . $opdPatient->lname) }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors @error('drug_test.patient_name') border-red-500 ring-2 ring-red-200 @enderror" 
+                                   placeholder="Full name" />
+                            @error('drug_test.patient_name')
+                                <p class="mt-1 text-sm text-red-600 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Address <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="drug_test[address]" value="{{ old('drug_test.address') }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors @error('drug_test.address') border-red-500 ring-2 ring-red-200 @enderror" 
+                                   placeholder="Patient address" />
+                            @error('drug_test.address')
+                                <p class="mt-1 text-sm text-red-600 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Age <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" name="drug_test[age]" 
+                                   value="{{ old('drug_test.age', $opdPatient->age ?? '') }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors @error('drug_test.age') border-red-500 ring-2 ring-red-200 @enderror" 
+                                   placeholder="Age" />
+                            @error('drug_test.age')
+                                <p class="mt-1 text-sm text-red-600 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Gender <span class="text-red-500">*</span>
+                            </label>
+                            <select name="drug_test[gender]" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors @error('drug_test.gender') border-red-500 ring-2 ring-red-200 @enderror">
+                                <option value="">Select Gender</option>
+                                <option value="Male" {{ old('drug_test.gender', ucfirst($opdPatient->sex ?? '')) == 'Male' ? 'selected' : '' }}>Male</option>
+                                <option value="Female" {{ old('drug_test.gender', ucfirst($opdPatient->sex ?? '')) == 'Female' ? 'selected' : '' }}>Female</option>
+                            </select>
+                            @error('drug_test.gender')
+                                <p class="mt-1 text-sm text-red-600 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Examination Details Section -->
+                <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Examination Details</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Date and Time of Examination <span class="text-red-500">*</span>
+                            </label>
+                            <input type="datetime-local" name="drug_test[examination_datetime]" 
+                                   value="{{ old('drug_test.examination_datetime', now()->format('Y-m-d\TH:i')) }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors @error('drug_test.examination_datetime') border-red-500 ring-2 ring-red-200 @enderror" />
+                            @error('drug_test.examination_datetime')
+                                <p class="mt-1 text-sm text-red-600 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Date of Admission to the Program
+                            </label>
+                            <input type="date" name="drug_test[admission_date]" 
+                                   value="{{ old('drug_test.admission_date') }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors @error('drug_test.admission_date') border-red-500 ring-2 ring-red-200 @enderror" />
+                            @error('drug_test.admission_date')
+                                <p class="mt-1 text-sm text-red-600 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Date of Last Intake of Substance
+                            </label>
+                            <input type="date" name="drug_test[last_intake_date]" 
+                                   value="{{ old('drug_test.last_intake_date') }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors @error('drug_test.last_intake_date') border-red-500 ring-2 ring-red-200 @enderror" />
+                            @error('drug_test.last_intake_date')
+                                <p class="mt-1 text-sm text-red-600 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Test Method <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="drug_test[test_method]" 
+                                   value="{{ old('drug_test.test_method', 'URINE TEST KIT') }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors @error('drug_test.test_method') border-red-500 ring-2 ring-red-200 @enderror" />
+                            @error('drug_test.test_method')
+                                <p class="mt-1 text-sm text-red-600 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Drug Test Results Section -->
+                <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Drug Test Results</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse border border-gray-300">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900">Drug/Metabolites</th>
+                                    <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900">Result</th>
+                                    <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900">Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="border border-gray-300 px-4 py-3 font-medium">METHAMPHETAMINE (Shabu)</td>
+                                    <td class="border border-gray-300 px-4 py-3">
+                                        <select name="drug_test[methamphetamine_result]" 
+                                                class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @error('drug_test.methamphetamine_result') border-red-500 ring-2 ring-red-200 @enderror">
+                                            <option value="">Select Result</option>
+                                            <option value="Negative" {{ old('drug_test.methamphetamine_result') == 'Negative' ? 'selected' : '' }}>Negative</option>
+                                            <option value="Positive" {{ old('drug_test.methamphetamine_result') == 'Positive' ? 'selected' : '' }}>Positive</option>
+                                        </select>
+                                        @error('drug_test.methamphetamine_result')
+                                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                        @enderror
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-3">
+                                        <input type="text" name="drug_test[methamphetamine_remarks]" 
+                                               value="{{ old('drug_test.methamphetamine_remarks') }}" 
+                                               class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-amber-500 focus:border-amber-500" 
+                                               placeholder="Optional remarks" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 px-4 py-3 font-medium">TETRAHYDROCANNABINOL (Marijuana)</td>
+                                    <td class="border border-gray-300 px-4 py-3">
+                                        <select name="drug_test[marijuana_result]" 
+                                                class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @error('drug_test.marijuana_result') border-red-500 ring-2 ring-red-200 @enderror">
+                                            <option value="">Select Result</option>
+                                            <option value="Negative" {{ old('drug_test.marijuana_result') == 'Negative' ? 'selected' : '' }}>Negative</option>
+                                            <option value="Positive" {{ old('drug_test.marijuana_result') == 'Positive' ? 'selected' : '' }}>Positive</option>
+                                        </select>
+                                        @error('drug_test.marijuana_result')
+                                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                        @enderror
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-3">
+                                        <input type="text" name="drug_test[marijuana_remarks]" 
+                                               value="{{ old('drug_test.marijuana_remarks') }}" 
+                                               class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-amber-500 focus:border-amber-500" 
+                                               placeholder="Optional remarks" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Signatures Section -->
+                <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Signatures</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Test Conducted by:
+                            </label>
+                            <div class="border-b-2 border-gray-400 pb-2 mb-2">
+                                <p class="text-center font-medium">{{ Auth::user()->fname }} {{ Auth::user()->lname }}</p>
+                            </div>
+                            <p class="text-xs text-gray-500 text-center">Signature over Printed Name of Staff</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Conforme:
+                            </label>
+                            <div class="border-b-2 border-gray-400 pb-2 mb-2 h-8">
+                                <!-- Empty space for patient signature -->
+                            </div>
+                            <p class="text-xs text-gray-500 text-center">Signature over Printed Name of Client</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
                 <!-- Clinical Findings Section -->
                 <div class="mb-8">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Clinical Findings <span class="text-red-500">*</span></h3>
@@ -297,4 +549,46 @@
             </form>
         </div>
     </div>
+
+@push('scripts')
+<script>
+    function toggleDrugTestForm() {
+        const checkbox = document.getElementById('requires_drug_test');
+        const drugTestForm = document.getElementById('drug_test_form');
+        const drugTestInputs = drugTestForm.querySelectorAll('input[required], select[required]');
+        
+        if (checkbox.checked) {
+            drugTestForm.style.display = 'block';
+            // Add required attribute to drug test fields when form is shown
+            drugTestInputs.forEach(input => {
+                if (input.name.includes('drug_test[') && 
+                    (input.name.includes('patient_name') || 
+                     input.name.includes('address') || 
+                     input.name.includes('age') || 
+                     input.name.includes('gender') || 
+                     input.name.includes('examination_datetime') || 
+                     input.name.includes('test_method') || 
+                     input.name.includes('methamphetamine_result') || 
+                     input.name.includes('marijuana_result'))) {
+                    input.setAttribute('required', 'required');
+                }
+            });
+        } else {
+            drugTestForm.style.display = 'none';
+            // Remove required attribute when form is hidden
+            drugTestInputs.forEach(input => {
+                input.removeAttribute('required');
+            });
+        }
+    }
+
+    // Check if drug test was previously selected (for form validation errors)
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkbox = document.getElementById('requires_drug_test');
+        if (checkbox.checked) {
+            toggleDrugTestForm();
+        }
+    });
+</script>
+@endpush
 @endsection

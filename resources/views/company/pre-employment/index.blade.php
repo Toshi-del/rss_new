@@ -130,10 +130,20 @@
                                 <!-- Summary -->
                                 <div class="text-right mb-4">
                                     <div class="bg-green-50 rounded-lg p-3 border-l-4 border-green-600">
-                                        <p class="text-xs font-medium text-green-700 uppercase tracking-wider mb-1">Total Price</p>
-                                        <p class="text-xl font-bold text-green-900">₱{{ number_format($file->total_price ?? 0, 2) }}</p>
+                                        @php
+                                            $pricePerPatient = $allTests->sum('price');
+                                            $totalPrice = $file->total_price ?? 0;
+                                            $patientCount = $pricePerPatient > 0 ? round($totalPrice / $pricePerPatient) : 1;
+                                        @endphp
+                                        <p class="text-xs font-medium text-green-700 uppercase tracking-wider mb-1">Price Per Patient</p>
+                                        <p class="text-lg font-bold text-green-900">₱{{ number_format($pricePerPatient, 2) }}</p>
+                                        <p class="text-xs text-green-600 mt-1">{{ $patientCount }} patient(s)</p>
+                                    </div>
+                                    <div class="bg-emerald-50 rounded-lg p-3 border-l-4 border-emerald-600 mt-3">
+                                        <p class="text-xs font-medium text-emerald-700 uppercase tracking-wider mb-1">Total Price</p>
+                                        <p class="text-xl font-bold text-emerald-900">₱{{ number_format($totalPrice, 2) }}</p>
                                         @if($allTests->count() > 1)
-                                            <p class="text-xs text-green-600 mt-1">{{ $allTests->count() }} tests selected</p>
+                                            <p class="text-xs text-emerald-600 mt-1">{{ $allTests->count() }} tests selected</p>
                                         @endif
                                     </div>
                                 </div>

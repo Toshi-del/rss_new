@@ -1,8 +1,8 @@
 @extends('layouts.ecgtech')
 
-@section('title', 'Annual Physical Patients')
+@section('title', 'Annual Physical with ECG & Drug Test')
 
-@section('page-title', 'Annual Physical Patients')
+@section('page-title', 'Annual Physical with ECG & Drug Test')
 
 @section('content')
 @if(session('success'))
@@ -49,8 +49,8 @@
 <!-- Patients Table -->
 <div class="bg-white rounded-lg shadow-sm">
     <div class="p-6 border-b border-gray-200">
-        <h2 class="text-xl font-semibold text-gray-800">Annual Physical Patients</h2>
-        <p class="text-gray-600 text-sm mt-1">Manage ECG examinations for annual physical patients</p>
+        <h2 class="text-xl font-semibold text-gray-800">Annual Physical with ECG & Drug Test</h2>
+        <p class="text-gray-600 text-sm mt-1">Patients scheduled for Annual Medical Examination with ECG and Drug Test</p>
     </div>
     
     <div class="overflow-x-auto">
@@ -61,6 +61,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AGE</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SEX</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">EMAIL</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TEST TYPE</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
                 </tr>
             </thead>
@@ -73,6 +74,11 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->age }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->sex }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->email }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                Annual Medical with ECG & Drug Test
+                            </span>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             <div class="flex items-center space-x-2">
                                 <form action="{{ route('ecgtech.annual-physical.send-to-doctor', $patient->id) }}" method="POST" class="inline">
@@ -92,8 +98,8 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
-                            No annual physical patients found
+                        <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                            No patients with Annual Medical Examination including ECG and Drug Test found
                         </td>
                     </tr>
                 @endforelse

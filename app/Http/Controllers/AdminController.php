@@ -18,6 +18,8 @@ use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 use App\Mail\RegistrationInvitation;
 use Illuminate\Support\Facades\Mail;
+use App\Services\MedicalTestRoutingService;
+use App\Models\AppointmentTestAssignment;
 
 class AdminController extends Controller
 {
@@ -642,10 +644,27 @@ class AdminController extends Controller
         $appointment = Appointment::findOrFail($id);
         $appointment->status = 'approved';
         $appointment->save();
+        
         // Update all patients with this appointment_id
         \App\Models\Patient::where('appointment_id', $appointment->id)
             ->update(['status' => 'approved']);
-        return redirect()->back()->with('success', 'Appointment and patients approved successfully.');
+        
+        // Route medical tests to appropriate staff
+        $routingService = new MedicalTestRoutingService();
+        $assignments = $routingService->routeTestsForAppointment($appointment);
+        
+        $message = 'Appointment and patients approved successfully.';
+        if (!empty($assignments)) {
+            $assignmentCount = count($assignments);
+            $staffRoles = array_unique(array_column($assignments, 'staff_role'));
+            $staffList = implode(', ', array_map(function($role) use ($routingService) {
+                return $routingService->getStaffRoleDisplayName($role);
+            }, $staffRoles));
+            
+            $message .= " {$assignmentCount} test assignments created for: {$staffList}.";
+        }
+        
+        return redirect()->back()->with('success', $message);
     }
 
     /**
@@ -899,5 +918,94 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'OPD entry not found.');
         }
         return redirect()->back()->with('success', 'Results sent to ' . ($entry->customer_email ?? 'patient') . '.');
+    }
+
+    /**
+     * Show test assignments page
+     */
+    public function testAssignments(Request $request)
+    {
+        $staffRole = $request->get('staff_role', 'all');
+        $status = $request->get('status', 'all');
+        
+        $query = AppointmentTestAssignment::with(['appointment.creator', 'medicalTest', 'assignedToUser']);
+        
+        if ($staffRole !== 'all') {
+            $query->where('staff_role', $staffRole);
+        }
+        
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+        
+        $assignments = $query->orderBy('assigned_at', 'desc')->paginate(15);
+        
+        // Get summary statistics
+        $routingService = new MedicalTestRoutingService();
+        $stats = [
+            'total' => AppointmentTestAssignment::count(),
+            'pending' => AppointmentTestAssignment::where('status', 'pending')->count(),
+            'in_progress' => AppointmentTestAssignment::where('status', 'in_progress')->count(),
+            'completed' => AppointmentTestAssignment::where('status', 'completed')->count(),
+            'by_staff_role' => AppointmentTestAssignment::select('staff_role', DB::raw('count(*) as count'))
+                ->groupBy('staff_role')
+                ->pluck('count', 'staff_role')
+                ->toArray(),
+        ];
+        
+        // Staff roles for filter dropdown
+        $staffRoles = [
+            'doctor' => 'Doctor',
+            'nurse' => 'Nurse',
+            'phlebotomist' => 'Phlebotomist',
+            'pathologist' => 'Pathologist',
+            'radiologist' => 'Radiologist',
+            'radtech' => 'Radiology Technician',
+            'ecg_tech' => 'ECG Technician',
+            'med_tech' => 'Medical Technologist',
+        ];
+        
+        return view('admin.test-assignments', compact('assignments', 'stats', 'staffRoles', 'staffRole', 'status', 'routingService'));
+    }
+
+    /**
+     * Show test assignment details
+     */
+    public function showTestAssignment($id)
+    {
+        $assignment = AppointmentTestAssignment::with([
+            'appointment.creator',
+            'appointment.medicalTestCategory', 
+            'medicalTest',
+            'assignedToUser'
+        ])->findOrFail($id);
+        
+        $routingService = new MedicalTestRoutingService();
+        $summary = $routingService->getTestAssignmentsSummary($assignment->appointment);
+        
+        return view('admin.test-assignment-details', compact('assignment', 'summary', 'routingService'));
+    }
+
+    /**
+     * Update test assignment status
+     */
+    public function updateTestAssignmentStatus(Request $request, $id)
+    {
+        $assignment = AppointmentTestAssignment::findOrFail($id);
+        
+        $request->validate([
+            'status' => 'required|in:pending,in_progress,completed,cancelled',
+            'results' => 'nullable|string',
+            'notes' => 'nullable|string',
+        ]);
+        
+        $assignment->update([
+            'status' => $request->status,
+            'results' => $request->results ? json_encode($request->results) : null,
+            'special_notes' => $request->notes,
+            'completed_at' => $request->status === 'completed' ? now() : null,
+        ]);
+        
+        return redirect()->back()->with('success', 'Test assignment updated successfully.');
     }
 }

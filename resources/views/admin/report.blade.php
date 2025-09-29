@@ -7,27 +7,45 @@
 @php
     // Ensure test data is available for the table rendered below
     $since = \Carbon\Carbon::now()->subDays(90);
-    $testsEarly = \App\Models\MedicalTest::select('id','name','medical_test_category_id')->with('category')->get();
+    $testsEarly = \App\Models\MedicalTest::select('id','name','medical_test_category_id','price')->with('category')->get();
     $testData = $testsEarly->map(function($t) use ($since){
+        // Pre-employment data
         $perCount = \App\Models\PreEmploymentRecord::where('medical_test_id', $t->id)
-            ->where('created_at','>=',$since)
-            ->count();
-        $apptCount = \App\Models\Appointment::where('medical_test_id', $t->id)
             ->where('created_at','>=',$since)
             ->count();
         $perRevenue = (float) (\App\Models\PreEmploymentRecord::where('medical_test_id', $t->id)
             ->where('created_at','>=',$since)
             ->sum('total_price') ?? 0);
-        try {
-            $apptRevenue = (float) (\App\Models\Appointment::where('medical_test_id', $t->id)
-                ->where('created_at','>=',$since)
-                ->sum('total_price') ?? 0);
-        } catch (\Throwable $e) { $apptRevenue = 0; }
+        
+        // Appointment data with patient counts
+        $appointments = \App\Models\Appointment::where('medical_test_id', $t->id)
+            ->where('created_at','>=',$since)
+            ->with('patients')
+            ->get();
+        $apptCount = $appointments->count();
+        $totalPatients = $appointments->sum(function($appointment) {
+            return $appointment->patients->count();
+        });
+        
+        // Calculate appointment revenue using dynamic pricing
+        $apptRevenue = 0;
+        foreach($appointments as $appointment) {
+            $patientCount = $appointment->patients->count();
+            $testPrice = $t->price ?? 0;
+            $apptRevenue += ($testPrice * $patientCount);
+        }
+        
         return [
             'test' => $t->name,
             'category' => optional($t->category)->name,
+            'pre_employment_count' => $perCount,
+            'appointment_count' => $apptCount,
+            'total_patients' => $totalPatients,
             'count' => $perCount + $apptCount,
+            'per_revenue' => round($perRevenue, 2),
+            'appt_revenue' => round($apptRevenue, 2),
             'revenue' => round($perRevenue + $apptRevenue, 2),
+            'test_price' => $t->price ?? 0,
         ];
     })->filter(fn($row) => $row['count'] > 0)
       ->sortByDesc('count')
@@ -50,10 +68,18 @@
                         <p class="text-sm text-gray-600 mt-1">Comprehensive insights into medical test performance and revenue trends</p>
                     </div>
                 </div>
-                <div class="hidden md:flex items-center space-x-4">
+                <div class="hidden md:flex items-center space-x-6">
                     <div class="text-center">
-                        <div class="text-2xl font-bold text-purple-600">{{ $testData->sum('count') }}</div>
-                        <div class="text-xs text-gray-500">Total Tests (90d)</div>
+                        <div class="text-2xl font-bold text-purple-600">{{ $testData->sum('pre_employment_count') }}</div>
+                        <div class="text-xs text-gray-500">Pre-Employment (90d)</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-blue-600">{{ $testData->sum('total_patients') }}</div>
+                        <div class="text-xs text-gray-500">Total Patients (90d)</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-orange-600">{{ $testData->sum('appointment_count') }}</div>
+                        <div class="text-xs text-gray-500">Appointments (90d)</div>
                     </div>
                     <div class="text-center">
                         <div class="text-2xl font-bold text-green-600">₱{{ number_format($testData->sum('revenue'), 0) }}</div>
@@ -131,8 +157,9 @@
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Test</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Count</th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Pre-Emp</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Patients</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Revenue</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
@@ -143,7 +170,10 @@
                                                     <div class="w-6 h-6 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">
                                                         {{ $index + 1 }}
                                                     </div>
-                                                    <div class="text-sm font-medium text-gray-900">{{ $row['test'] }}</div>
+                                                    <div>
+                                                        <div class="text-sm font-medium text-gray-900">{{ $row['test'] }}</div>
+                                                        <div class="text-xs text-gray-500">₱{{ number_format($row['test_price'], 2) }} per test</div>
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td class="px-6 py-4">
@@ -152,15 +182,22 @@
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 text-right">
-                                                <div class="text-sm font-semibold text-gray-900">{{ $row['count'] }}</div>
+                                                <div class="text-sm font-semibold text-purple-600">{{ $row['pre_employment_count'] }}</div>
+                                                <div class="text-xs text-gray-500">₱{{ number_format($row['per_revenue'], 2) }}</div>
+                                            </td>
+                                            <td class="px-6 py-4 text-right">
+                                                <div class="text-sm font-semibold text-blue-600">{{ $row['total_patients'] }}</div>
+                                                <div class="text-xs text-gray-500">{{ $row['appointment_count'] }} appointments</div>
+                                                <div class="text-xs text-gray-500">₱{{ number_format($row['appt_revenue'], 2) }}</div>
                                             </td>
                                             <td class="px-6 py-4 text-right">
                                                 <div class="text-sm font-semibold text-green-600">₱{{ number_format($row['revenue'], 2) }}</div>
+                                                <div class="text-xs text-gray-500">{{ $row['count'] }} total tests</div>
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="px-6 py-12 text-center">
+                                            <td colspan="5" class="px-6 py-12 text-center">
                                                 <div class="flex flex-col items-center">
                                                     <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-3">
                                                         <i class="fas fa-chart-bar text-gray-400 text-lg"></i>
@@ -209,20 +246,27 @@
     $months = collect(range(0, 11))->map(fn($i) => \Carbon\Carbon::now()->subMonths(11 - $i));
     $monthLabels = $months->map(fn($m) => $m->format('M Y'));
 
-    // Medical test volume per month (from pre-employment records and appointments)
+    // Medical test volume per month (from pre-employment records and appointments with patient counts)
     $monthlyTestCounts = $months->map(function ($m) {
         $start = $m->copy()->startOfMonth();
         $end = $m->copy()->endOfMonth();
         $per = \App\Models\PreEmploymentRecord::whereBetween('created_at', [$start, $end])
             ->whereNotNull('medical_test_id')
             ->count();
-        $appt = \App\Models\Appointment::whereBetween('created_at', [$start, $end])
+        
+        // Get appointments with patient counts for more accurate test volume
+        $appointments = \App\Models\Appointment::whereBetween('created_at', [$start, $end])
             ->whereNotNull('medical_test_id')
-            ->count();
-        return $per + $appt;
+            ->with('patients')
+            ->get();
+        $apptPatients = $appointments->sum(function($appointment) {
+            return $appointment->patients->count();
+        });
+        
+        return $per + $apptPatients;
     });
 
-    // Top categories last 90 days by count
+    // Top categories last 90 days by count (including patient counts)
     $since = \Carbon\Carbon::now()->subDays(90);
     $categoryData = \App\Models\MedicalTestCategory::select('id','name')
         ->get()
@@ -230,59 +274,47 @@
             $per = \App\Models\PreEmploymentRecord::where('medical_test_categories_id', $cat->id)
                 ->where('created_at', '>=', $since)
                 ->count();
-            $appt = \App\Models\Appointment::where('medical_test_categories_id', $cat->id)
+            
+            // Get appointments with patient counts for this category
+            $appointments = \App\Models\Appointment::where('medical_test_categories_id', $cat->id)
                 ->where('created_at', '>=', $since)
-                ->count();
+                ->with('patients')
+                ->get();
+            $apptPatients = $appointments->sum(function($appointment) {
+                return $appointment->patients->count();
+            });
+            
             return [
                 'name' => $cat->name,
-                'count' => $per + $appt,
+                'count' => $per + $apptPatients,
             ];
         })
         ->sortByDesc('count')
         ->take(6)
         ->values();
 
-    // Revenue trend per month (sum total_price)
+    // Revenue trend per month (calculated with patient counts for appointments)
     $monthlyRevenue = $months->map(function ($m) {
         $start = $m->copy()->startOfMonth();
         $end = $m->copy()->endOfMonth();
         $perTotal = (float) (\App\Models\PreEmploymentRecord::whereBetween('created_at', [$start, $end])->sum('total_price') ?? 0);
-        // Appointments total_price may not exist for all rows; handle gracefully
-        try {
-            $apptTotal = (float) (\App\Models\Appointment::whereBetween('created_at', [$start, $end])->sum('total_price') ?? 0);
-        } catch (\Throwable $e) {
-            $apptTotal = 0;
+        
+        // Calculate appointment revenue with patient counts
+        $appointments = \App\Models\Appointment::whereBetween('created_at', [$start, $end])
+            ->with(['patients', 'medicalTest'])
+            ->get();
+        $apptTotal = 0;
+        foreach($appointments as $appointment) {
+            $patientCount = $appointment->patients->count();
+            $testPrice = $appointment->medicalTest ? $appointment->medicalTest->price : 0;
+            $apptTotal += ($testPrice * $patientCount);
         }
+        
         return round($perTotal + $apptTotal, 2);
     });
 
-    // Top tests last 90 days with counts and revenue
-    $tests = \App\Models\MedicalTest::select('id','name','medical_test_category_id')->with('category')->get();
-    $testData = $tests->map(function($t) use ($since){
-        $perCount = \App\Models\PreEmploymentRecord::where('medical_test_id', $t->id)
-            ->where('created_at','>=',$since)
-            ->count();
-        $apptCount = \App\Models\Appointment::where('medical_test_id', $t->id)
-            ->where('created_at','>=',$since)
-            ->count();
-        $perRevenue = (float) (\App\Models\PreEmploymentRecord::where('medical_test_id', $t->id)
-            ->where('created_at','>=',$since)
-            ->sum('total_price') ?? 0);
-        try {
-            $apptRevenue = (float) (\App\Models\Appointment::where('medical_test_id', $t->id)
-                ->where('created_at','>=',$since)
-                ->sum('total_price') ?? 0);
-        } catch (\Throwable $e) { $apptRevenue = 0; }
-        return [
-            'test' => $t->name,
-            'category' => optional($t->category)->name,
-            'count' => $perCount + $apptCount,
-            'revenue' => round($perRevenue + $apptRevenue, 2),
-        ];
-    })->filter(fn($row) => $row['count'] > 0)
-      ->sortByDesc('count')
-      ->take(10)
-      ->values();
+    // This testData is already calculated above with enhanced patient count logic
+    // No need to recalculate - the $testData variable is already available
 @endphp
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>

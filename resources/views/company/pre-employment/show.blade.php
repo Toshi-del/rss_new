@@ -182,7 +182,49 @@
                 </h2>
             </div>
             <div class="p-8">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                @php
+                    $pricePerPatient = $allTests->sum('price');
+                    $totalPrice = $record->total_price ?? 0;
+                    $patientCount = $pricePerPatient > 0 ? round($totalPrice / $pricePerPatient) : 1;
+                @endphp
+                
+                <!-- Price Calculation Summary -->
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border-l-4 border-green-600 mb-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">
+                        <i class="fas fa-calculator mr-2 text-green-600"></i>Price Calculation Breakdown
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white rounded-lg p-4 border border-green-200">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-sm font-medium text-green-700">Patient Count</p>
+                                <i class="fas fa-users text-green-600"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-green-900">{{ $patientCount }}</p>
+                            <p class="text-xs text-green-600 mt-1">Total patients</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-4 border border-green-200">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-sm font-medium text-green-700">Price Per Patient</p>
+                                <i class="fas fa-tag text-green-600"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-green-900">₱{{ number_format($pricePerPatient, 2) }}</p>
+                            <p class="text-xs text-green-600 mt-1">{{ $testsCount }} test(s) total</p>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg p-4 text-white">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-sm font-medium text-green-100">Total Amount</p>
+                                <i class="fas fa-receipt text-green-200"></i>
+                            </div>
+                            <p class="text-2xl font-bold text-white">₱{{ number_format($totalPrice, 2) }}</p>
+                            <p class="text-xs text-green-200 mt-1">{{ $patientCount }} × ₱{{ number_format($pricePerPatient, 2) }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Billing Information -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-600">
                         <p class="text-blue-700 text-sm font-medium">Billing Type</p>
                         <p class="text-2xl font-bold text-blue-900">{{ $record->billing_type }}</p>
@@ -193,10 +235,6 @@
                         <p class="text-lg font-bold text-indigo-900">{{ $record->company_name }}</p>
                     </div>
                     @endif
-                    <div class="bg-green-50 rounded-lg p-4 border-l-4 border-green-600 {{ $record->company_name ? '' : 'md:col-span-2' }}">
-                        <p class="text-green-700 text-sm font-medium">Total Price</p>
-                        <p class="text-3xl font-bold text-green-900">₱{{ number_format($record->total_price ?? 0, 2) }}</p>
-                    </div>
                 </div>
             </div>
         </div>

@@ -206,69 +206,69 @@
                         $uniqueTests = $category->medicalTests->unique(function($t){ return strtolower($t->name ?? ''); });
                     @endphp
                     @if($categoryName === 'appointment' || $categoryName === 'blood chemistry' || $categoryName === 'package')
-                        <div class="mb-8">
-                            <div class="flex items-center space-x-3 mb-4">
-                                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-flask text-blue-600"></i>
-                                </div>
-                                <div>
-                                    <h4 class="text-lg font-bold text-gray-900">{{ $category->name }}</h4>
-                                    @if($category->description)
-                                        <p class="text-sm text-gray-600">{{ $category->description }}</p>
-                                    @endif
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-1 gap-4">
-                                @foreach($uniqueTests as $test)
-                                    @php
-                                        $isPackage = str_contains(strtolower($test->name), 'package');
-                                    @endphp
-                                    <label for="appointment_test_{{ $test->id }}" class="cursor-pointer block border-2 border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-200 {{ $isPackage ? 'bg-emerald-50 border-emerald-200 hover:border-emerald-300' : 'bg-white' }}">
-                                        <div class="flex items-start space-x-4">
-                                            <input
-                                                id="appointment_test_{{ $test->id }}"
-                                                type="checkbox"
-                                                name="appointment_selected_test"
-                                                value="{{ $test->id }}"
-                                                data-category-id="{{ $category->id }}"
-                                                data-test-id="{{ $test->id }}"
-                                                class="mt-1 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-colors"
-                                            >
-                                            <div class="flex-1">
-                                                <div class="flex items-start justify-between">
-                                                    <div class="flex-1">
-                                                        <h5 class="text-lg font-semibold text-gray-900">{{ $test->name }}</h5>
-                                                        @if($test->description)
-                                                            <p class="text-sm text-gray-600 mt-1 leading-relaxed">{{ $test->description }}</p>
-                                                        @endif
-                                                    </div>
-                                                    @if($isPackage)
-                                                        <span class="bg-emerald-100 text-emerald-700 text-xs font-medium px-3 py-1 rounded-full ml-3">
-                                                            <i class="fas fa-box mr-1"></i>Package
-                                                        </span>
-                                                    @endif
-                                                </div>
-                                                @if(!is_null($test->price) && $test->price > 0)
-                                                    <div class="mt-4 flex items-center justify-between">
-                                                        <div class="flex items-center space-x-2">
-                                                            <i class="fas fa-peso-sign text-emerald-600"></i>
-                                                            <span class="text-2xl font-bold text-emerald-600">{{ number_format((float)$test->price, 2) }}</span>
-                                                        </div>
-                                                        <div class="text-sm text-gray-500">
-                                                            <i class="fas fa-info-circle mr-1"></i>
-                                                            Comprehensive examination
-                                                        </div>
-                                                    </div>
-                                                @elseif(!is_null($test->price) && $test->price == 0)
-                                                    <div class="mt-3 flex items-center space-x-2">
-                                                        <i class="fas fa-tag text-blue-600"></i>
-                                                        <span class="text-sm font-medium text-blue-600">Individual Test - Contact for pricing</span>
-                                                    </div>
-                                                @endif
-                                            </div>
+                        <div class="mb-6 last:mb-0">
+                            <!-- Collapsible Category Header -->
+                            <div class="bg-white rounded-lg border-l-4 border-indigo-600 overflow-hidden">
+                                <button type="button" 
+                                        class="w-full p-4 text-left hover:bg-indigo-50 transition-colors duration-200 focus:outline-none focus:bg-indigo-50"
+                                        onclick="toggleCategory('category-{{ $category->id }}')">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <h4 class="text-xl font-bold text-indigo-900 mb-1">
+                                                <i class="fas fa-vial mr-2"></i>{{ $category->name }}
+                                            </h4>
+                                            @if($category->description)
+                                                <p class="text-sm text-indigo-700">{{ $category->description }}</p>
+                                            @endif
                                         </div>
-                                    </label>
-                                @endforeach
+                                        <div class="flex items-center space-x-3">
+                                            <span id="selected-count-{{ $category->id }}" class="text-sm font-medium text-indigo-600 bg-indigo-100 px-2 py-1 rounded-full hidden">
+                                                0 selected
+                                            </span>
+                                            <i id="chevron-{{ $category->id }}" class="fas fa-chevron-down text-indigo-600 transform transition-transform duration-200"></i>
+                                        </div>
+                                    </div>
+                                </button>
+                                
+                                <!-- Collapsible Content -->
+                                <div id="category-{{ $category->id }}" class="hidden border-t border-indigo-100">
+                                    <div class="p-4 bg-indigo-50">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            @foreach($uniqueTests as $test)
+                                                <label for="appointment_test_{{ $test->id }}" class="cursor-pointer block">
+                                                    <div class="bg-white rounded-lg p-5 border-2 border-gray-200 hover:border-blue-400 hover:shadow-md transition-all duration-200">
+                                                        <div class="flex items-start">
+                                                            <input
+                                                                id="appointment_test_{{ $test->id }}"
+                                                                type="checkbox"
+                                                                name="appointment_selected_test"
+                                                                value="{{ $test->id }}"
+                                                                data-category-id="{{ $category->id }}"
+                                                                data-test-id="{{ $test->id }}"
+                                                                class="mt-1 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded category-checkbox"
+                                                            >
+                                                            <div class="ml-3 flex-1">
+                                                                <h5 class="text-base font-bold text-gray-900 mb-1">{{ $test->name }}</h5>
+                                                                @if($test->description)
+                                                                    <p class="text-sm text-gray-600 mb-2">{{ Str::limit($test->description, 60) }}</p>
+                                                                @endif
+                                                                @if(!is_null($test->price) && $test->price > 0)
+                                                                    <div class="bg-emerald-50 rounded-lg px-3 py-1 inline-block">
+                                                                        <p class="text-sm font-bold text-emerald-700">₱{{ number_format((float)$test->price, 2) }}</p>
+                                                                    </div>
+                                                                @elseif(!is_null($test->price) && $test->price == 0)
+                                                                    <div class="bg-blue-50 rounded-lg px-3 py-1 inline-block">
+                                                                        <p class="text-sm font-bold text-blue-700">Contact for pricing</p>
+                                                                    </div>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     @endif
@@ -568,23 +568,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const selectedTestInfo = document.getElementById('selectedTestInfo');
     const testDetails = document.getElementById('testDetails');
     
-    // Helper function to extract price from test card
+    // Medical test category selection handling - Allow one test per category
+    const hiddenCategoryInput = document.getElementById('medical_test_categories_id');
+    const hiddenTestInput = document.getElementById('medical_test_id');
+    const testCheckboxes = document.querySelectorAll('input[name="appointment_selected_test"][data-category-id]');
+    const totalPriceInput = document.getElementById('total_price');
+
+    function updateHiddenInputs() {
+        const checkedTests = Array.from(testCheckboxes).filter(cb => cb.checked);
+        if (checkedTests.length > 0) {
+            // Since we only allow one test selection, get the first (and only) checked test
+            const selectedTest = checkedTests[0];
+            const categoryId = selectedTest.getAttribute('data-category-id');
+            const testId = selectedTest.getAttribute('data-test-id');
+            
+            // Store as single values for the backend validation
+            hiddenCategoryInput.value = categoryId;
+            hiddenTestInput.value = testId;
+            
+            // Calculate total price
+            const price = extractPrice(selectedTest);
+            totalPriceInput.value = price.toFixed(2);
+        } else {
+            hiddenCategoryInput.value = '';
+            hiddenTestInput.value = '';
+            totalPriceInput.value = '0';
+        }
+    }
+
     function extractPrice(checkbox) {
-        const testCard = checkbox.parentElement.parentElement;
-        
-        // Try different selectors for price
-        let priceElement = testCard.querySelector('.text-2xl.font-bold.text-emerald-600');
-        if (!priceElement) {
-            priceElement = testCard.querySelector('.text-emerald-600');
-        }
-        if (!priceElement) {
-            priceElement = testCard.querySelector('[class*="emerald-600"]');
-        }
+        const testCard = checkbox.closest('label');
+        const priceElement = testCard.querySelector('.text-emerald-700');
         
         if (priceElement) {
             const priceText = priceElement.textContent;
-            
-            // Extract number from text (handle ₱, commas, etc.)
             const priceMatch = priceText.match(/[\d,]+\.?\d*/);
             if (priceMatch) {
                 const price = parseFloat(priceMatch[0].replace(',', ''));
@@ -594,46 +611,37 @@ document.addEventListener('DOMContentLoaded', function() {
         
         return 0;
     }
-    
-    // Medical test category selection handling
-    const hiddenCategoryInput = document.getElementById('medical_test_categories_id');
-    const hiddenTestInput = document.getElementById('medical_test_id');
-    const testCheckboxes = document.querySelectorAll('input[name="appointment_selected_test"][data-category-id]');
-
-    function syncHiddenFromChecked() {
-        const firstChecked = Array.from(testCheckboxes).find(cb => cb.checked);
-        if (firstChecked) {
-            hiddenCategoryInput.value = firstChecked.getAttribute('data-category-id');
-        }
-    }
-
 
     function handleTestChange(e) {
         const current = e.target;
-        const currentCategoryId = current.getAttribute('data-category-id');
-        const currentTestId = current.getAttribute('data-test-id');
 
         if (current.checked) {
-            // When checking a test, uncheck other tests in the SAME category only
+            // If checking a test, uncheck all other tests (only one test allowed)
             Array.from(testCheckboxes).forEach(cb => {
-                if (cb !== current && cb.getAttribute('data-category-id') === currentCategoryId) {
+                if (cb !== current) {
                     cb.checked = false;
                 }
             });
         }
 
-        // Update the selected test info display
-        updateSelectedTestsInfo();
-        
-        // Update hidden inputs with selected tests
+        // Update hidden inputs with current selections
         updateHiddenInputs();
+        
+        // Update all category counters since we changed selections
+        const allCategoryIds = [...new Set(Array.from(testCheckboxes).map(cb => cb.getAttribute('data-category-id')))];
+        allCategoryIds.forEach(categoryId => {
+            updateCategoryCount(categoryId);
+        });
+        
+        // Update selected test info in sidebar
+        updateSelectedTestsInfo();
     }
 
     function updateSelectedTestsInfo() {
         const checkedBoxes = Array.from(testCheckboxes).filter(cb => cb.checked);
         
         if (checkedBoxes.length === 0) {
-            selectedTestInfo.style.display = 'none';
+            if (selectedTestInfo) selectedTestInfo.style.display = 'none';
             return;
         }
 
@@ -641,8 +649,9 @@ document.addEventListener('DOMContentLoaded', function() {
         let testsHtml = '<div class="space-y-4">';
         
         checkedBoxes.forEach(checkbox => {
-            const testName = checkbox.parentElement.parentElement.querySelector('.text-lg.font-semibold').textContent;
-            const description = checkbox.parentElement.parentElement.querySelector('.text-sm.text-gray-600')?.textContent || '';
+            const testCard = checkbox.closest('label');
+            const testName = testCard.querySelector('.text-base.font-bold').textContent;
+            const description = testCard.querySelector('.text-sm.text-gray-600')?.textContent || '';
             const price = extractPrice(checkbox);
             
             totalPrice += price;
@@ -651,7 +660,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
                     <h4 class="text-sm font-semibold text-gray-900">${testName}</h4>
                     ${description ? `<p class="text-xs text-gray-600 mt-1">${description}</p>` : ''}
-                    ${price > 0 ? `<p class="text-sm font-bold text-emerald-600 mt-2">₱${price.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>` : ''}
+                    ${price > 0 ? `<p class="text-sm font-bold text-emerald-600 mt-2">₱${price.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>` : '<p class="text-sm text-blue-600 mt-2">Contact for pricing</p>'}
                 </div>
             `;
         });
@@ -669,83 +678,18 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         }
         
-        testDetails.innerHTML = testsHtml;
-        selectedTestInfo.style.display = 'block';
-    }
-
-    function updateHiddenInputs() {
-        const checkedBoxes = Array.from(testCheckboxes).filter(cb => cb.checked);
-        const selectedTestsContainer = document.getElementById('selected_tests_container');
-        const totalPriceInput = document.getElementById('total_price');
-        
-        // Clear existing hidden inputs
-        selectedTestsContainer.innerHTML = '';
-        
-        if (checkedBoxes.length === 0) {
-            hiddenCategoryInput.value = '';
-            hiddenTestInput.value = '';
-            totalPriceInput.value = '0';
-            return;
+        if (testDetails) {
+            testDetails.innerHTML = testsHtml;
         }
-
-        // For backward compatibility, set the first selected test in the original fields
-        const firstChecked = checkedBoxes[0];
-        hiddenCategoryInput.value = firstChecked.getAttribute('data-category-id');
-        hiddenTestInput.value = firstChecked.getAttribute('data-test-id');
-
-        // Calculate total price and create hidden inputs for all selected tests
-        let totalPrice = 0;
-        checkedBoxes.forEach((checkbox, index) => {
-            const categoryId = checkbox.getAttribute('data-category-id');
-            const testId = checkbox.getAttribute('data-test-id');
-            
-            // Get price from the test card
-            const price = extractPrice(checkbox);
-            totalPrice += price;
-            
-            // Create hidden inputs for selected tests array
-            const categoryInput = document.createElement('input');
-            categoryInput.type = 'hidden';
-            categoryInput.name = `selected_tests[${index}][category_id]`;
-            categoryInput.value = categoryId;
-            selectedTestsContainer.appendChild(categoryInput);
-            
-            const testInput = document.createElement('input');
-            testInput.type = 'hidden';
-            testInput.name = `selected_tests[${index}][test_id]`;
-            testInput.value = testId;
-            selectedTestsContainer.appendChild(testInput);
-            
-            const priceInput = document.createElement('input');
-            priceInput.type = 'hidden';
-            priceInput.name = `selected_tests[${index}][price]`;
-            priceInput.value = price;
-            selectedTestsContainer.appendChild(priceInput);
-        });
-        
-        // Set the total price
-        totalPriceInput.value = totalPrice.toFixed(2);
+        if (selectedTestInfo) {
+            selectedTestInfo.style.display = 'block';
+        }
     }
 
     testCheckboxes.forEach(cb => cb.addEventListener('change', handleTestChange));
     
-    // Initialize on load for old inputs
-    const oldCategoryId = '{{ old("medical_test_categories_id") }}';
-    const oldTestId = '{{ old("medical_test_id") }}';
-    
-    if (oldTestId) {
-        // Handle single test ID (for backward compatibility)
-        const targetCheckbox = document.querySelector(`input[data-test-id="${oldTestId}"]`);
-        if (targetCheckbox) {
-            targetCheckbox.checked = true;
-        }
-        
-        // Update displays
-        updateSelectedTestsInfo();
-        updateHiddenInputs();
-    } else if (!hiddenCategoryInput.value) {
-        syncHiddenFromChecked();
-    }
+    // Initialize on page load
+    updateHiddenInputs();
     
     // Prevent form submission if date is not available
     const form = document.querySelector('form');
@@ -757,7 +701,68 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // Check for selected tests before submission
+        const checkedTests = Array.from(testCheckboxes).filter(cb => cb.checked);
+        if (checkedTests.length === 0) {
+            e.preventDefault();
+            alert('Please select at least one medical test before submitting.');
+            return;
+        }
     });
+});
+
+// Collapsible category functions
+function toggleCategory(categoryId) {
+    const content = document.getElementById(categoryId);
+    const chevron = document.getElementById('chevron-' + categoryId.replace('category-', ''));
+    
+    if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        chevron.classList.add('rotate-180');
+    } else {
+        content.classList.add('hidden');
+        chevron.classList.remove('rotate-180');
+    }
+}
+
+function updateCategoryCount(categoryId) {
+    const categoryCheckboxes = document.querySelectorAll(`input[data-category-id="${categoryId}"]`);
+    const checkedCount = Array.from(categoryCheckboxes).filter(cb => cb.checked).length;
+    const countElement = document.getElementById(`selected-count-${categoryId}`);
+    
+    if (countElement) {
+        if (checkedCount > 0) {
+            countElement.textContent = `${checkedCount} selected`;
+            countElement.classList.remove('hidden');
+        } else {
+            countElement.classList.add('hidden');
+        }
+    }
+}
+
+// Add form validation before submission
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form[action*="appointments"]');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const hiddenCategoryInput = document.getElementById('medical_test_categories_id');
+            const hiddenTestInput = document.getElementById('medical_test_id');
+            
+            // Check if a test is selected
+            if (!hiddenCategoryInput.value || !hiddenTestInput.value) {
+                e.preventDefault();
+                alert('Please select a medical test before submitting the appointment.');
+                return false;
+            }
+            
+            // Additional validation to ensure the values are numeric
+            if (isNaN(hiddenCategoryInput.value) || isNaN(hiddenTestInput.value)) {
+                e.preventDefault();
+                alert('Invalid test selection. Please refresh the page and try again.');
+                return false;
+            }
+        });
+    }
 });
 </script>
 @endpush

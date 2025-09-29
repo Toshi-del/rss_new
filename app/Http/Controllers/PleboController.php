@@ -10,6 +10,7 @@ use App\Models\AnnualPhysicalExamination;
 use App\Models\OpdExamination;
 use App\Models\MedicalChecklist;
 use App\Models\User;
+use App\Models\AppointmentTestAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -311,6 +312,75 @@ class PleboController extends Controller
         } else {
             return redirect()->route('plebo.annual-physical')->with('success', 'Medical checklist updated successfully.');
         }
+    }
+
+    /**
+     * Show test assignments for phlebotomist
+     */
+    public function testAssignments()
+    {
+        $assignments = AppointmentTestAssignment::with([
+            'appointment.creator',
+            'appointment.medicalTestCategory', 
+            'medicalTest',
+            'assignedToUser'
+        ])
+        ->where('staff_role', 'phlebotomist')
+        ->where(function($query) {
+            $query->where('assigned_to_user_id', Auth::id())
+                  ->orWhereNull('assigned_to_user_id');
+        })
+        ->orderBy('assigned_at', 'desc')
+        ->paginate(15);
+
+        $stats = [
+            'total' => AppointmentTestAssignment::where('staff_role', 'phlebotomist')->count(),
+            'pending' => AppointmentTestAssignment::where('staff_role', 'phlebotomist')->where('status', 'pending')->count(),
+            'in_progress' => AppointmentTestAssignment::where('staff_role', 'phlebotomist')->where('status', 'in_progress')->count(),
+            'completed' => AppointmentTestAssignment::where('staff_role', 'phlebotomist')->where('status', 'completed')->count(),
+        ];
+
+        return view('plebo.test-assignments', compact('assignments', 'stats'));
+    }
+
+    /**
+     * Update test assignment status
+     */
+    public function updateTestAssignmentStatus(Request $request, $id)
+    {
+        $assignment = AppointmentTestAssignment::findOrFail($id);
+        
+        // Ensure this assignment is for phlebotomist role
+        if ($assignment->staff_role !== 'phlebotomist') {
+            return redirect()->back()->with('error', 'Unauthorized access to this assignment.');
+        }
+
+        $request->validate([
+            'status' => 'required|in:pending,in_progress,completed,cancelled',
+            'results' => 'nullable|string',
+            'notes' => 'nullable|string',
+        ]);
+
+        $updateData = [
+            'status' => $request->status,
+            'assigned_to_user_id' => Auth::id(),
+        ];
+
+        if ($request->status === 'completed') {
+            $updateData['completed_at'] = now();
+        }
+
+        if ($request->filled('results')) {
+            $updateData['results'] = $request->results;
+        }
+
+        if ($request->filled('notes')) {
+            $updateData['special_notes'] = $request->notes;
+        }
+
+        $assignment->update($updateData);
+
+        return redirect()->route('plebo.test-assignments')->with('success', 'Test assignment status updated successfully.');
     }
 }
 

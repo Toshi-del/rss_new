@@ -227,8 +227,27 @@
                         </div>
                         @if($appointment->medicalTest)
                         <div class="bg-green-50 rounded-lg p-4 border-l-4 border-green-600 col-span-2">
-                            <p class="text-green-700 text-sm font-medium">Total Price</p>
-                            <p class="text-3xl font-bold text-green-900">₱{{ number_format($appointment->medicalTest->price ?? 0, 2) }}</p>
+                            <p class="text-green-700 text-sm font-medium">Total Price Calculation</p>
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between text-sm text-green-700">
+                                    <span>Test Price per Patient:</span>
+                                    <span class="font-semibold">₱{{ number_format($appointment->medicalTest->price, 2) }}</span>
+                                </div>
+                                <div class="flex items-center justify-between text-sm text-green-700">
+                                    <span>Number of Patients:</span>
+                                    <span class="font-semibold">{{ $appointment->patient_count }}</span>
+                                </div>
+                                <hr class="border-green-300">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-green-700 font-medium">Total Amount:</span>
+                                    <span class="text-3xl font-bold text-green-900">{{ $appointment->formatted_total_price }}</span>
+                                </div>
+                                @if($appointment->patient_count > 0)
+                                <p class="text-xs text-green-600 mt-1">
+                                    (₱{{ number_format($appointment->medicalTest->price, 2) }} × {{ $appointment->patient_count }} patients)
+                                </p>
+                                @endif
+                            </div>
                         </div>
                         @endif
                         <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-gray-600 col-span-2">

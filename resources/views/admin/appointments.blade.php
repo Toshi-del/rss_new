@@ -57,6 +57,7 @@
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Appointment Date</th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Time Slot</th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Examination Type</th>
+                        <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Total Price</th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Company Email</th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Status</th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider">Actions</th>
@@ -102,7 +103,44 @@
                                             {{ $appointment->appointment_type ?? 'General Checkup' }}
                                         @endif
                                     </div>
+                                    @if($appointment->status === 'approved' && $appointment->hasTestAssignments())
+                                        <div class="mt-2 flex flex-wrap gap-1">
+                                            @php
+                                                $assignmentsByRole = $appointment->getTestAssignmentsByStaffRole();
+                                            @endphp
+                                            @foreach($assignmentsByRole as $role => $assignments)
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                                    <i class="fas fa-user-md mr-1 text-xs"></i>
+                                                    {{ ucfirst(str_replace('_', ' ', $role)) }} ({{ count($assignments) }})
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                 </div>
+                            </td>
+                            <td class="py-5 px-6 border-r border-gray-100">
+                                @if($appointment->medicalTest && $appointment->patient_count > 0)
+                                    <div class="bg-green-50 px-3 py-2 rounded-lg border border-green-200">
+                                        <div class="text-sm font-bold text-green-800">
+                                            {{ $appointment->formatted_total_price }}
+                                        </div>
+                                        <div class="text-xs text-green-600 mt-1">
+                                            ₱{{ number_format($appointment->medicalTest->price, 2) }} × {{ $appointment->patient_count }} patients
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+                                        <div class="text-sm text-gray-500">
+                                            @if(!$appointment->medicalTest)
+                                                No test selected
+                                            @elseif($appointment->patient_count == 0)
+                                                No patients
+                                            @else
+                                                ₱0.00
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endif
                             </td>
                             <td class="py-5 px-6 border-r border-gray-100">
                                 <div class="flex items-center space-x-2">
@@ -148,12 +186,19 @@
                                         <i class="fas fa-eye mr-1"></i>
                                         View
                                     </button>
+                                    @if($appointment->status === 'approved' && $appointment->hasTestAssignments())
+                                        <a href="{{ route('admin.test-assignments.show', $appointment->id) }}" 
+                                           class="inline-flex items-center px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg text-xs font-medium transition-all duration-150 border border-purple-200">
+                                            <i class="fas fa-tasks mr-1"></i>
+                                            Assignments
+                                        </a>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="py-16 text-center border-2 border-dashed border-gray-300">
+                            <td colspan="8" class="py-16 text-center border-2 border-dashed border-gray-300">
                                 <div class="flex flex-col items-center space-y-4">
                                     <div class="w-20 h-20 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-full flex items-center justify-center border-4 border-emerald-300">
                                         <i class="fas fa-calendar-check text-emerald-500 text-3xl"></i>

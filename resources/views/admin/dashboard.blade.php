@@ -111,12 +111,71 @@
                     <p class="text-sm font-medium text-gray-600 mb-2 uppercase tracking-wide">Monthly Revenue</p>
                     <div class="flex items-center space-x-3">
                         @php
-                            $monthlyRevenue = \App\Models\Appointment::whereBetween('created_at', [now()->startOfMonth(), now()])
+                            // Calculate current month revenue from all sources
+                            $currentMonth = now();
+                            $startOfMonth = $currentMonth->copy()->startOfMonth();
+                            $endOfMonth = $currentMonth->copy()->endOfMonth();
+                            
+                            // 1. Appointments Revenue (calculated with patient count)
+                            $appointments = \App\Models\Appointment::whereBetween('created_at', [$startOfMonth, $endOfMonth])
                                 ->where('status', 'approved')
-                                ->sum('total_price');
-                            $lastMonthRevenue = \App\Models\Appointment::whereBetween('created_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])
+                                ->with(['patients', 'medicalTest'])
+                                ->get();
+                            $appointmentRevenue = 0;
+                            foreach($appointments as $appointment) {
+                                $patientCount = $appointment->patients->count();
+                                $testPrice = $appointment->medicalTest ? $appointment->medicalTest->price : 0;
+                                $appointmentRevenue += ($testPrice * $patientCount);
+                            }
+                            
+                            // 2. Pre-Employment Revenue
+                            $preEmploymentRevenue = \App\Models\PreEmploymentRecord::whereBetween('created_at', [$startOfMonth, $endOfMonth])
+                                ->sum('total_price') ?? 0;
+                            
+                            // 3. OPD Revenue (if OPD examinations have pricing)
+                            $opdRevenue = 0;
+                            try {
+                                $opdExaminations = \App\Models\OpdExamination::whereBetween('created_at', [$startOfMonth, $endOfMonth])
+                                    ->with('user')
+                                    ->get();
+                                foreach($opdExaminations as $opd) {
+                                    // Assuming OPD has a standard rate or calculate based on services
+                                    $opdRevenue += 500; // Default OPD consultation fee
+                                }
+                            } catch (\Exception $e) {
+                                $opdRevenue = 0;
+                            }
+                            
+                            $monthlyRevenue = $appointmentRevenue + $preEmploymentRevenue + $opdRevenue;
+                            
+                            // Calculate last month revenue for comparison
+                            $lastMonth = now()->subMonth();
+                            $lastMonthStart = $lastMonth->copy()->startOfMonth();
+                            $lastMonthEnd = $lastMonth->copy()->endOfMonth();
+                            
+                            $lastMonthAppointments = \App\Models\Appointment::whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])
                                 ->where('status', 'approved')
-                                ->sum('total_price');
+                                ->with(['patients', 'medicalTest'])
+                                ->get();
+                            $lastMonthApptRevenue = 0;
+                            foreach($lastMonthAppointments as $appointment) {
+                                $patientCount = $appointment->patients->count();
+                                $testPrice = $appointment->medicalTest ? $appointment->medicalTest->price : 0;
+                                $lastMonthApptRevenue += ($testPrice * $patientCount);
+                            }
+                            
+                            $lastMonthPreEmpRevenue = \App\Models\PreEmploymentRecord::whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])
+                                ->sum('total_price') ?? 0;
+                            
+                            $lastMonthOpdRevenue = 0;
+                            try {
+                                $lastMonthOpdCount = \App\Models\OpdExamination::whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])->count();
+                                $lastMonthOpdRevenue = $lastMonthOpdCount * 500;
+                            } catch (\Exception $e) {
+                                $lastMonthOpdRevenue = 0;
+                            }
+                            
+                            $lastMonthRevenue = $lastMonthApptRevenue + $lastMonthPreEmpRevenue + $lastMonthOpdRevenue;
                             $revenueChange = $lastMonthRevenue > 0 ? (($monthlyRevenue - $lastMonthRevenue) / $lastMonthRevenue) * 100 : 0;
                         @endphp
                         <p class="text-2xl font-semibold text-gray-900">₱{{ number_format($monthlyRevenue, 0) }}</p>
@@ -140,7 +199,14 @@
                     @php
                         $targetRevenue = 180000; // ₱180K target
                     @endphp
-                    <p class="text-xs text-gray-500 mt-1">target: ₱{{ number_format($targetRevenue, 0) }}</p>
+                    <div class="mt-2 space-y-1">
+                        <p class="text-xs text-gray-500">target: ₱{{ number_format($targetRevenue, 0) }}</p>
+                        <div class="flex items-center space-x-4 text-xs">
+                            <span class="text-blue-600">Appointments: ₱{{ number_format($appointmentRevenue, 0) }}</span>
+                            <span class="text-purple-600">Pre-Emp: ₱{{ number_format($preEmploymentRevenue, 0) }}</span>
+                            <span class="text-green-600">OPD: ₱{{ number_format($opdRevenue, 0) }}</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="w-12 h-12 bg-cyan-600 rounded-lg flex items-center justify-center">
                     <i class="fas fa-chart-line text-white text-lg"></i>
@@ -148,6 +214,69 @@
             </div>
         </div>
     </div>
+
+    <!-- Critical Stock Alert Section -->
+    @if(isset($criticalStockCount) && $criticalStockCount > 0)
+        <div class="mb-8">
+            <div class="content-card rounded-lg overflow-hidden border-l-4 border-red-500">
+                <div class="bg-red-50 px-6 py-4 border-b border-red-100">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-lg animate-pulse"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-red-800">Critical Stock Alert</h3>
+                            <p class="text-red-600 text-sm">{{ $criticalStockCount }} {{ Str::plural('item', $criticalStockCount) }} require immediate attention</p>
+                        </div>
+                        <div class="ml-auto">
+                            <a href="{{ route('admin.inventory.index') }}" class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors duration-200">
+                                <i class="fas fa-boxes mr-2"></i>
+                                Manage Inventory
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @foreach($criticalStockItems->take(6) as $item)
+                            <div class="bg-white border border-red-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-semibold text-gray-900 text-sm truncate">{{ $item->item_name }}</h4>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        Critical
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between text-sm text-gray-600">
+                                    <span>Current Stock: <strong class="text-red-600">{{ $item->item_quantity }}</strong></span>
+                                    <span>Min Required: <strong>{{ $item->minimum_stock }}</strong></span>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        @php
+                                            $percentage = $item->minimum_stock > 0 ? min(($item->item_quantity / $item->minimum_stock) * 100, 100) : 0;
+                                        @endphp
+                                        <div class="bg-red-500 h-2 rounded-full transition-all duration-1000" style="width: {{ $percentage }}%"></div>
+                                    </div>
+                                    <p class="text-xs text-red-600 mt-1 font-medium">
+                                        {{ $item->minimum_stock - $item->item_quantity }} units needed
+                                    </p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    
+                    @if($criticalStockCount > 6)
+                        <div class="mt-4 text-center">
+                            <a href="{{ route('admin.inventory.index') }}" class="text-red-600 hover:text-red-800 font-medium text-sm">
+                                View {{ $criticalStockCount - 6 }} more critical items →
+                            </a>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    @endif
 
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
@@ -309,30 +438,30 @@
                 </div>
                 
                 <div class="p-6 space-y-3">
-                    <button class="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200">
-                        <i class="fas fa-plus-circle mr-2 text-sm"></i>
-                        New Appointment
-                    </button>
+                    <a href="{{ route('admin.appointments') }}" class="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200">
+                        <i class="fas fa-calendar-check mr-2 text-sm"></i>
+                        View Appointments
+                    </a>
                     
-                    <button class="w-full flex items-center justify-center px-4 py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors duration-200">
-                        <i class="fas fa-user-plus mr-2 text-sm"></i>
-                        Add Patient
-                    </button>
+                    <a href="{{ route('admin.pre-employment') }}" class="w-full flex items-center justify-center px-4 py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors duration-200">
+                        <i class="fas fa-file-medical mr-2 text-sm"></i>
+                        View Pre-Employment
+                    </a>
                     
-                    <button class="w-full flex items-center justify-center px-4 py-3 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 transition-colors duration-200">
+                    <a href="{{ route('admin.tests') }}" class="w-full flex items-center justify-center px-4 py-3 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 transition-colors duration-200">
                         <i class="fas fa-vial mr-2 text-sm"></i>
-                        Schedule Test
-                    </button>
+                        View Medical Tests
+                    </a>
                     
                     <a href="{{ route('admin.inventory.index') }}" class="w-full flex items-center justify-center px-4 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors duration-200">
                         <i class="fas fa-boxes mr-2 text-sm"></i>
                         Manage Inventory
                     </a>
                     
-                    <button class="w-full flex items-center justify-center px-4 py-3 bg-slate-600 text-white rounded-lg font-medium hover:bg-slate-700 transition-colors duration-200">
-                        <i class="fas fa-file-alt mr-2 text-sm"></i>
-                        Generate Report
-                    </button>
+                    <a href="{{ route('admin.report') }}" class="w-full flex items-center justify-center px-4 py-3 bg-slate-600 text-white rounded-lg font-medium hover:bg-slate-700 transition-colors duration-200">
+                        <i class="fas fa-chart-line mr-2 text-sm"></i>
+                        View Reports
+                    </a>
                 </div>
             </div>
 

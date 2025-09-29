@@ -55,6 +55,11 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('admin/appointments/{id}/decline', [App\Http\Controllers\AdminController::class, 'declineAppointment'])->name('admin.appointments.decline');
     Route::post('admin/pre-employment/{id}/approve', [App\Http\Controllers\AdminController::class, 'approvePreEmployment'])->name('admin.pre-employment.approve');
     Route::post('admin/pre-employment/{id}/decline', [App\Http\Controllers\AdminController::class, 'declinePreEmployment'])->name('admin.pre-employment.decline');
+    
+    // Test Assignment Routes
+    Route::get('/admin/test-assignments', [AdminController::class, 'testAssignments'])->name('admin.test-assignments');
+    Route::get('/admin/test-assignments/{id}', [AdminController::class, 'showTestAssignment'])->name('admin.test-assignments.show');
+    Route::post('/admin/test-assignments/{id}/update-status', [AdminController::class, 'updateTestAssignmentStatus'])->name('admin.test-assignments.update-status');
 Route::post('admin/pre-employment/{id}/send-email', [App\Http\Controllers\AdminController::class, 'sendRegistrationEmail'])->name('admin.pre-employment.send-email');
     Route::post('admin/pre-employment/send-all-emails', [AdminController::class, 'sendAllRegistrationEmails'])->name('admin.pre-employment.send-all-emails');
     Route::get('/admin/accounts-and-patients', [AdminController::class, 'companyAccountsAndPatients'])->name('admin.accounts-and-patients');
@@ -305,6 +310,8 @@ Route::middleware(['auth', 'role:plebo'])->group(function () {
     Route::get('/plebo/medical-checklist/opd/{userId}', [PleboController::class, 'showMedicalChecklistOpd'])->name('plebo.medical-checklist.opd');
     Route::post('/plebo/medical-checklist', [PleboController::class, 'storeMedicalChecklist'])->name('plebo.medical-checklist.store');
     Route::patch('/plebo/medical-checklist/{id}', [PleboController::class, 'updateMedicalChecklist'])->name('plebo.medical-checklist.update');
+    Route::get('/plebo/test-assignments', [PleboController::class, 'testAssignments'])->name('plebo.test-assignments');
+    Route::post('/plebo/test-assignments/{id}/update-status', [PleboController::class, 'updateTestAssignmentStatus'])->name('plebo.test-assignments.update-status');
 });
 
 Route::middleware(['auth', 'role:radiologist'])->group(function () {

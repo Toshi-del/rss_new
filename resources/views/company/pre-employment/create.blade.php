@@ -158,8 +158,13 @@
 
                     @php
                         $uniqueCategories = $medicalTestCategories->unique(function($c){ return strtolower($c->name ?? ''); });
+                        // Filter to only show pre-employment, blood chem, and package categories
+                        $allowedCategories = ['pre-employment', 'blood chemistry', 'package'];
+                        $filteredCategories = $uniqueCategories->filter(function($category) use ($allowedCategories) {
+                            return in_array(strtolower(trim($category->name)), $allowedCategories);
+                        });
                     @endphp
-                    @foreach($uniqueCategories as $index => $category)
+                    @foreach($filteredCategories as $index => $category)
                         @php 
                             $categoryName = strtolower(trim($category->name)); 
                             $uniqueTests = $category->activeMedicalTests->unique(function($t){ return strtolower($t->name ?? ''); });
@@ -316,6 +321,56 @@
                     @enderror
                 </div>
 
+                <!-- Price Calculation Summary -->
+                <div id="priceCalculationSection" class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border-l-4 border-green-600 hidden">
+                    <div class="mb-4">
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">
+                            <i class="fas fa-calculator mr-2 text-green-600"></i>Price Calculation Summary
+                        </h3>
+                        <p class="text-sm text-gray-600">Total cost calculation based on selected tests and patient count</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Patient Count -->
+                        <div class="bg-white rounded-lg p-4 border border-green-200">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-sm font-medium text-green-700">Patient Count</p>
+                                <i class="fas fa-users text-green-600"></i>
+                            </div>
+                            <p id="patientCount" class="text-2xl font-bold text-green-900">0</p>
+                            <p class="text-xs text-green-600 mt-1">From Excel file</p>
+                        </div>
+                        
+                        <!-- Price Per Patient -->
+                        <div class="bg-white rounded-lg p-4 border border-green-200">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-sm font-medium text-green-700">Price Per Patient</p>
+                                <i class="fas fa-tag text-green-600"></i>
+                            </div>
+                            <p id="pricePerPatient" class="text-2xl font-bold text-green-900">₱0.00</p>
+                            <p class="text-xs text-green-600 mt-1">Selected tests total</p>
+                        </div>
+                        
+                        <!-- Total Price -->
+                        <div class="bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg p-4 text-white">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-sm font-medium text-green-100">Total Price</p>
+                                <i class="fas fa-receipt text-green-200"></i>
+                            </div>
+                            <p id="totalPrice" class="text-2xl font-bold text-white">₱0.00</p>
+                            <p class="text-xs text-green-200 mt-1">For all patients</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Selected Tests Breakdown -->
+                    <div id="selectedTestsBreakdown" class="mt-6 hidden">
+                        <h4 class="text-md font-semibold text-gray-900 mb-3">
+                            <i class="fas fa-list-ul mr-2 text-green-600"></i>Selected Tests Breakdown
+                        </h4>
+                        <div id="testsList" class="space-y-2"></div>
+                    </div>
+                </div>
+
                 <!-- Form Actions -->
                 <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
                     <a href="{{ route('company.pre-employment.index') }}" 
@@ -388,6 +443,10 @@
             // Show stats
             const totalRows = data.length - 1; // Exclude header
             document.getElementById('preview-stats').textContent = `${totalRows} record(s) found`;
+            
+            // Update patient count in price calculation
+            document.getElementById('patientCount').textContent = totalRows;
+            updatePriceCalculation();
             
             // Clear previous preview
             const headersRow = document.getElementById('preview-headers');
@@ -474,12 +533,92 @@
             
             // Update the category counter after the selection logic
             updateCategoryCount(currentCategoryId);
+            
+            // Update price calculation
+            updatePriceCalculation();
         }
 
         testCheckboxes.forEach(cb => cb.addEventListener('change', handleTestChange));
         
         // Initialize on page load
         updateHiddenInputs();
+        
+        // Price calculation functions
+        function updatePriceCalculation() {
+            const checkedTests = Array.from(testCheckboxes).filter(cb => cb.checked);
+            const patientCount = parseInt(document.getElementById('patientCount').textContent) || 0;
+            const priceCalculationSection = document.getElementById('priceCalculationSection');
+            const selectedTestsBreakdown = document.getElementById('selectedTestsBreakdown');
+            const testsList = document.getElementById('testsList');
+            
+            if (checkedTests.length > 0 && patientCount > 0) {
+                // Show price calculation section
+                priceCalculationSection.classList.remove('hidden');
+                
+                // Calculate total price per patient
+                let totalPricePerPatient = 0;
+                const testsData = [];
+                
+                checkedTests.forEach(cb => {
+                    const testCard = cb.closest('.bg-white');
+                    const testName = testCard.querySelector('h5').textContent;
+                    const priceElement = testCard.querySelector('.text-emerald-700');
+                    const priceText = priceElement ? priceElement.textContent : '₱0.00';
+                    const price = parseFloat(priceText.replace('₱', '').replace(',', '')) || 0;
+                    
+                    totalPricePerPatient += price;
+                    testsData.push({
+                        name: testName,
+                        price: price
+                    });
+                });
+                
+                // Update display
+                const totalPrice = totalPricePerPatient * patientCount;
+                document.getElementById('pricePerPatient').textContent = `₱${totalPricePerPatient.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                document.getElementById('totalPrice').textContent = `₱${totalPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                
+                // Show tests breakdown
+                if (testsData.length > 0) {
+                    selectedTestsBreakdown.classList.remove('hidden');
+                    testsList.innerHTML = '';
+                    
+                    testsData.forEach(test => {
+                        const testItem = document.createElement('div');
+                        testItem.className = 'flex items-center justify-between bg-white rounded-lg p-3 border border-green-200';
+                        testItem.innerHTML = `
+                            <div class="flex items-center">
+                                <i class="fas fa-vial text-green-600 mr-2"></i>
+                                <span class="text-sm font-medium text-gray-900">${test.name}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-sm font-bold text-green-700">₱${test.price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                                <p class="text-xs text-gray-500">per patient</p>
+                            </div>
+                        `;
+                        testsList.appendChild(testItem);
+                    });
+                    
+                    // Add total row
+                    const totalItem = document.createElement('div');
+                    totalItem.className = 'flex items-center justify-between bg-green-100 rounded-lg p-3 border-2 border-green-300 mt-2';
+                    totalItem.innerHTML = `
+                        <div class="flex items-center">
+                            <i class="fas fa-calculator text-green-700 mr-2"></i>
+                            <span class="text-sm font-bold text-green-900">Total for ${patientCount} patient(s)</span>
+                        </div>
+                        <span class="text-lg font-bold text-green-800">₱${totalPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    `;
+                    testsList.appendChild(totalItem);
+                } else {
+                    selectedTestsBreakdown.classList.add('hidden');
+                }
+            } else {
+                // Hide price calculation section
+                priceCalculationSection.classList.add('hidden');
+                selectedTestsBreakdown.classList.add('hidden');
+            }
+        }
 
         // Add form submission debugging
         const form = document.querySelector('form');

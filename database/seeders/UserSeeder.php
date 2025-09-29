@@ -53,10 +53,10 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password123'),
             ],
             [
-                'fname' => 'Med Tech Sarah',
+                'fname' => 'Nurse Sarah',
                 'lname' => 'Johnson',
                 'mname' => 'Elizabeth',
-                'email' => 'medtech@rsshealth.com',
+                'email' => 'nurse@rsshealth.com',
                 'phone' => '09123456741',
                 'birthday' => '1992-07-10',
                 'age' => 32,

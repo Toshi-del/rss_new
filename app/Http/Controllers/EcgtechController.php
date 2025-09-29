@@ -11,6 +11,7 @@ use App\Models\AnnualPhysicalExamination;
 use App\Models\OpdExamination;
 use App\Models\User;
 use App\Models\Message;
+use App\Models\MedicalTest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,21 +22,42 @@ class EcgtechController extends Controller
      */
     public function dashboard()
     {
-        // Get pre-employment records not yet submitted
+        // Get pre-employment records not yet submitted - only those with ECG and Drug test
         $preEmployments = PreEmploymentRecord::where('status', 'approved')
+            ->whereHas('medicalTest', function ($q) {
+                $q->where('name', 'Pre-Employment with ECG and Drug test');
+            })
             ->whereDoesntHave('preEmploymentExamination', function ($q) {
                 $q->whereIn('status', ['Approved', 'sent_to_company']);
             })
             ->latest()->take(5)->get();
-        $preEmploymentCount = PreEmploymentRecord::where('status', 'approved')->count();
+        $preEmploymentCount = PreEmploymentRecord::where('status', 'approved')
+            ->whereHas('medicalTest', function ($q) {
+                $q->where('name', 'Pre-Employment with ECG and Drug test');
+            })
+            ->count();
 
-        // Get patients for annual physical not yet submitted
+        // Get patients for annual physical with ECG and Drug test only
         $patients = Patient::where('status', 'approved')
+            ->whereHas('appointment', function ($q) {
+                $q->where('status', 'approved')
+                  ->whereHas('medicalTest', function ($testQuery) {
+                      $testQuery->where('name', 'Annual Medical with ECG and Drug test');
+                  });
+            })
             ->whereDoesntHave('annualPhysicalExamination', function ($q) {
                 $q->whereIn('status', ['completed', 'sent_to_company']);
             })
             ->latest()->take(5)->get();
-        $patientCount = Patient::where('status', 'approved')->count();
+        
+        $patientCount = Patient::where('status', 'approved')
+            ->whereHas('appointment', function ($q) {
+                $q->where('status', 'approved')
+                  ->whereHas('medicalTest', function ($testQuery) {
+                      $testQuery->where('name', 'Annual Medical with ECG and Drug test');
+                  });
+            })
+            ->count();
 
         // Get OPD walk-in patients (users with 'opd' role)
         $opdPatients = User::where('role', 'opd')->latest()->take(5)->get();
@@ -67,6 +89,9 @@ class EcgtechController extends Controller
     public function preEmployment()
     {
         $preEmployments = PreEmploymentRecord::where('status', 'approved')
+            ->whereHas('medicalTest', function ($q) {
+                $q->where('name', 'Pre-Employment with ECG and Drug test');
+            })
             ->whereDoesntHave('preEmploymentExamination', function ($q) {
                 $q->whereIn('status', ['Approved', 'sent_to_company']);
             })
@@ -81,6 +106,12 @@ class EcgtechController extends Controller
     public function annualPhysical()
     {
         $patients = Patient::where('status', 'approved')
+            ->whereHas('appointment', function ($q) {
+                $q->where('status', 'approved')
+                  ->whereHas('medicalTest', function ($testQuery) {
+                      $testQuery->where('name', 'Annual Medical with ECG and Drug test');
+                  });
+            })
             ->whereDoesntHave('annualPhysicalExamination', function ($q) {
                 $q->whereIn('status', ['completed', 'sent_to_company']);
             })

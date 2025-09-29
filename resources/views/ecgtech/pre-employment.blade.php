@@ -1,8 +1,8 @@
 @extends('layouts.ecgtech')
 
-@section('title', 'Pre-Employment Records')
+@section('title', 'Pre-Employment with ECG & Drug Test')
 
-@section('page-title', 'Pre-Employment Records')
+@section('page-title', 'Pre-Employment with ECG & Drug Test')
 
 @section('content')
 @if(session('success'))
@@ -42,8 +42,8 @@
 <!-- Records Table -->
 <div class="bg-white rounded-lg shadow-sm">
     <div class="p-6 border-b border-gray-200">
-        <h2 class="text-xl font-semibold text-gray-800">Pre-Employment Records</h2>
-        <p class="text-gray-600 text-sm mt-1">Manage ECG examinations for pre-employment records</p>
+        <h2 class="text-xl font-semibold text-gray-800">Pre-Employment with ECG & Drug Test</h2>
+        <p class="text-gray-600 text-sm mt-1">Manage ECG examinations for pre-employment records requiring ECG and drug test</p>
     </div>
     
     <div class="overflow-x-auto">
@@ -100,7 +100,7 @@
                 @empty
                     <tr>
                         <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
-                            No pre-employment records found
+                            No pre-employment records with ECG and drug test found
                         </td>
                     </tr>
                 @endforelse

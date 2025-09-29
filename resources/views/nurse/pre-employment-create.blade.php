@@ -97,6 +97,18 @@
         @csrf
         <input type="hidden" name="pre_employment_record_id" value="{{ $preEmploymentRecord->id }}">
         
+        @php
+            $medicalTestName = $preEmploymentRecord->medicalTest->name ?? '';
+            $isAudiometryIshiharaOnly = strtolower($medicalTestName) === 'audiometry and ishihara only';
+            $hasDrugTest = in_array(strtolower($medicalTestName), [
+                'pre-employment with drug test',
+                'pre-employment with ecg and drug test',
+                'pre-employment with drug test and audio and ishihara',
+                'drug test only (bring valid i.d)'
+            ]);
+        @endphp
+
+        @if(!$isAudiometryIshiharaOnly)
         <!-- Physical Examination Card -->
         <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">
             <div class="flex items-center space-x-3 mb-6">
@@ -189,7 +201,15 @@
                 </div>
             </div>
         </div>
+        @else
+        <!-- Hidden inputs for physical examination when Audiometry and Ishihara Only -->
+        <input type="hidden" name="physical_exam[temp]" value="N/A - Not required for Audiometry and Ishihara Only" />
+        <input type="hidden" name="physical_exam[height]" value="N/A - Not required for Audiometry and Ishihara Only" />
+        <input type="hidden" name="physical_exam[weight]" value="N/A - Not required for Audiometry and Ishihara Only" />
+        <input type="hidden" name="physical_exam[heart_rate]" value="N/A - Not required for Audiometry and Ishihara Only" />
+        @endif
         
+        @if(!$isAudiometryIshiharaOnly)
         <!-- Skin Identification Marks Card -->
         <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">
             <div class="flex items-center space-x-3 mb-6">
@@ -216,20 +236,37 @@
                 @enderror
             </div>
         </div>
+        @else
+        <!-- Hidden input for skin marks when Audiometry and Ishihara Only -->
+        <input type="hidden" name="skin_marks" value="N/A - Not required for Audiometry and Ishihara Only" />
+        @endif
         
-        <!-- Vision Tests Card -->
+        <!-- Vision Tests Card - Show for Audiometry and Ishihara Only (for Ishihara test) or other tests (for visual acuity) -->
         <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">
             <div class="flex items-center space-x-3 mb-6">
                 <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
                     <i class="fas fa-eye text-purple-600"></i>
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-gray-900">Vision Tests</h3>
-                    <p class="text-gray-600 text-sm">Visual acuity and color vision assessments</p>
+                    <h3 class="text-xl font-bold text-gray-900">
+                        @if($isAudiometryIshiharaOnly)
+                            Ishihara Color Vision Test
+                        @else
+                            Vision Tests
+                        @endif
+                    </h3>
+                    <p class="text-gray-600 text-sm">
+                        @if($isAudiometryIshiharaOnly)
+                            Color vision assessment using Ishihara test
+                        @else
+                            Visual acuity and color vision assessments
+                        @endif
+                    </p>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 @if(!$isAudiometryIshiharaOnly) md:grid-cols-2 @endif gap-6">
+                @if(!$isAudiometryIshiharaOnly)
                 <div class="space-y-2">
                     <label class="block text-sm font-semibold text-gray-700">
                         Visual Acuity <span class="text-red-500">*</span>
@@ -243,7 +280,12 @@
                         </p>
                     @enderror
                 </div>
+                @else
+                <!-- Hidden input for visual acuity when Audiometry and Ishihara Only -->
+                <input type="hidden" name="visual" value="N/A - Not required for Audiometry and Ishihara Only" />
+                @endif
 
+                @if($isAudiometryIshiharaOnly || in_array(strtolower($medicalTestName), ['pre-employment with drug test and audio and ishihara']))
                 <div class="space-y-2">
                     <label class="block text-sm font-semibold text-gray-700">
                         Ishihara Test <span class="text-red-500">*</span>
@@ -257,8 +299,246 @@
                         </p>
                     @enderror
                 </div>
+                @else
+                <!-- Ishihara test hidden for other pre-employment medical tests -->
+                <input type="hidden" name="ishihara_test" value="N/A - Not required for this medical test" />
+                @endif
             </div>
         </div>
+        
+        @if($hasDrugTest)
+        <!-- Drug Test Form Card -->
+        <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-pills text-red-600"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Drug Test Result (DT Form 2)</h3>
+                    <p class="text-gray-600 text-sm">Urine drug screening examination form</p>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Patient Information Section -->
+                <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Patient Information</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Patient Name <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="drug_test[patient_name]" 
+                                   value="{{ old('drug_test.patient_name', ($preEmploymentRecord->full_name ?? ($preEmploymentRecord->first_name . ' ' . $preEmploymentRecord->last_name))) }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('drug_test.patient_name') border-red-500 ring-2 ring-red-200 @enderror" 
+                                   placeholder="Full name" required />
+                            @error('drug_test.patient_name')
+                                <p class="mt-1 text-sm text-red-600 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Address <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="drug_test[address]" value="{{ old('drug_test.address') }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('drug_test.address') border-red-500 ring-2 ring-red-200 @enderror" 
+                                   placeholder="Patient address" required />
+                            @error('drug_test.address')
+                                <p class="mt-1 text-sm text-red-600 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Age <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" name="drug_test[age]" 
+                                   value="{{ old('drug_test.age', $preEmploymentRecord->age ?? '') }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('drug_test.age') border-red-500 ring-2 ring-red-200 @enderror" 
+                                   placeholder="Age" required />
+                            @error('drug_test.age')
+                                <p class="mt-1 text-sm text-red-600 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Gender <span class="text-red-500">*</span>
+                            </label>
+                            <select name="drug_test[gender]" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('drug_test.gender') border-red-500 ring-2 ring-red-200 @enderror" 
+                                    required>
+                                <option value="">Select Gender</option>
+                                <option value="Male" {{ old('drug_test.gender', ucfirst($preEmploymentRecord->sex ?? '')) == 'Male' ? 'selected' : '' }}>Male</option>
+                                <option value="Female" {{ old('drug_test.gender', ucfirst($preEmploymentRecord->sex ?? '')) == 'Female' ? 'selected' : '' }}>Female</option>
+                            </select>
+                            @error('drug_test.gender')
+                                <p class="mt-1 text-sm text-red-600 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Examination Details Section -->
+                <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Examination Details</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Date and Time of Examination <span class="text-red-500">*</span>
+                            </label>
+                            <input type="datetime-local" name="drug_test[examination_datetime]" 
+                                   value="{{ old('drug_test.examination_datetime', now()->format('Y-m-d\TH:i')) }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('drug_test.examination_datetime') border-red-500 ring-2 ring-red-200 @enderror" 
+                                   required />
+                            @error('drug_test.examination_datetime')
+                                <p class="mt-1 text-sm text-red-600 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Date of Admission to the Program
+                            </label>
+                            <input type="date" name="drug_test[admission_date]" 
+                                   value="{{ old('drug_test.admission_date') }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('drug_test.admission_date') border-red-500 ring-2 ring-red-200 @enderror" />
+                            @error('drug_test.admission_date')
+                                <p class="mt-1 text-sm text-red-600 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Date of Last Intake of Substance
+                            </label>
+                            <input type="date" name="drug_test[last_intake_date]" 
+                                   value="{{ old('drug_test.last_intake_date') }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('drug_test.last_intake_date') border-red-500 ring-2 ring-red-200 @enderror" />
+                            @error('drug_test.last_intake_date')
+                                <p class="mt-1 text-sm text-red-600 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Test Method <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="drug_test[test_method]" 
+                                   value="{{ old('drug_test.test_method', 'URINE TEST KIT') }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('drug_test.test_method') border-red-500 ring-2 ring-red-200 @enderror" 
+                                   required />
+                            @error('drug_test.test_method')
+                                <p class="mt-1 text-sm text-red-600 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Drug Test Results Section -->
+                <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Drug Test Results</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse border border-gray-300">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900">Drug/Metabolites</th>
+                                    <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900">Result</th>
+                                    <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900">Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="border border-gray-300 px-4 py-3 font-medium">METHAMPHETAMINE (Meth)</td>
+                                    <td class="border border-gray-300 px-4 py-3">
+                                        <select name="drug_test[methamphetamine_result]" 
+                                                class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('drug_test.methamphetamine_result') border-red-500 ring-2 ring-red-200 @enderror" 
+                                                required>
+                                            <option value="">Select Result</option>
+                                            <option value="Negative" {{ old('drug_test.methamphetamine_result') == 'Negative' ? 'selected' : '' }}>Negative</option>
+                                            <option value="Positive" {{ old('drug_test.methamphetamine_result') == 'Positive' ? 'selected' : '' }}>Positive</option>
+                                        </select>
+                                        @error('drug_test.methamphetamine_result')
+                                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                        @enderror
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-3">
+                                        <input type="text" name="drug_test[methamphetamine_remarks]" 
+                                               value="{{ old('drug_test.methamphetamine_remarks') }}" 
+                                               class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                               placeholder="Optional remarks" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 px-4 py-3 font-medium">TETRAHYDROCANNABINOL (Marijuana)</td>
+                                    <td class="border border-gray-300 px-4 py-3">
+                                        <select name="drug_test[marijuana_result]" 
+                                                class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('drug_test.marijuana_result') border-red-500 ring-2 ring-red-200 @enderror" 
+                                                required>
+                                            <option value="">Select Result</option>
+                                            <option value="Negative" {{ old('drug_test.marijuana_result') == 'Negative' ? 'selected' : '' }}>Negative</option>
+                                            <option value="Positive" {{ old('drug_test.marijuana_result') == 'Positive' ? 'selected' : '' }}>Positive</option>
+                                        </select>
+                                        @error('drug_test.marijuana_result')
+                                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                        @enderror
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-3">
+                                        <input type="text" name="drug_test[marijuana_remarks]" 
+                                               value="{{ old('drug_test.marijuana_remarks') }}" 
+                                               class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                               placeholder="Optional remarks" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Signatures Section -->
+                <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Signatures</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Test Conducted by:
+                            </label>
+                            <div class="border-b-2 border-gray-400 pb-2 mb-2">
+                                <p class="text-center font-medium">{{ Auth::user()->fname }} {{ Auth::user()->lname }}</p>
+                            </div>
+                            <p class="text-xs text-gray-500 text-center">Signature over Printed Name of Staff</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Conforme:
+                            </label>
+                            <div class="border-b-2 border-gray-400 pb-2 mb-2 h-8">
+                                <!-- Empty space for patient signature -->
+                            </div>
+                            <p class="text-xs text-gray-500 text-center">Signature over Printed Name of Client</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
         
         <!-- Medical Findings Card -->
         <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">

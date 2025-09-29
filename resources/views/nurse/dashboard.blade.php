@@ -111,113 +111,76 @@
         </div>
     </div>
 
-    <!-- Recent Appointments Section -->
-    <div class="content-card rounded-xl shadow-xl border-2 border-gray-200">
-        <div class="bg-gradient-to-r from-emerald-600 to-emerald-700 px-8 py-6 rounded-t-xl">
+    <!-- Recent Patients Section -->
+    <div class="content-card rounded-xl shadow-xl border-2 border-gray-200 mb-8">
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 rounded-t-xl">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center backdrop-blur-sm border border-white/20">
-                        <i class="fas fa-calendar-alt text-white"></i>
+                        <i class="fas fa-users text-white"></i>
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-white">Recent Appointments</h3>
-                        <p class="text-emerald-100 text-sm">Latest patient appointments and examinations</p>
+                        <h3 class="text-xl font-bold text-white">Recent Patients</h3>
+                        <p class="text-blue-100 text-sm">Latest approved annual physical patients</p>
                     </div>
                 </div>
-                <a href="{{ route('nurse.appointments') }}" class="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 font-medium">
-                    <i class="fas fa-external-link-alt mr-2"></i>View All
-                </a>
+                <div class="px-4 py-2 bg-white/10 text-white rounded-lg backdrop-blur-sm border border-white/20 font-medium">
+                    <i class="fas fa-eye mr-2"></i>View Only
+                </div>
             </div>
         </div>
         
         <div class="p-0">
-            @if($appointments->count() > 0)
+            @if($patients->count() > 0)
                 <div class="overflow-x-auto">
                     <table class="w-full">
                         <thead class="bg-gray-50 border-b border-gray-200">
                             <tr>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Patient</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Contact</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Medical Test</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Schedule</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Age & Gender</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Registration Date</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-100">
-                            @foreach($appointments as $appointment)
-                                @foreach($appointment->patients as $patient)
-                                    <tr class="hover:bg-gray-50 transition-colors duration-150">
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center space-x-3">
-                                                <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                                                    <span class="text-emerald-600 font-semibold text-sm">
-                                                        {{ substr($patient->first_name, 0, 1) }}{{ substr($patient->last_name, 0, 1) }}
-                                                    </span>
-                                                </div>
-                                                <div>
-                                                    <p class="text-sm font-semibold text-gray-900">{{ $patient->first_name }} {{ $patient->last_name }}</p>
-                                                    <p class="text-xs text-gray-500">Patient ID: #{{ $patient->id }}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <p class="text-sm text-gray-900">{{ $patient->email }}</p>
-                                            <p class="text-xs text-gray-500">{{ $patient->phone ?? 'No phone' }}</p>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">
-                                                @if($appointment->medicalTestCategory)
-                                                    <span class="font-medium">{{ $appointment->medicalTestCategory->name }}</span>
-                                                    @if($appointment->medicalTest)
-                                                        <p class="text-xs text-gray-500">{{ $appointment->medicalTest->name }}</p>
-                                                    @endif
-                                                @else
-                                                    <span class="text-gray-500">{{ $appointment->appointment_type ?? 'General Checkup' }}</span>
-                                                @endif
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm">
-                                                <p class="text-gray-900 font-medium">{{ $appointment->formatted_date }}</p>
-                                                <p class="text-xs text-gray-500">{{ $appointment->formatted_time_slot }}</p>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            @if($appointment->status === 'completed')
-                                                <span class="px-3 py-1 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full">
-                                                    <i class="fas fa-check-circle mr-1"></i>Completed
+                            @foreach($patients as $patient)
+                                <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                                <span class="text-blue-600 font-semibold text-sm">
+                                                    {{ substr($patient->first_name, 0, 1) }}{{ substr($patient->last_name, 0, 1) }}
                                                 </span>
-                                            @elseif($appointment->status === 'pending')
-                                                <span class="px-3 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">
-                                                    <i class="fas fa-clock mr-1"></i>Pending
-                                                </span>
-                                            @else
-                                                <span class="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
-                                                    <i class="fas fa-question-circle mr-1"></i>{{ ucfirst($appointment->status ?? 'Unknown') }}
-                                                </span>
-                                            @endif
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <div class="flex items-center space-x-2">
-                                                @if($appointment->status === 'pending')
-                                                    <button class="text-emerald-600 hover:text-emerald-900 p-2 hover:bg-emerald-50 rounded-lg transition-colors" 
-                                                            title="Complete Examination">
-                                                        <i class="fas fa-stethoscope"></i>
-                                                    </button>
-                                                @endif
-                                                <button class="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors" 
-                                                        title="View Patient Details">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                                <button class="text-gray-600 hover:text-gray-900 p-2 hover:bg-gray-50 rounded-lg transition-colors" 
-                                                        title="View Medical History">
-                                                    <i class="fas fa-file-medical"></i>
-                                                </button>
                                             </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
+                                            <div>
+                                                <p class="text-sm font-semibold text-gray-900">{{ $patient->first_name }} {{ $patient->last_name }}</p>
+                                                <p class="text-xs text-gray-500">Patient ID: #{{ $patient->id }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <p class="text-sm text-gray-900">{{ $patient->email }}</p>
+                                        <p class="text-xs text-gray-500">{{ $patient->phone ?? 'No phone' }}</p>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm">
+                                            <p class="text-gray-900 font-medium">{{ $patient->age ?? 'N/A' }} years old</p>
+                                            <p class="text-xs text-gray-500">{{ $patient->sex ?? 'Not specified' }}</p>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm">
+                                            <p class="text-gray-900 font-medium">{{ $patient->created_at->format('M d, Y') }}</p>
+                                            <p class="text-xs text-gray-500">{{ $patient->created_at->diffForHumans() }}</p>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-3 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                                            <i class="fas fa-check-circle mr-1"></i>{{ ucfirst($patient->status) }}
+                                        </span>
+                                    </td>
+                                </tr>
                             @endforeach
                         </tbody>
                     </table>
@@ -226,13 +189,103 @@
                 <!-- Empty State -->
                 <div class="text-center py-16">
                     <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-gray-100 flex items-center justify-center">
-                        <i class="fas fa-calendar-times text-4xl text-gray-400"></i>
+                        <i class="fas fa-user-times text-4xl text-gray-400"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">No Recent Appointments</h3>
-                    <p class="text-gray-600 mb-8 max-w-md mx-auto">There are no recent appointments to display. New appointments will appear here once scheduled.</p>
-                    <a href="{{ route('nurse.appointments') }}" class="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium">
-                        <i class="fas fa-calendar-plus mr-2"></i>View All Appointments
-                    </a>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">No Recent Patients</h3>
+                    <p class="text-gray-600 mb-8 max-w-md mx-auto">There are no recent patients to display. New patients will appear here once registered.</p>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <!-- Recent Pre-Employment Section -->
+    <div class="content-card rounded-xl shadow-xl border-2 border-gray-200">
+        <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-8 py-6 rounded-t-xl">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center backdrop-blur-sm border border-white/20">
+                        <i class="fas fa-briefcase text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Recent Pre-Employment</h3>
+                        <p class="text-purple-100 text-sm">Latest approved pre-employment records</p>
+                    </div>
+                </div>
+                <div class="px-4 py-2 bg-white/10 text-white rounded-lg backdrop-blur-sm border border-white/20 font-medium">
+                    <i class="fas fa-eye mr-2"></i>View Only
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-0">
+            @if($preEmployments->count() > 0)
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Applicant</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Company</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Medical Test</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Age & Gender</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-100">
+                            @foreach($preEmployments as $preEmployment)
+                                <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                                <span class="text-purple-600 font-semibold text-sm">
+                                                    {{ substr($preEmployment->first_name, 0, 1) }}{{ substr($preEmployment->last_name, 0, 1) }}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-semibold text-gray-900">{{ $preEmployment->first_name }} {{ $preEmployment->last_name }}</p>
+                                                <p class="text-xs text-gray-500">Record ID: #{{ $preEmployment->id }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <p class="text-sm text-gray-900 font-medium">{{ $preEmployment->company_name }}</p>
+                                        <p class="text-xs text-gray-500">{{ $preEmployment->position ?? 'N/A' }}</p>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            @if($preEmployment->medicalTestCategory)
+                                                <span class="font-medium">{{ $preEmployment->medicalTestCategory->name }}</span>
+                                                @if($preEmployment->medicalTest)
+                                                    <p class="text-xs text-gray-500">{{ $preEmployment->medicalTest->name }}</p>
+                                                @endif
+                                            @else
+                                                <span class="text-gray-500">{{ $preEmployment->medical_exam_type ?? 'Standard Exam' }}</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm">
+                                            <p class="text-gray-900 font-medium">{{ $preEmployment->age ?? 'N/A' }} years old</p>
+                                            <p class="text-xs text-gray-500">{{ $preEmployment->sex ?? 'Not specified' }}</p>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-3 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                                            <i class="fas fa-check-circle mr-1"></i>{{ ucfirst($preEmployment->status) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <!-- Empty State -->
+                <div class="text-center py-16">
+                    <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-gray-100 flex items-center justify-center">
+                        <i class="fas fa-briefcase text-4xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">No Recent Pre-Employment Records</h3>
+                    <p class="text-gray-600 mb-8 max-w-md mx-auto">There are no recent pre-employment records to display. New records will appear here once approved.</p>
                 </div>
             @endif
         </div>
