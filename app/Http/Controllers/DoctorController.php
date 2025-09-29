@@ -10,6 +10,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\PreEmploymentExamination;
+use App\Models\MedicalTestCategory;
+use App\Models\MedicalTest;
+use App\Models\MedicalTestReferenceRange;
 
 class DoctorController extends Controller
 {
@@ -252,7 +255,11 @@ class DoctorController extends Controller
      */
     public function showExamination($id)
     {
-        $examination = PreEmploymentExamination::with('preEmploymentRecord')->findOrFail($id);
+        $examination = PreEmploymentExamination::with([
+            'preEmploymentRecord.preEmploymentMedicalTests.medicalTest.referenceRanges',
+            'preEmploymentRecord.preEmploymentMedicalTests.medicalTestCategory'
+        ])->findOrFail($id);
+        
         return view('doctor.pre-employment-examination', compact('examination'));
     }
 
@@ -546,5 +553,112 @@ class DoctorController extends Controller
         $medicalChecklist->update($data);
 
         return redirect()->back()->with('success', 'Medical checklist updated successfully.');
+    }
+
+    /**
+     * Display medical test categories
+     */
+    public function medicalTestCategories(Request $request)
+    {
+        $search = $request->get('search');
+        
+        $categories = MedicalTestCategory::withCount('medicalTests')
+            ->when($search, function ($query, $search) {
+                return $query->where('name', 'like', "%{$search}%")
+                           ->orWhere('description', 'like', "%{$search}%");
+            })
+            ->paginate(12)
+            ->appends($request->query());
+        
+        return view('doctor.medical-test-categories.index', compact('categories', 'search'));
+    }
+
+    /**
+     * Show specific medical test category
+     */
+    public function showMedicalTestCategory($id)
+    {
+        $category = MedicalTestCategory::with('medicalTests')->findOrFail($id);
+        
+        return view('doctor.medical-test-categories.show', compact('category'));
+    }
+
+    /**
+     * Display medical tests
+     */
+    public function medicalTests(Request $request)
+    {
+        $search = $request->get('search');
+        $categoryFilter = $request->get('category');
+        
+        $tests = MedicalTest::with('category')
+            ->when($search, function ($query, $search) {
+                return $query->where('name', 'like', "%{$search}%")
+                           ->orWhere('description', 'like', "%{$search}%")
+                           ->orWhereHas('category', function ($q) use ($search) {
+                               $q->where('name', 'like', "%{$search}%");
+                           });
+            })
+            ->when($categoryFilter, function ($query, $categoryFilter) {
+                return $query->where('medical_test_category_id', $categoryFilter);
+            })
+            ->paginate(15)
+            ->appends($request->query());
+            
+        $categories = MedicalTestCategory::all();
+        
+        return view('doctor.medical-tests.index', compact('tests', 'categories', 'search', 'categoryFilter'));
+    }
+
+    /**
+     * Show edit form for medical test
+     */
+    public function editMedicalTest($id)
+    {
+        $test = MedicalTest::with(['category', 'referenceRanges'])->findOrFail($id);
+        $categories = MedicalTestCategory::all();
+        
+        return view('doctor.medical-tests.edit', compact('test', 'categories'));
+    }
+
+    /**
+     * Update medical test (doctors can only edit reference ranges)
+     */
+    public function updateMedicalTest(Request $request, $id)
+    {
+        $test = MedicalTest::findOrFail($id);
+        
+        $request->validate([
+            'reference_ranges.*.reference_name' => 'nullable|string|max:255',
+            'reference_ranges.*.reference_range' => 'nullable|string|max:255',
+        ]);
+
+        // Doctors can only update reference ranges, not basic test information
+        // Handle reference ranges
+        if ($request->has('reference_ranges')) {
+            // Delete existing reference ranges
+            $test->referenceRanges()->delete();
+            
+            // Add new reference ranges
+            $referenceRanges = collect($request->reference_ranges)
+                ->filter(function ($range) {
+                    return !empty($range['reference_name']) && !empty($range['reference_range']);
+                })
+                ->map(function ($range, $index) {
+                    return [
+                        'reference_name' => $range['reference_name'],
+                        'reference_range' => $range['reference_range'],
+                        'sort_order' => $index,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                });
+
+            if ($referenceRanges->isNotEmpty()) {
+                $test->referenceRanges()->createMany($referenceRanges->toArray());
+            }
+        }
+
+        return redirect()->route('medical-tests.index')->with('success', 'Reference ranges updated successfully.');
     }
 }

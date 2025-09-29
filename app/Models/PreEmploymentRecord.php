@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class PreEmploymentRecord extends Model
 {
@@ -59,6 +61,34 @@ class PreEmploymentRecord extends Model
     public function medicalChecklist(): HasOne
     {
         return $this->hasOne(MedicalChecklist::class, 'pre_employment_record_id');
+    }
+
+    /**
+     * Get the medical tests associated with this pre-employment record
+     */
+    public function preEmploymentMedicalTests(): HasMany
+    {
+        return $this->hasMany(PreEmploymentMedicalTest::class);
+    }
+
+    /**
+     * Get the medical tests through the pivot table
+     */
+    public function medicalTests(): BelongsToMany
+    {
+        return $this->belongsToMany(MedicalTest::class, 'pre_employment_medical_tests')
+                    ->withPivot('medical_test_category_id')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get the medical test categories through the pivot table
+     */
+    public function medicalTestCategories(): BelongsToMany
+    {
+        return $this->belongsToMany(MedicalTestCategory::class, 'pre_employment_medical_tests')
+                    ->withPivot('medical_test_id')
+                    ->withTimestamps();
     }
 
     // Helper method to parse other_exams JSON data

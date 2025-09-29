@@ -16,23 +16,102 @@
     </div>
 <?php endif; ?>
 
+<?php if($errors->any()): ?>
+    <div class="mb-4 p-4 rounded bg-red-100 text-red-800 border border-red-300">
+        <h4 class="font-semibold mb-2">Validation Errors:</h4>
+        <ul class="list-disc list-inside">
+            <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <li><?php echo e($error); ?></li>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+        </ul>
+    </div>
+<?php endif; ?>
+
+
+<?php if(config('app.debug')): ?>
+    <div class="mb-4 p-4 rounded bg-blue-100 text-blue-800 border border-blue-300 text-sm">
+        <h4 class="font-semibold mb-2">Debug Info:</h4>
+        <p><strong>Examination Type:</strong> <?php echo e($examinationType ?? 'Not set'); ?></p>
+        <p><strong>Pre-Employment Record ID:</strong> <?php echo e(isset($preEmploymentRecord) ? $preEmploymentRecord->id : 'Not set'); ?></p>
+        <p><strong>Patient ID:</strong> <?php echo e(isset($patient) ? $patient->id : 'Not set'); ?></p>
+        <p><strong>Medical Checklist ID:</strong> <?php echo e(isset($medicalChecklist) && $medicalChecklist->id ? $medicalChecklist->id : 'Not set'); ?></p>
+        <p><strong>Name:</strong> <?php echo e($name ?? 'Not set'); ?></p>
+        <p><strong>Age:</strong> <?php echo e($age ?? 'Not set'); ?></p>
+        <p><strong>Number:</strong> <?php echo e($number ?? 'Not set'); ?></p>
+        <?php if(isset($medicalChecklist) && $medicalChecklist->id): ?>
+            <p><strong>Saved Checklist ID:</strong> <?php echo e($medicalChecklist->id); ?></p>
+            <p><strong>Saved Name:</strong> <?php echo e($medicalChecklist->name); ?></p>
+            <p><strong>Saved Age:</strong> <?php echo e($medicalChecklist->age); ?></p>
+            <p><strong>Saved Number:</strong> <?php echo e($medicalChecklist->number); ?></p>
+            <p><strong>Saved Examination Type:</strong> <?php echo e($medicalChecklist->examination_type); ?></p>
+            <p><strong>Saved Pre-Employment Record ID:</strong> <?php echo e($medicalChecklist->pre_employment_record_id ?: 'NULL'); ?></p>
+            <p><strong>Saved Patient ID:</strong> <?php echo e($medicalChecklist->patient_id ?: 'NULL'); ?></p>
+            <p><strong>Stool Exam Done By:</strong> <?php echo e($medicalChecklist->stool_exam_done_by ?: 'Not set'); ?></p>
+            <p><strong>Urinalysis Done By:</strong> <?php echo e($medicalChecklist->urinalysis_done_by ?: 'Not set'); ?></p>
+        <?php endif; ?>
+        <p><strong>Request Pre-Employment Record ID:</strong> <?php echo e(request('pre_employment_record_id') ?: 'Not in request'); ?></p>
+        <p><strong>Request Patient ID:</strong> <?php echo e(request('patient_id') ?: 'Not in request'); ?></p>
+        <p><strong>Form Hidden Field - Examination Type:</strong> <?php echo e((isset($examinationType) && ($examinationType === 'pre-employment' || $examinationType === 'pre_employment')) ? 'pre_employment' : 'annual_physical'); ?></p>
+        <p><strong>Form Hidden Field - Pre-Employment Record ID:</strong> <?php echo e(request('pre_employment_record_id') ?: (isset($preEmploymentRecord) && $preEmploymentRecord ? $preEmploymentRecord->id : 'Not set')); ?></p>
+        <p><strong>Form Hidden Field - Patient ID:</strong> <?php echo e(request('patient_id') ?: (isset($patient) && $patient ? $patient->id : 'Not set')); ?></p>
+        <p><strong>Current URL:</strong> <?php echo e(request()->fullUrl()); ?></p>
+        <p><strong>All Request Parameters:</strong> <?php echo e(json_encode(request()->all())); ?></p>
+        <?php
+            $debugFormAction = isset($medicalChecklist) && $medicalChecklist->id 
+                ? route('pathologist.medical-checklist.update', $medicalChecklist->id) 
+                : route('pathologist.medical-checklist.store');
+            
+            if (request('pre_employment_record_id') || request('patient_id') || request('examination_type')) {
+                $params = [];
+                if (request('pre_employment_record_id')) $params['pre_employment_record_id'] = request('pre_employment_record_id');
+                if (request('patient_id')) $params['patient_id'] = request('patient_id');
+                if (request('examination_type')) $params['examination_type'] = request('examination_type');
+                $debugFormAction .= '?' . http_build_query($params);
+            }
+        ?>
+        <p><strong>Form Action URL:</strong> <?php echo e($debugFormAction); ?></p>
+    </div>
+<?php endif; ?>
+
 <div class="max-w-4xl mx-auto py-8">
     <div class="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
         <div class="bg-teal-900 text-white text-center py-3 rounded-t-lg mb-8">
             <h2 class="text-xl font-bold tracking-wide">MEDICAL CHECKLIST</h2>
         </div>
 
-        <form action="<?php echo e(isset($medicalChecklist) && $medicalChecklist->id ? route('pathologist.medical-checklist.update', $medicalChecklist->id) : route('pathologist.medical-checklist.store')); ?>" method="POST" class="space-y-8">
+        <?php
+            $formAction = isset($medicalChecklist) && $medicalChecklist->id 
+                ? route('pathologist.medical-checklist.update', $medicalChecklist->id) 
+                : route('pathologist.medical-checklist.store');
+            
+            // Preserve URL parameters in form action
+            if (request('pre_employment_record_id') || request('patient_id') || request('examination_type')) {
+                $params = [];
+                if (request('pre_employment_record_id')) $params['pre_employment_record_id'] = request('pre_employment_record_id');
+                if (request('patient_id')) $params['patient_id'] = request('patient_id');
+                if (request('examination_type')) $params['examination_type'] = request('examination_type');
+                $formAction .= '?' . http_build_query($params);
+            }
+        ?>
+        
+        <form action="<?php echo e($formAction); ?>" method="POST" class="space-y-8">
             <?php echo csrf_field(); ?>
             <?php if(isset($medicalChecklist) && $medicalChecklist->id): ?>
                 <?php echo method_field('PATCH'); ?>
             <?php endif; ?>
             
-            <input type="hidden" name="examination_type" value="<?php echo e($examinationType === 'pre-employment' ? 'pre_employment' : 'annual_physical'); ?>">
-            <?php if(isset($preEmploymentRecord)): ?>
+            <input type="hidden" name="examination_type" value="<?php echo e((isset($examinationType) && ($examinationType === 'pre-employment' || $examinationType === 'pre_employment')) ? 'pre_employment' : 'annual_physical'); ?>">
+            
+            
+            <?php if(request('pre_employment_record_id')): ?>
+                <input type="hidden" name="pre_employment_record_id" value="<?php echo e(request('pre_employment_record_id')); ?>">
+            <?php elseif(isset($preEmploymentRecord) && $preEmploymentRecord): ?>
                 <input type="hidden" name="pre_employment_record_id" value="<?php echo e($preEmploymentRecord->id); ?>">
             <?php endif; ?>
-            <?php if(isset($patient)): ?>
+            
+            <?php if(request('patient_id')): ?>
+                <input type="hidden" name="patient_id" value="<?php echo e(request('patient_id')); ?>">
+            <?php elseif(isset($patient) && $patient): ?>
                 <input type="hidden" name="patient_id" value="<?php echo e($patient->id); ?>">
             <?php endif; ?>
             <?php if(isset($annualPhysicalExamination)): ?>
@@ -188,25 +267,37 @@
 
 <?php $__env->startSection('scripts'); ?>
 <script>
-    // Form validation
+    // Form validation and debugging
     document.querySelector('form').addEventListener('submit', function(e) {
         const requiredFields = ['stool_exam_done_by', 'urinalysis_done_by'];
         let isValid = true;
+        
+        // Debug: Log form data
+        const formData = new FormData(this);
+        console.log('Form submission data:');
+        for (let [key, value] of formData.entries()) {
+            console.log(key + ': ' + value);
+        }
         
         requiredFields.forEach(field => {
             const input = document.querySelector(`[name="${field}"]`);
             if (!input.value.trim()) {
                 input.classList.add('border-red-500');
                 isValid = false;
+                console.log(`Missing required field: ${field}`);
             } else {
                 input.classList.remove('border-red-500');
+                console.log(`Field ${field} has value: ${input.value}`);
             }
         });
         
         if (!isValid) {
             e.preventDefault();
             alert('Please fill in all required fields (Stool Exam and Urinalysis).');
+            return false;
         }
+        
+        console.log('Form validation passed, submitting...');
     });
 </script>
 <?php $__env->stopSection(); ?>

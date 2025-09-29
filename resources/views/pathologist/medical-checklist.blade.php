@@ -16,23 +16,57 @@
     </div>
 @endif
 
+@if($errors->any())
+    <div class="mb-4 p-4 rounded bg-red-100 text-red-800 border border-red-300">
+        <h4 class="font-semibold mb-2">Validation Errors:</h4>
+        <ul class="list-disc list-inside">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
+
 <div class="max-w-4xl mx-auto py-8">
     <div class="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
         <div class="bg-teal-900 text-white text-center py-3 rounded-t-lg mb-8">
             <h2 class="text-xl font-bold tracking-wide">MEDICAL CHECKLIST</h2>
         </div>
 
-        <form action="{{ isset($medicalChecklist) && $medicalChecklist->id ? route('pathologist.medical-checklist.update', $medicalChecklist->id) : route('pathologist.medical-checklist.store') }}" method="POST" class="space-y-8">
+        @php
+            $formAction = isset($medicalChecklist) && $medicalChecklist->id 
+                ? route('pathologist.medical-checklist.update', $medicalChecklist->id) 
+                : route('pathologist.medical-checklist.store');
+            
+            // Preserve URL parameters in form action
+            if (request('pre_employment_record_id') || request('patient_id') || request('examination_type')) {
+                $params = [];
+                if (request('pre_employment_record_id')) $params['pre_employment_record_id'] = request('pre_employment_record_id');
+                if (request('patient_id')) $params['patient_id'] = request('patient_id');
+                if (request('examination_type')) $params['examination_type'] = request('examination_type');
+                $formAction .= '?' . http_build_query($params);
+            }
+        @endphp
+        
+        <form action="{{ $formAction }}" method="POST" class="space-y-8">
             @csrf
             @if(isset($medicalChecklist) && $medicalChecklist->id)
                 @method('PATCH')
             @endif
             
-            <input type="hidden" name="examination_type" value="{{ $examinationType === 'pre-employment' ? 'pre_employment' : 'annual_physical' }}">
-            @if(isset($preEmploymentRecord))
+            <input type="hidden" name="examination_type" value="{{ (isset($examinationType) && ($examinationType === 'pre-employment' || $examinationType === 'pre_employment')) ? 'pre_employment' : 'annual_physical' }}">
+            
+            {{-- Always include the IDs from request parameters if available --}}
+            @if(request('pre_employment_record_id'))
+                <input type="hidden" name="pre_employment_record_id" value="{{ request('pre_employment_record_id') }}">
+            @elseif(isset($preEmploymentRecord) && $preEmploymentRecord)
                 <input type="hidden" name="pre_employment_record_id" value="{{ $preEmploymentRecord->id }}">
             @endif
-            @if(isset($patient))
+            
+            @if(request('patient_id'))
+                <input type="hidden" name="patient_id" value="{{ request('patient_id') }}">
+            @elseif(isset($patient) && $patient)
                 <input type="hidden" name="patient_id" value="{{ $patient->id }}">
             @endif
             @if(isset($annualPhysicalExamination))
@@ -178,10 +212,11 @@
 
 @section('scripts')
 <script>
-    // Form validation
+    // Form validation and debugging
     document.querySelector('form').addEventListener('submit', function(e) {
         const requiredFields = ['stool_exam_done_by', 'urinalysis_done_by'];
         let isValid = true;
+        
         
         requiredFields.forEach(field => {
             const input = document.querySelector(`[name="${field}"]`);
@@ -196,7 +231,9 @@
         if (!isValid) {
             e.preventDefault();
             alert('Please fill in all required fields (Stool Exam and Urinalysis).');
+            return false;
         }
+        
     });
 </script>
 @endsection

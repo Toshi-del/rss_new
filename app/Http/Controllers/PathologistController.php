@@ -181,6 +181,7 @@ class PathologistController extends Controller
         $preEmploymentRecord = null;
         $examinationType = $request->get('examination_type', 'annual_physical');
         
+        
         // Set default values for the form
         $medicalChecklist = null;
         $annualPhysicalExamination = null;
@@ -237,10 +238,9 @@ class PathologistController extends Controller
                 $number = 'PPEP-' . str_pad($preEmploymentRecord->id, 4, '0', STR_PAD_LEFT);
                 $examinationType = 'pre_employment';
                 
-                // Try to find existing medical checklist for this record
+                // Try to find existing medical checklist for this record (remove examination_type filter for now)
                 if (!$medicalChecklist) {
                     $medicalChecklist = MedicalChecklist::where('pre_employment_record_id', $preEmploymentRecord->id)
-                        ->where('examination_type', 'pre_employment')
                         ->first();
                 }
             }
@@ -266,8 +266,14 @@ class PathologistController extends Controller
      */
     public function storeMedicalChecklist(Request $request)
     {
+        
+        // Add validation for required fields
         $request->validate([
             'examination_type' => 'required|string|in:annual_physical,pre_employment',
+            'name' => 'nullable|string|max:255',
+            'date' => 'nullable|date',
+            'age' => 'nullable|integer|min:0',
+            'number' => 'nullable|string|max:255',
             'stool_exam_done_by' => 'nullable|string|max:255',
             'urinalysis_done_by' => 'nullable|string|max:255',
             'optional_exam' => 'nullable|string|max:255',
@@ -276,37 +282,57 @@ class PathologistController extends Controller
             'drug_test_done_by' => 'nullable|string|max:255',
             'ecg_done_by' => 'nullable|string|max:255',
             'physical_exam_done_by' => 'nullable|string|max:255',
+            'patient_id' => 'nullable|exists:patients,id',
+            'pre_employment_record_id' => 'nullable|exists:pre_employment_records,id',
         ]);
 
         try {
             DB::beginTransaction();
 
-            // Get patient/record data
+            // Get patient/record data - use form data first, then fallback to defaults
             $patient = null;
             $preEmploymentRecord = null;
-            $name = 'Unknown';
-            $age = 0;
-            $number = 'UNKNOWN-0000';
-            $date = now()->format('Y-m-d');
+            $name = $request->name ?: 'Unknown';
+            $age = $request->age ?: 0;
+            $number = $request->number ?: 'UNKNOWN-0000';
+            $date = $request->date ?: now()->format('Y-m-d');
 
-            if ($request->examination_type === 'annual_physical' && $request->has('patient_id') && $request->patient_id) {
+            // Always try to get the patient/record from the request, regardless of examination_type
+            if ($request->has('patient_id') && $request->patient_id) {
                 $patient = Patient::find($request->patient_id);
                 if ($patient) {
-                    $name = $patient->full_name ?: 'Unknown Patient';
-                    $age = (int) $patient->age ?: 0;
-                    $number = 'APEP-' . str_pad($patient->id, 4, '0', STR_PAD_LEFT);
+                    // Only override if form data is empty/default
+                    if ($name === 'Unknown' || empty($name)) {
+                        $name = $patient->full_name ?: 'Unknown Patient';
+                    }
+                    if ($age == 0) {
+                        $age = (int) $patient->age ?: 0;
+                    }
+                    if ($number === 'UNKNOWN-0000' || empty($number)) {
+                        $number = 'APEP-' . str_pad($patient->id, 4, '0', STR_PAD_LEFT);
+                    }
                 }
-            } elseif ($request->examination_type === 'pre_employment' && $request->has('pre_employment_record_id') && $request->pre_employment_record_id) {
+            }
+            
+            if ($request->has('pre_employment_record_id') && $request->pre_employment_record_id) {
                 $preEmploymentRecord = PreEmploymentRecord::find($request->pre_employment_record_id);
                 if ($preEmploymentRecord) {
-                    $name = trim($preEmploymentRecord->first_name . ' ' . $preEmploymentRecord->last_name) ?: 'Unknown Employee';
-                    $age = (int) $preEmploymentRecord->age ?: 0;
-                    $number = 'PPEP-' . str_pad($preEmploymentRecord->id, 4, '0', STR_PAD_LEFT);
+                    // Only override if form data is empty/default
+                    if ($name === 'Unknown' || empty($name)) {
+                        $name = trim($preEmploymentRecord->first_name . ' ' . $preEmploymentRecord->last_name) ?: 'Unknown Employee';
+                    }
+                    if ($age == 0) {
+                        $age = (int) $preEmploymentRecord->age ?: 0;
+                    }
+                    if ($number === 'UNKNOWN-0000' || empty($number)) {
+                        $number = 'PPEP-' . str_pad($preEmploymentRecord->id, 4, '0', STR_PAD_LEFT);
+                    }
                 }
             }
 
             // Prepare data for creation
             $data = [
+                'user_id' => auth()->id(), // Add the authenticated user ID
                 'name' => $name,
                 'date' => $date,
                 'age' => $age,
@@ -328,12 +354,19 @@ class PathologistController extends Controller
             } elseif ($preEmploymentRecord) {
                 $data['pre_employment_record_id'] = $preEmploymentRecord->id;
             }
-
-            MedicalChecklist::create($data);
+            $medicalChecklist = MedicalChecklist::create($data);
 
             DB::commit();
 
-            return redirect()->route('pathologist.medical-checklist')->with('success', 'Medical checklist created successfully.');
+            // Redirect back to the form with the created checklist data
+            $redirectUrl = route('pathologist.medical-checklist');
+            if ($preEmploymentRecord) {
+                $redirectUrl .= '?pre_employment_record_id=' . $preEmploymentRecord->id . '&examination_type=pre_employment';
+            } elseif ($patient) {
+                $redirectUrl .= '?patient_id=' . $patient->id . '&examination_type=annual_physical';
+            }
+            
+            return redirect($redirectUrl)->with('success', 'Medical checklist created successfully.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -360,7 +393,7 @@ class PathologistController extends Controller
         ]);
 
         try {
-            $medicalChecklist->update($request->only([
+            $updateData = $request->only([
                 'stool_exam_done_by',
                 'urinalysis_done_by',
                 'optional_exam',
@@ -369,9 +402,22 @@ class PathologistController extends Controller
                 'drug_test_done_by',
                 'ecg_done_by',
                 'physical_exam_done_by'
-            ]));
+            ]);
+            
+            // Add user_id to track who updated the record
+            $updateData['user_id'] = auth()->id();
+            
+            $medicalChecklist->update($updateData);
 
-            return redirect()->route('pathologist.medical-checklist')->with('success', 'Medical checklist updated successfully.');
+            // Redirect back to the form with the updated checklist data
+            $redirectUrl = route('pathologist.medical-checklist');
+            if ($medicalChecklist->pre_employment_record_id) {
+                $redirectUrl .= '?pre_employment_record_id=' . $medicalChecklist->pre_employment_record_id . '&examination_type=pre_employment';
+            } elseif ($medicalChecklist->patient_id) {
+                $redirectUrl .= '?patient_id=' . $medicalChecklist->patient_id . '&examination_type=annual_physical';
+            }
+            
+            return redirect($redirectUrl)->with('success', 'Medical checklist updated successfully.');
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to update medical checklist: ' . $e->getMessage())->withInput();

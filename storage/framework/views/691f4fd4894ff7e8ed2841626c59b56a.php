@@ -1,14 +1,12 @@
-@extends('layouts.doctor')
+<?php $__env->startSection('title', 'Edit Pre-Employment Examination'); ?>
+<?php $__env->startSection('page-title', 'Edit Pre-Employment Examination'); ?>
+<?php $__env->startSection('page-description', 'Update and manage employment medical screening results'); ?>
 
-@section('title', 'Edit Pre-Employment Examination')
-@section('page-title', 'Edit Pre-Employment Examination')
-@section('page-description', 'Update and manage employment medical screening results')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="space-y-8">
     
     <!-- Success Message -->
-    @if(session('success'))
+    <?php if(session('success')): ?>
     <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-green-500">
         <div class="px-8 py-6 bg-gradient-to-r from-green-500 to-green-600">
             <div class="flex items-center justify-between">
@@ -17,7 +15,7 @@
                         <i class="fas fa-check-circle text-white text-xl"></i>
                     </div>
                     <div class="ml-3">
-                        <p class="text-white font-medium">{{ session('success') }}</p>
+                        <p class="text-white font-medium"><?php echo e(session('success')); ?></p>
                     </div>
                 </div>
                 <button type="button" class="text-green-200 hover:text-white transition-colors duration-200" onclick="this.parentElement.parentElement.parentElement.style.display='none'">
@@ -26,7 +24,7 @@
             </div>
         </div>
     </div>
-    @endif
+    <?php endif; ?>
     
     <!-- Header Section -->
     <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-blue-600">
@@ -41,7 +39,7 @@
                 <div class="flex items-center space-x-4">
                     <div class="bg-blue-800 bg-opacity-50 rounded-lg px-4 py-2 border border-blue-500">
                         <p class="text-blue-200 text-sm font-medium">Exam ID</p>
-                        <p class="text-white text-lg font-bold">#{{ $preEmployment->id }}</p>
+                        <p class="text-white text-lg font-bold">#<?php echo e($preEmployment->id); ?></p>
                     </div>
                 </div>
             </div>
@@ -51,7 +49,7 @@
     <!-- Main Form Container -->
     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
         <!-- Applicant Information Section -->
-        @if($preEmployment->preEmploymentRecord)
+        <?php if($preEmployment->preEmploymentRecord): ?>
         <div class="px-8 py-6 bg-gradient-to-r from-green-600 to-green-700 border-l-4 border-green-800">
             <div class="flex items-center justify-between">
                 <div>
@@ -67,29 +65,29 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="bg-white rounded-lg p-4 border-l-4 border-blue-500 hover:shadow-md transition-shadow duration-200">
                     <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Full Name</label>
-                    <div class="text-lg font-bold text-blue-800">{{ $preEmployment->preEmploymentRecord->full_name ?? ($preEmployment->preEmploymentRecord->first_name . ' ' . $preEmployment->preEmploymentRecord->last_name) }}</div>
+                    <div class="text-lg font-bold text-blue-800"><?php echo e($preEmployment->preEmploymentRecord->full_name ?? ($preEmployment->preEmploymentRecord->first_name . ' ' . $preEmployment->preEmploymentRecord->last_name)); ?></div>
                 </div>
                 <div class="bg-white rounded-lg p-4 border-l-4 border-green-500 hover:shadow-md transition-shadow duration-200">
                     <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Age</label>
-                    <div class="text-lg font-bold text-green-800">{{ $preEmployment->preEmploymentRecord->age }} years</div>
+                    <div class="text-lg font-bold text-green-800"><?php echo e($preEmployment->preEmploymentRecord->age); ?> years</div>
                 </div>
                 <div class="bg-white rounded-lg p-4 border-l-4 border-indigo-500 hover:shadow-md transition-shadow duration-200">
                     <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Sex</label>
-                    <div class="text-lg font-bold text-indigo-800">{{ $preEmployment->preEmploymentRecord->sex }}</div>
+                    <div class="text-lg font-bold text-indigo-800"><?php echo e($preEmployment->preEmploymentRecord->sex); ?></div>
                 </div>
                 <div class="bg-white rounded-lg p-4 border-l-4 border-yellow-500 hover:shadow-md transition-shadow duration-200">
                     <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Company</label>
-                    <div class="text-sm font-semibold text-yellow-800 truncate">{{ $preEmployment->preEmploymentRecord->company_name }}</div>
+                    <div class="text-sm font-semibold text-yellow-800 truncate"><?php echo e($preEmployment->preEmploymentRecord->company_name); ?></div>
                 </div>
             </div>
         </div>
-        @endif
+        <?php endif; ?>
         
         <!-- Form Section -->
         <div class="p-8">
-            <form action="{{ route('doctor.pre-employment.update', $preEmployment->id) }}" method="POST" class="space-y-8">
-                @csrf
-                @method('PATCH')
+            <form action="<?php echo e(route('doctor.pre-employment.update', $preEmployment->id)); ?>" method="POST" class="space-y-8">
+                <?php echo csrf_field(); ?>
+                <?php echo method_field('PATCH'); ?>
                 
                 <!-- Medical History Section -->
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-green-500">
@@ -107,7 +105,8 @@
                                 <i class="fas fa-hospital mr-2 text-green-600"></i>Illness / Hospitalization
                             </label>
                             <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 min-h-[4rem] text-sm text-gray-700">
-                                {{ $preEmployment->illness_history ?: 'No illness or hospitalization history recorded' }}
+                                <?php echo e($preEmployment->illness_history ?: 'No illness or hospitalization history recorded'); ?>
+
                             </div>
                         </div>
                         <div class="bg-white rounded-lg p-4 border border-gray-200">
@@ -115,7 +114,8 @@
                                 <i class="fas fa-user-injured mr-2 text-orange-600"></i>Accidents / Operations
                             </label>
                             <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 min-h-[4rem] text-sm text-gray-700">
-                                {{ $preEmployment->accidents_operations ?: 'No accidents or surgical operations recorded' }}
+                                <?php echo e($preEmployment->accidents_operations ?: 'No accidents or surgical operations recorded'); ?>
+
                             </div>
                         </div>
                         <div class="bg-white rounded-lg p-4 border border-gray-200">
@@ -123,7 +123,8 @@
                                 <i class="fas fa-clipboard-list mr-2 text-blue-600"></i>Past Medical History
                             </label>
                             <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 min-h-[4rem] text-sm text-gray-700">
-                                {{ $preEmployment->past_medical_history ?: 'No past medical conditions recorded' }}
+                                <?php echo e($preEmployment->past_medical_history ?: 'No past medical conditions recorded'); ?>
+
                             </div>
                         </div>
                     </div>
@@ -133,16 +134,16 @@
                             <i class="fas fa-users mr-2 text-purple-600"></i>Family Medical History
                         </label>
                         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                            @php
+                            <?php
                                 $family = $preEmployment->family_history ?? [];
                                 $options = ['asthma','arthritis','migraine','diabetes','heart_disease','tuberculosis','allergies','anemia','cancer','insanity','hypertension','epilepsy'];
-                            @endphp
-                            @foreach($options as $opt)
-                                <label class="inline-flex items-center p-3 rounded-lg border transition-colors duration-200 {{ in_array($opt, $family ?? []) ? 'bg-green-100 border-green-300 text-green-800' : 'bg-gray-50 border-gray-200 text-gray-600' }}">
-                                    <input type="checkbox" name="family_history[]" value="{{ $opt }}" class="mr-3 text-green-600 focus:ring-green-500" {{ in_array($opt, $family ?? []) ? 'checked' : '' }} disabled>
-                                    <span class="text-sm font-medium">{{ str_replace('_', ' ', ucwords($opt)) }}</span>
+                            ?>
+                            <?php $__currentLoopData = $options; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $opt): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <label class="inline-flex items-center p-3 rounded-lg border transition-colors duration-200 <?php echo e(in_array($opt, $family ?? []) ? 'bg-green-100 border-green-300 text-green-800' : 'bg-gray-50 border-gray-200 text-gray-600'); ?>">
+                                    <input type="checkbox" name="family_history[]" value="<?php echo e($opt); ?>" class="mr-3 text-green-600 focus:ring-green-500" <?php echo e(in_array($opt, $family ?? []) ? 'checked' : ''); ?> disabled>
+                                    <span class="text-sm font-medium"><?php echo e(str_replace('_', ' ', ucwords($opt))); ?></span>
                                 </label>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </div>
                     </div>
                     </div>
@@ -159,21 +160,21 @@
                     
                     <div class="bg-white rounded-lg p-4">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            @php
+                            <?php
                                 $habits = $preEmployment->personal_habits ?? [];
                                 $habitOptions = [
                                     'alcohol' => ['icon' => 'fas fa-wine-bottle', 'color' => 'red'],
                                     'cigarettes' => ['icon' => 'fas fa-smoking', 'color' => 'orange'],
                                     'coffee_tea' => ['icon' => 'fas fa-coffee', 'color' => 'amber']
                                 ];
-                            @endphp
-                            @foreach($habitOptions as $habit => $config)
-                                <div class="flex items-center p-4 rounded-lg border transition-colors duration-200 {{ in_array($habit, $habits ?? []) ? 'bg-blue-100 border-blue-300' : 'bg-gray-50 border-gray-200' }}">
-                                    <i class="{{ $config['icon'] }} text-{{ $config['color'] }}-600 mr-3"></i>
-                                    <span class="text-sm font-medium text-gray-700 mr-3">{{ str_replace('_', ' ', ucwords($habit)) }}</span>
-                                    <i class="fas {{ in_array($habit, $habits ?? []) ? 'fa-check-circle text-green-600' : 'fa-times-circle text-gray-400' }}"></i>
+                            ?>
+                            <?php $__currentLoopData = $habitOptions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $habit => $config): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <div class="flex items-center p-4 rounded-lg border transition-colors duration-200 <?php echo e(in_array($habit, $habits ?? []) ? 'bg-blue-100 border-blue-300' : 'bg-gray-50 border-gray-200'); ?>">
+                                    <i class="<?php echo e($config['icon']); ?> text-<?php echo e($config['color']); ?>-600 mr-3"></i>
+                                    <span class="text-sm font-medium text-gray-700 mr-3"><?php echo e(str_replace('_', ' ', ucwords($habit))); ?></span>
+                                    <i class="fas <?php echo e(in_array($habit, $habits ?? []) ? 'fa-check-circle text-green-600' : 'fa-times-circle text-gray-400'); ?>"></i>
                                 </div>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </div>
                     </div>
                     </div>
@@ -189,7 +190,7 @@
                     <div class="p-6 bg-yellow-50">
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        @php 
+                        <?php 
                             $phys = $preEmployment->physical_exam ?? [];
                             $vitals = [
                                 'temp' => ['label' => 'Temperature', 'icon' => 'fas fa-thermometer-half', 'unit' => '°C', 'color' => 'red'],
@@ -197,20 +198,22 @@
                                 'heart_rate' => ['label' => 'Heart Rate', 'icon' => 'fas fa-heartbeat', 'unit' => 'bpm', 'color' => 'pink'],
                                 'weight' => ['label' => 'Weight', 'icon' => 'fas fa-weight', 'unit' => 'kg', 'color' => 'green']
                             ];
-                        @endphp
-                        @foreach($vitals as $key => $vital)
-                            <div class="bg-white rounded-lg p-4 border-l-4 border-{{ $vital['color'] }}-500">
+                        ?>
+                        <?php $__currentLoopData = $vitals; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $vital): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <div class="bg-white rounded-lg p-4 border-l-4 border-<?php echo e($vital['color']); ?>-500">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="{{ $vital['icon'] }} text-{{ $vital['color'] }}-600 mr-2"></i>{{ $vital['label'] }}
+                                    <i class="<?php echo e($vital['icon']); ?> text-<?php echo e($vital['color']); ?>-600 mr-2"></i><?php echo e($vital['label']); ?>
+
                                 </label>
                                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
-                                    {{ $phys[$key] ?? 'Not recorded' }}
-                                    @if(isset($phys[$key]) && $phys[$key])
-                                        <span class="text-xs text-gray-500 ml-1">{{ $vital['unit'] }}</span>
-                                    @endif
+                                    <?php echo e($phys[$key] ?? 'Not recorded'); ?>
+
+                                    <?php if(isset($phys[$key]) && $phys[$key]): ?>
+                                        <span class="text-xs text-gray-500 ml-1"><?php echo e($vital['unit']); ?></span>
+                                    <?php endif; ?>
                                 </div>
                             </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                     </div>
                 </div>
@@ -226,7 +229,8 @@
                     
                     <div class="bg-white rounded-lg p-4">
                         <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 text-sm text-gray-700 min-h-[4rem]">
-                            {{ $preEmployment->skin_marks ?: 'No identifying marks, scars, or tattoos recorded' }}
+                            <?php echo e($preEmployment->skin_marks ?: 'No identifying marks, scars, or tattoos recorded'); ?>
+
                         </div>
                     </div>
                     </div>
@@ -247,7 +251,8 @@
                                 <i class="fas fa-glasses mr-2 text-blue-600"></i>Visual Acuity
                             </label>
                             <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
-                                {{ $preEmployment->visual ?: 'Visual acuity not tested' }}
+                                <?php echo e($preEmployment->visual ?: 'Visual acuity not tested'); ?>
+
                             </div>
                         </div>
                         <div class="bg-white rounded-lg p-4 border-l-4 border-green-500">
@@ -255,7 +260,8 @@
                                 <i class="fas fa-palette mr-2 text-green-600"></i>Ishihara Test
                             </label>
                             <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
-                                {{ $preEmployment->ishihara_test ?: 'Color vision test not performed' }}
+                                <?php echo e($preEmployment->ishihara_test ?: 'Color vision test not performed'); ?>
+
                             </div>
                         </div>
                         <div class="bg-white rounded-lg p-4 border-l-4 border-purple-500">
@@ -263,7 +269,8 @@
                                 <i class="fas fa-clipboard-check mr-2 text-purple-600"></i>General Findings
                             </label>
                             <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
-                                {{ $preEmployment->findings ?: 'No significant findings recorded' }}
+                                <?php echo e($preEmployment->findings ?: 'No significant findings recorded'); ?>
+
                             </div>
                         </div>
                     </div>
@@ -276,7 +283,7 @@
                         <h3 class="text-lg font-bold text-gray-800">Laboratory Examination Report</h3>
                     </div>
                     
-                    @php
+                    <?php
                         $lab = $preEmployment->lab_report ?? [];
                         $labFields = [
                             'urinalysis' => ['icon' => 'fas fa-vial', 'color' => 'yellow'],
@@ -286,19 +293,21 @@
                             'blood_chemistry' => ['icon' => 'fas fa-heartbeat', 'color' => 'pink'],
                             'others' => ['icon' => 'fas fa-plus-circle', 'color' => 'indigo']
                         ];
-                    @endphp
+                    ?>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                        @foreach($labFields as $field => $config)
-                            <div class="bg-white rounded-lg p-4 border-l-4 border-{{ $config['color'] }}-500">
+                        <?php $__currentLoopData = $labFields; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $field => $config): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <div class="bg-white rounded-lg p-4 border-l-4 border-<?php echo e($config['color']); ?>-500">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="{{ $config['icon'] }} text-{{ $config['color'] }}-600 mr-2"></i>{{ str_replace('_', ' ', ucwords($field)) }}
+                                    <i class="<?php echo e($config['icon']); ?> text-<?php echo e($config['color']); ?>-600 mr-2"></i><?php echo e(str_replace('_', ' ', ucwords($field))); ?>
+
                                 </label>
                                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
-                                    {{ data_get($lab, $field, 'Test not performed') }}
+                                    <?php echo e(data_get($lab, $field, 'Test not performed')); ?>
+
                                 </div>
                             </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                     
                     <!-- Additional Laboratory Tests -->
@@ -312,7 +321,8 @@
                                     <i class="fas fa-shield-virus text-orange-600 mr-2"></i>HBsAg Screening
                                 </label>
                                 <div class="bg-white p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
-                                    {{ data_get($lab, 'hbsag_screening', 'Screening not performed') }}
+                                    <?php echo e(data_get($lab, 'hbsag_screening', 'Screening not performed')); ?>
+
                                 </div>
                             </div>
                             <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-purple-500">
@@ -320,7 +330,8 @@
                                     <i class="fas fa-virus text-purple-600 mr-2"></i>HEPA A IGG & IGM
                                 </label>
                                 <div class="bg-white p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
-                                    {{ data_get($lab, 'hepa_a_igg_igm', 'Test not performed') }}
+                                    <?php echo e(data_get($lab, 'hepa_a_igg_igm', 'Test not performed')); ?>
+
                                 </div>
                             </div>
                         </div>
@@ -334,7 +345,7 @@
                         <h3 class="text-lg font-bold text-blue-800">Physical Examination Findings</h3>
                     </div>
                     
-                    @php
+                    <?php
                         $physicalRows = [
                             'Neck' => ['icon' => 'fas fa-head-side-cough', 'color' => 'blue'],
                             'Chest-Breast Axilla' => ['icon' => 'fas fa-lungs', 'color' => 'green'],
@@ -346,27 +357,27 @@
                             'GUT' => ['icon' => 'fas fa-pills', 'color' => 'yellow'],
                             'Inguinal / Genital' => ['icon' => 'fas fa-user-circle', 'color' => 'pink']
                         ];
-                    @endphp
+                    ?>
                     
                     <div class="space-y-4">
-                        @foreach($physicalRows as $row => $config)
+                        <?php $__currentLoopData = $physicalRows; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $row => $config): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <div class="bg-white rounded-lg p-4 border border-gray-200">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                                 <div class="flex items-center">
-                                    <i class="{{ $config['icon'] }} text-{{ $config['color'] }}-600 mr-3"></i>
-                                    <span class="font-semibold text-gray-700">{{ $row }}</span>
+                                    <i class="<?php echo e($config['icon']); ?> text-<?php echo e($config['color']); ?>-600 mr-3"></i>
+                                    <span class="font-semibold text-gray-700"><?php echo e($row); ?></span>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Result</label>
-                                    <input type="text" name="physical_findings[{{ $row }}][result]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" value="{{ old('physical_findings.'.$row.'.result', data_get($preEmployment->physical_findings, $row.'.result', '')) }}" placeholder="Enter result">
+                                    <input type="text" name="physical_findings[<?php echo e($row); ?>][result]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" value="<?php echo e(old('physical_findings.'.$row.'.result', data_get($preEmployment->physical_findings, $row.'.result', ''))); ?>" placeholder="Enter result">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Findings</label>
-                                    <input type="text" name="physical_findings[{{ $row }}][findings]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" value="{{ old('physical_findings.'.$row.'.findings', data_get($preEmployment->physical_findings, $row.'.findings', '')) }}" placeholder="Enter findings">
+                                    <input type="text" name="physical_findings[<?php echo e($row); ?>][findings]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" value="<?php echo e(old('physical_findings.'.$row.'.findings', data_get($preEmployment->physical_findings, $row.'.findings', ''))); ?>" placeholder="Enter findings">
                                 </div>
                             </div>
                         </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                 </div>
                 <!-- Laboratory Test Results Section -->
@@ -376,7 +387,7 @@
                         <h3 class="text-lg font-bold text-green-800">Laboratory Test Results</h3>
                     </div>
                     
-                    @php
+                    <?php
                         $labRows = [
                             'Chest X-Ray' => ['icon' => 'fas fa-x-ray', 'color' => 'gray'],
                             'Urinalysis' => ['icon' => 'fas fa-vial', 'color' => 'yellow'],
@@ -387,35 +398,35 @@
                             'HEPA A IGG & IGM' => ['icon' => 'fas fa-virus', 'color' => 'pink'],
                             'Others' => ['icon' => 'fas fa-plus-circle', 'color' => 'indigo']
                         ];
-                    @endphp
+                    ?>
                     
                     <div class="space-y-4">
-                        @foreach($labRows as $row => $config)
+                        <?php $__currentLoopData = $labRows; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $row => $config): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <div class="bg-white rounded-lg p-4 border border-gray-200">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                                 <div class="flex items-center">
-                                    <i class="{{ $config['icon'] }} text-{{ $config['color'] }}-600 mr-3"></i>
-                                    <span class="font-semibold text-gray-700">{{ $row }}</span>
+                                    <i class="<?php echo e($config['icon']); ?> text-<?php echo e($config['color']); ?>-600 mr-3"></i>
+                                    <span class="font-semibold text-gray-700"><?php echo e($row); ?></span>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Result</label>
-                                    @php
+                                    <?php
                                         $testKey = strtolower(str_replace([' ', '-', '&'], ['_', '_', '_'], $row));
                                         $testKey = str_replace('chest_x_ray', 'xray', $testKey);
                                         $testKey = str_replace('hepa_a_igg___igm', 'hepa_a_igg_igm', $testKey);
-                                    @endphp
-                                    <input type="text" name="lab_report[{{ $testKey }}]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm" value="{{ old('lab_report.'.$testKey, data_get($preEmployment->lab_report, $testKey, '')) }}" placeholder="Enter test result">
+                                    ?>
+                                    <input type="text" name="lab_report[<?php echo e($testKey); ?>]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm" value="<?php echo e(old('lab_report.'.$testKey, data_get($preEmployment->lab_report, $testKey, ''))); ?>" placeholder="Enter test result">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Findings</label>
-                                    @php
+                                    <?php
                                         $findingsKey = $testKey . '_findings';
-                                    @endphp
-                                    <input type="text" name="lab_report[{{ $findingsKey }}]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm" value="{{ old('lab_report.'.$findingsKey, data_get($preEmployment->lab_report, $findingsKey, '')) }}" placeholder="Enter findings">
+                                    ?>
+                                    <input type="text" name="lab_report[<?php echo e($findingsKey); ?>]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm" value="<?php echo e(old('lab_report.'.$findingsKey, data_get($preEmployment->lab_report, $findingsKey, ''))); ?>" placeholder="Enter findings">
                                 </div>
                             </div>
                         </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                 </div>
                 <!-- ECG Section -->
@@ -429,7 +440,7 @@
                         <label class="block text-sm font-semibold text-gray-700 mb-2">
                             <i class="fas fa-chart-line text-red-600 mr-2"></i>ECG Results
                         </label>
-                        <input type="text" name="ecg" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm" value="{{ old('ecg', $preEmployment->ecg ?? '') }}" placeholder="Enter ECG findings and interpretation">
+                        <input type="text" name="ecg" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm" value="<?php echo e(old('ecg', $preEmployment->ecg ?? '')); ?>" placeholder="Enter ECG findings and interpretation">
                     </div>
                 </div>
                 
@@ -466,5 +477,7 @@
         </div>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
+
+<?php echo $__env->make('layouts.doctor', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\rss_new\resources\views/doctor/pre-employment-edit.blade.php ENDPATH**/ ?>

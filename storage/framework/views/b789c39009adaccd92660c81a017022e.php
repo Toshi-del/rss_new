@@ -218,14 +218,21 @@
                                     }
                                 }
                                 
-                                // Check if medical checklist is completed (blood extraction done)
+                                // Check if medical checklist is completed (pathologist tasks: stool exam and urinalysis)
+                                // First, let's check without examination_type filter to see if that's the issue
                                 $medicalChecklist = \App\Models\MedicalChecklist::where('pre_employment_record_id', $preEmployment->id)
-                                    ->where('examination_type', 'pre_employment')
-                                    ->whereNotNull('blood_extraction_done_by')
-                                    ->where('blood_extraction_done_by', '!=', '')
+                                    ->where(function($query) {
+                                        $query->whereNotNull('stool_exam_done_by')
+                                              ->where('stool_exam_done_by', '!=', '')
+                                              ->orWhere(function($q) {
+                                                  $q->whereNotNull('urinalysis_done_by')
+                                                    ->where('urinalysis_done_by', '!=', '');
+                                              });
+                                    })
                                     ->first();
                                 
                                 $isChecklistCompleted = $medicalChecklist !== null;
+                                
                             ?>
                             
                             <?php if($hasSubmittedData): ?>
@@ -275,7 +282,7 @@
                                 <?php if(!$isChecklistCompleted): ?>
                                     <!-- Disabled Edit Button - Checklist Not Completed -->
                                     <button class="bg-gray-400 text-white px-3 py-2 rounded-full cursor-not-allowed flex items-center text-sm font-medium shadow-sm opacity-60" 
-                                            title="Medical checklist must be completed first (blood extraction required)"
+                                            title="Medical checklist must be completed first (stool exam or urinalysis required)"
                                             disabled>
                                         <i class="fas fa-lock mr-2 text-sm"></i>
                                         Edit

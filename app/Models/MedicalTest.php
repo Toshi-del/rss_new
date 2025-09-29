@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MedicalTest extends Model
 {
@@ -24,5 +25,10 @@ class MedicalTest extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(MedicalTestCategory::class, 'medical_test_category_id');
+    }
+
+    public function referenceRanges(): HasMany
+    {
+        return $this->hasMany(MedicalTestReferenceRange::class)->orderBy('sort_order');
     }
 }

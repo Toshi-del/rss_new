@@ -228,6 +228,13 @@ Route::middleware(['auth', 'role:doctor'])->group(function () {
     Route::post('/doctor/medical-checklist', [DoctorController::class, 'storeMedicalChecklist'])->name('doctor.medical-checklist.store');
     Route::patch('/doctor/medical-checklist/{id}', [DoctorController::class, 'updateMedicalChecklist'])->name('doctor.medical-checklist.update');
     
+    // Medical Test Management Routes
+    Route::get('/doctor/medical-test-categories', [DoctorController::class, 'medicalTestCategories'])->name('medical-test-categories.index');
+    Route::get('/doctor/medical-test-categories/{id}', [DoctorController::class, 'showMedicalTestCategory'])->name('medical-test-categories.show');
+    Route::get('/doctor/medical-tests', [DoctorController::class, 'medicalTests'])->name('medical-tests.index');
+    Route::get('/doctor/medical-tests/{id}/edit', [DoctorController::class, 'editMedicalTest'])->name('medical-tests.edit');
+    Route::patch('/doctor/medical-tests/{id}', [DoctorController::class, 'updateMedicalTest'])->name('medical-tests.update');
+    
     // Doctor Chat Routes
     Route::get('/doctor/messages', [DoctorController::class, 'messages'])->name('doctor.messages');
     Route::get('/doctor/messages/fetch', [DoctorController::class, 'fetchMessages']);
