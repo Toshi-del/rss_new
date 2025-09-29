@@ -56,6 +56,10 @@ class PreEmploymentRecord extends Model
         return $this->belongsTo(MedicalTest::class, 'medical_test_id');
     }
 
+    public function medicalChecklist(): HasOne
+    {
+        return $this->hasOne(MedicalChecklist::class, 'pre_employment_record_id');
+    }
 
     // Helper method to parse other_exams JSON data
     public function getParsedOtherExamsAttribute()

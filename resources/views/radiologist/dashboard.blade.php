@@ -1,7 +1,8 @@
-@extends('layouts.radtech')
+@extends('layouts.radiologist')
 
 @section('title', 'Radiologist Dashboard')
 @section('page-title', 'Radiologist Dashboard')
+@section('page-description', 'Radiologic Technologist Portal')
 
 @section('content')
 <div class="space-y-8">

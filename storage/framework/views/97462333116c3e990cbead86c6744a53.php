@@ -1,21 +1,20 @@
-@extends('layouts.radiologist')
+<?php $__env->startSection('title', 'Pre-Employment Examination'); ?>
+<?php $__env->startSection('page-title', 'Pre-Employment Examination'); ?>
+<?php $__env->startSection('page-description', 'Review and analyze X-ray images'); ?>
 
-@section('title', 'Pre-Employment Examination')
-@section('page-title', 'Pre-Employment Examination')
-@section('page-description', 'Review and analyze X-ray images')
-
-@section('content')
-@if(session('success'))
+<?php $__env->startSection('content'); ?>
+<?php if(session('success')): ?>
     <div class="mb-4 p-4 rounded bg-green-100 text-green-800 border border-green-300 text-center font-semibold">
-        {{ session('success') }}
+        <?php echo e(session('success')); ?>
+
     </div>
-@endif
+<?php endif; ?>
 <div class="max-w-3xl mx-auto bg-white rounded-lg shadow p-6">
-    @if(isset($checklist) && $checklist && $checklist->xray_image_path)
+    <?php if(isset($checklist) && $checklist && $checklist->xray_image_path): ?>
         <div class="mb-4">
             <div class="text-xs font-semibold uppercase text-gray-600 mb-2">X-Ray Image</div>
             <div class="border rounded p-3">
-                <img src="{{ asset('storage/' . $checklist->xray_image_path) }}" alt="X-Ray Image" class="w-full h-40 object-contain bg-gray-50 border rounded cursor-zoom-in" id="xray-thumb" />
+                <img src="<?php echo e(asset('storage/' . $checklist->xray_image_path)); ?>" alt="X-Ray Image" class="w-full h-40 object-contain bg-gray-50 border rounded cursor-zoom-in" id="xray-thumb" />
                 <div class="text-xs text-gray-500 mt-2">Click image to open fullscreen and zoom</div>
             </div>
         </div>
@@ -28,7 +27,7 @@
                 <button type="button" id="close-viewer" class="px-3 py-2 bg-red-600 text-white rounded shadow">Close</button>
             </div>
             <div id="viewer-canvas" class="w-full h-full flex items-center justify-center overflow-hidden cursor-grab">
-                <img id="viewer-image" src="{{ asset('storage/' . $checklist->xray_image_path) }}" alt="X-Ray Full" class="select-none" draggable="false" />
+                <img id="viewer-image" src="<?php echo e(asset('storage/' . $checklist->xray_image_path)); ?>" alt="X-Ray Full" class="select-none" draggable="false" />
             </div>
         </div>
 
@@ -122,29 +121,29 @@
             });
         })();
         </script>
-    @endif
+    <?php endif; ?>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
             <div class="text-xs font-semibold uppercase text-gray-600">Full Name</div>
-            <div class="text-sm">{{ $full_name }}</div>
+            <div class="text-sm"><?php echo e($full_name); ?></div>
         </div>
         <div>
             <div class="text-xs font-semibold uppercase text-gray-600">Sex</div>
-            <div class="text-sm">{{ $sex ?? '—' }}</div>
+            <div class="text-sm"><?php echo e($sex ?? '—'); ?></div>
         </div>
         <div>
             <div class="text-xs font-semibold uppercase text-gray-600">Age</div>
-            <div class="text-sm">{{ $age ?? '—' }}</div>
+            <div class="text-sm"><?php echo e($age ?? '—'); ?></div>
         </div>
         <div>
             <div class="text-xs font-semibold uppercase text-gray-600">Company</div>
-            <div class="text-sm">{{ $company ?? '—' }}</div>
+            <div class="text-sm"><?php echo e($company ?? '—'); ?></div>
         </div>
     </div>
 
-    <form action="{{ route('radiologist.pre-employment.update', request()->route('id')) }}" method="POST" class="space-y-3">
-        @csrf
-        @method('PATCH')
+    <form action="<?php echo e(route('radiologist.pre-employment.update', request()->route('id'))); ?>" method="POST" class="space-y-3">
+        <?php echo csrf_field(); ?>
+        <?php echo method_field('PATCH'); ?>
         <div class="overflow-hidden rounded border">
             <table class="w-full text-sm">
                 <thead>
@@ -159,23 +158,25 @@
                         <td class="p-2">Chest X-Ray</td>
                         <td class="p-2">
                             <select name="cxr_result" class="w-full border rounded p-2">
-                                <option value="—" {{ old('cxr_result', $cxr_result) == '—' ? 'selected' : '' }}>—</option>
-                                <option value="Normal" {{ old('cxr_result', $cxr_result) == 'Normal' ? 'selected' : '' }}>Normal</option>
-                                <option value="Not Normal" {{ old('cxr_result', $cxr_result) == 'Not Normal' ? 'selected' : '' }}>Not Normal</option>
+                                <option value="—" <?php echo e(old('cxr_result', $cxr_result) == '—' ? 'selected' : ''); ?>>—</option>
+                                <option value="Normal" <?php echo e(old('cxr_result', $cxr_result) == 'Normal' ? 'selected' : ''); ?>>Normal</option>
+                                <option value="Not Normal" <?php echo e(old('cxr_result', $cxr_result) == 'Not Normal' ? 'selected' : ''); ?>>Not Normal</option>
                             </select>
                         </td>
-                        <td class="p-2"><input type="text" name="cxr_finding" value="{{ old('cxr_finding', $cxr_finding) }}" class="w-full border rounded p-2" /></td>
+                        <td class="p-2"><input type="text" name="cxr_finding" value="<?php echo e(old('cxr_finding', $cxr_finding)); ?>" class="w-full border rounded p-2" /></td>
                     </tr>
                 </tbody>
             </table>
         </div>
         <div class="flex justify-between">
-            <a href="{{ route('radiologist.dashboard') }}" class="px-4 py-2 rounded border text-gray-700">Back</a>
+            <a href="<?php echo e(route('radiologist.dashboard')); ?>" class="px-4 py-2 rounded border text-gray-700">Back</a>
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Save</button>
         </div>
     </form>
 </div>
 
-@endsection
+<?php $__env->stopSection(); ?>
 
 
+
+<?php echo $__env->make('layouts.radiologist', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\rss_new-1\resources\views/radiologist/pre-employment-show.blade.php ENDPATH**/ ?>

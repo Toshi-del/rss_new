@@ -248,6 +248,15 @@ class DoctorController extends Controller
     }
 
     /**
+     * Show a pre-employment examination
+     */
+    public function showExamination($id)
+    {
+        $examination = PreEmploymentExamination::with('preEmploymentRecord')->findOrFail($id);
+        return view('doctor.pre-employment-examination', compact('examination'));
+    }
+
+    /**
      * Find or create an examination by pre_employment_record_id and redirect to edit form
      */
     public function editExaminationByRecordId($recordId)

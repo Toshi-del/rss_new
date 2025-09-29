@@ -1,32 +1,60 @@
-<?php $__env->startSection('content'); ?>
-<?php
-    // Determine which test should be unlocked (first incomplete test)
-    $unlockedTest = null;
-    foreach($examinations as $field => $exam) {
-        $completedBy = isset($medicalChecklist) ? ($medicalChecklist->{$field . '_done_by'} ?? null) : null;
-        if (!$completedBy) {
-            $unlockedTest = $field;
-            break;
-        }
-    }
-?>
+<?php $__env->startSection('title', 'X-Ray Medical Checklist - RSS Citi Health Services'); ?>
+<?php $__env->startSection('page-title', 'X-Ray Medical Checklist'); ?>
+<?php $__env->startSection('page-description', 'X-Ray examination checklist and image upload'); ?>
 
-<div class="max-w-5xl mx-auto py-8 px-4">
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-teal-500 to-teal-600 rounded-t-xl px-8 py-6 shadow-lg">
-        <div class="flex items-center space-x-3">
-            <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                <i class="fas fa-clipboard-check text-white text-2xl"></i>
+<?php $__env->startSection('content'); ?>
+<div class="max-w-7xl mx-auto space-y-8">
+    <!-- Success/Error Messages -->
+    <?php if(session('success')): ?>
+        <div class="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-6 flex items-center space-x-4 shadow-lg">
+            <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-check text-emerald-600 text-lg"></i>
             </div>
-            <div>
-                <h1 class="text-2xl font-bold text-white">Medical Checklist</h1>
-                <p class="text-teal-100 text-sm">Complete examinations in sequential order</p>
+            <div class="flex-1">
+                <p class="text-emerald-800 font-semibold text-lg"><?php echo e(session('success')); ?></p>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-600 transition-colors p-2">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+        </div>
+    <?php endif; ?>
+
+    <?php if(session('error')): ?>
+        <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6 flex items-center space-x-4 shadow-lg">
+            <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-red-600 text-lg"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-red-800 font-semibold text-lg"><?php echo e(session('error')); ?></p>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-600 transition-colors p-2">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+        </div>
+    <?php endif; ?>
+
+    <!-- Header Section -->
+    <div class="content-card rounded-xl overflow-hidden shadow-xl border-2 border-gray-200">
+        <div class="bg-gradient-to-r from-cyan-600 to-cyan-700 px-10 py-8">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-6">
+                    <div class="w-20 h-20 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border-2 border-white/20">
+                        <i class="fas fa-x-ray text-white text-3xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-white">X-Ray Medical Checklist</h2>
+                        <p class="text-cyan-100 text-base mt-1">X-Ray examination and image documentation</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-white/90 text-base">Examination Type</div>
+                    <div class="text-white font-bold text-xl"><?php echo e(ucfirst($examinationType ?? 'General')); ?></div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="bg-white rounded-b-xl shadow-lg">
-        <form action="<?php echo e(isset($medicalChecklist) && $medicalChecklist->id ? route('radtech.medical-checklist.update', $medicalChecklist->id) : route('radtech.medical-checklist.store')); ?>" method="POST" enctype="multipart/form-data">
+        <form action="<?php echo e(isset($medicalChecklist) && $medicalChecklist->id ? route('radtech.medical-checklist.update', $medicalChecklist->id) : route('radtech.medical-checklist.store')); ?>" method="POST" enctype="multipart/form-data" class="space-y-8">
             <?php echo csrf_field(); ?>
             <?php if(isset($medicalChecklist) && $medicalChecklist->id): ?>
                 <?php echo method_field('PATCH'); ?>
@@ -38,206 +66,278 @@
             <?php if(isset($patient)): ?>
                 <input type="hidden" name="patient_id" value="<?php echo e($patient->id); ?>">
             <?php endif; ?>
+            <?php if(isset($annualPhysicalExamination)): ?>
+                <input type="hidden" name="annual_physical_examination_id" value="<?php echo e($annualPhysicalExamination->id); ?>">
+            <?php endif; ?>
 
-            <!-- Patient Information -->
-            <div class="p-8 border-b border-gray-200">
-                <div class="flex items-center mb-6">
-                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-user text-blue-600"></i>
+            <?php
+                // Precompute generated number once for reuse
+                $generatedNumber = null;
+                if (isset($medicalChecklist) && $medicalChecklist->number) {
+                    $generatedNumber = $medicalChecklist->number;
+                } elseif (isset($patient)) {
+                    $generatedNumber = 'APEP-' . str_pad($patient->id, 4, '0', STR_PAD_LEFT);
+                } elseif (isset($preEmploymentRecord)) {
+                    $generatedNumber = 'PPEP-' . str_pad($preEmploymentRecord->id, 4, '0', STR_PAD_LEFT);
+                } else {
+                    $generatedNumber = old('number', isset($number) ? $number : '');
+                }
+            ?>
+
+            <!-- Patient Information Card -->
+            <div class="content-card rounded-xl shadow-xl border-2 border-gray-200 p-8">
+                <div class="flex items-center space-x-4 mb-8">
+                    <div class="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-user-md text-teal-600 text-xl"></i>
                     </div>
-                    <h2 class="text-lg font-bold text-gray-900">Patient Information</h2>
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-900">Patient Information</h3>
+                        <p class="text-gray-600 text-base">Medical examination details and patient data</p>
+                    </div>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">Patient Name</label>
-                        <input type="text" name="name" value="<?php echo e(old('name', $medicalChecklist->name ?? (isset($preEmploymentRecord) ? ($preEmploymentRecord->first_name . ' ' . $preEmploymentRecord->last_name) : (isset($patient) ? ($patient->first_name . ' ' . $patient->last_name) : '')) )); ?>" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500" required />
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">Examination Date</label>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="space-y-3">
+                        <label class="block text-sm font-bold uppercase tracking-wide text-gray-700">Patient Name</label>
                         <?php
-                            $currentDate = old('date', ($medicalChecklist->date ?? now()->format('Y-m-d')));
+                            $patientName = '';
+                            if (isset($medicalChecklist) && $medicalChecklist->name) {
+                                $patientName = $medicalChecklist->name;
+                            } elseif (isset($patient)) {
+                                $patientName = $patient->first_name . ' ' . $patient->last_name;
+                            } elseif (isset($preEmploymentRecord)) {
+                                $patientName = $preEmploymentRecord->first_name . ' ' . $preEmploymentRecord->last_name;
+                            } else {
+                                $patientName = old('name', isset($name) ? $name : '');
+                            }
                         ?>
-                        <div class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-gray-50 text-gray-700">
-                            <?php echo e(\Carbon\Carbon::parse($currentDate)->format('M d, Y')); ?>
+                        <div class="w-full rounded-xl border-2 border-gray-300 bg-gray-50 px-5 py-4 text-gray-800 font-medium text-base shadow-inner">
+                            <?php echo e($patientName); ?>
+
+                        </div>
+                        <input type="hidden" name="name" value="<?php echo e($patientName); ?>" />
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <label class="block text-sm font-bold uppercase tracking-wide text-gray-700">Examination Date</label>
+                        <?php
+                            $currentDate = old('date', isset($medicalChecklist) && $medicalChecklist->date ? $medicalChecklist->date : (isset($date) ? $date : now()->format('Y-m-d')));
+                        ?>
+                        <div class="w-full rounded-xl border-2 border-gray-300 bg-gray-50 px-5 py-4 text-gray-800 font-medium text-base shadow-inner">
+                            <?php echo e(\Carbon\Carbon::parse($currentDate)->format('F j, Y')); ?>
 
                         </div>
                         <input type="hidden" name="date" value="<?php echo e($currentDate); ?>" />
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">Age</label>
-                        <input type="number" name="age" value="<?php echo e(old('age', $medicalChecklist->age ?? (isset($preEmploymentRecord) ? $preEmploymentRecord->age : (isset($patient) ? $patient->age : '')) )); ?>" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500" required />
+                    
+                    <div class="space-y-3">
+                        <label class="block text-sm font-bold uppercase tracking-wide text-gray-700">Patient Age</label>
+                        <?php
+                            $patientAge = '';
+                            if (isset($medicalChecklist) && $medicalChecklist->age) {
+                                $patientAge = $medicalChecklist->age;
+                            } elseif (isset($patient)) {
+                                $patientAge = $patient->age;
+                            } elseif (isset($preEmploymentRecord)) {
+                                $patientAge = $preEmploymentRecord->age;
+                            } else {
+                                $patientAge = old('age', isset($age) ? $age : '');
+                            }
+                        ?>
+                        <div class="w-full rounded-xl border-2 border-gray-300 bg-gray-50 px-5 py-4 text-gray-800 font-medium text-base shadow-inner">
+                            <?php echo e($patientAge ? $patientAge . ' years' : 'N/A'); ?>
+
+                        </div>
+                        <input type="hidden" name="age" value="<?php echo e($patientAge); ?>" />
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">Record Number</label>
-                        <?php($displayNumber = old('number', $medicalChecklist->number ?? ($number ?? '')))
-                        @if($displayNumber)
-                            <div class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-gray-50 text-gray-700">
-                                {{ $displayNumber }}
-                            </div>
-                        @else
-                            <div class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-gray-50 text-gray-500">
-                                N/A
-                            </div>
-                        @endif
-                        <input type="hidden" name="number" value="{{ $displayNumber }}" />
+                    
+                    <div class="space-y-3">
+                        <label class="block text-sm font-bold uppercase tracking-wide text-gray-700">Checklist Number</label>
+                        <div class="w-full rounded-xl border-2 border-teal-300 bg-teal-50 px-5 py-4 text-teal-800 font-bold text-base shadow-inner">
+                            <?php echo e($generatedNumber ?: 'N/A'); ?>
+
+                        </div>
+                        <input type="hidden" name="number" value="<?php echo e($generatedNumber); ?>" />
                     </div>
                 </div>
             </div>
 
-            <!-- Medical Examinations Checklist -->
-            <div class="p-8">
-                <div class="flex items-center mb-6">
-                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-tasks text-purple-600"></i>
+            <!-- Medical Examinations Checklist Card -->
+            <div class="content-card rounded-xl shadow-xl border-2 border-gray-200 p-8">
+                <div class="flex items-center space-x-4 mb-8">
+                    <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-tasks text-indigo-600 text-xl"></i>
                     </div>
                     <div>
-                        <h2 class="text-lg font-bold text-gray-900">Medical Examinations Checklist</h2>
-                        <p class="text-sm text-gray-500">Tests must be completed in order</p>
+                        <h3 class="text-2xl font-bold text-gray-900">Medical Examinations Checklist</h3>
+                        <p class="text-gray-600 text-base">Track completion status and responsible medical staff</p>
                     </div>
                 </div>
-
-                <div class="space-y-3">
-                    @foreach($examinations as $field => $exam)
-                        @php
-                            $completedBy = isset($medicalChecklist) ? ($medicalChecklist->{$field . '_done_by'} ?? null) : null;
-                            $isUnlocked = ($field === $unlockedTest);
-                            $isCompleted = !empty($completedBy);
+                
+                <div class="space-y-6">
+                    <?php
+                        $examinations = [
+                            'chest_xray' => ['name' => 'Chest X-Ray', 'icon' => 'fas fa-x-ray', 'color' => 'cyan'],
+                            'stool_exam' => ['name' => 'Stool Examination', 'icon' => 'fas fa-vial', 'color' => 'amber'],
+                            'urinalysis' => ['name' => 'Urinalysis', 'icon' => 'fas fa-flask', 'color' => 'blue'],
+                            'drug_test' => ['name' => 'Drug Test', 'icon' => 'fas fa-pills', 'color' => 'red'],
+                            'blood_extraction' => ['name' => 'Blood Extraction', 'icon' => 'fas fa-tint', 'color' => 'rose'],
+                            'ecg' => ['name' => 'ElectroCardioGram (ECG)', 'icon' => 'fas fa-heartbeat', 'color' => 'green'],
+                            'physical_exam' => ['name' => 'Physical Examination', 'icon' => 'fas fa-stethoscope', 'color' => 'purple'],
+                        ];
+                    ?>
+                    <?php $__currentLoopData = $examinations; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $field => $exam): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php
+                            $isCompleted = isset($medicalChecklist) && !empty($medicalChecklist->{$field . '_done_by'});
+                            $isChestXray = ($field === 'chest_xray');
                         ?>
-                        
-                        <div class="flex items-center justify-between p-4 rounded-lg border-2 <?php echo e($isCompleted ? 'bg-green-50 border-green-300' : ($isUnlocked ? 'bg-blue-50 border-blue-400 shadow-md' : 'bg-gray-50 border-gray-200')); ?>">
-                            <!-- Left Side: Number, Icon, Name -->
-                            <div class="flex items-center space-x-4 flex-1">
-                                <!-- Number Badge -->
-                                <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold <?php echo e($isCompleted ? 'bg-green-500 text-white' : ($isUnlocked ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-600')); ?>">
-                                    <?php echo e($loop->iteration); ?>
-
+                        <div class="bg-white rounded-xl border-2 <?php echo e($isChestXray ? 'border-cyan-400 bg-cyan-50' : 'border-gray-200'); ?> p-6 hover:shadow-lg transition-all duration-200">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-10 h-10 bg-<?php echo e($isChestXray ? 'cyan' : 'gray'); ?>-100 rounded-lg flex items-center justify-center">
+                                        <i class="<?php echo e($exam['icon']); ?> text-<?php echo e($isChestXray ? 'cyan' : 'gray'); ?>-600"></i>
+                                    </div>
+                                    <div>
+                                        <span class="text-lg font-bold <?php echo e($isChestXray ? 'text-cyan-900' : 'text-gray-900'); ?>"><?php echo e($loop->iteration); ?>. <?php echo e($exam['name']); ?></span>
+                                        <div class="text-sm <?php echo e($isChestXray ? 'text-cyan-700' : 'text-gray-600'); ?> mt-1">
+                                            <?php if($isChestXray): ?>
+                                                RadTech responsibility - X-Ray imaging
+                                            <?php else: ?>
+                                                Medical examination requirement
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
                                 </div>
                                 
-                                <!-- Icon -->
-                                <div class="w-10 h-10 rounded-lg flex items-center justify-center <?php echo e($isCompleted ? 'bg-green-200' : ($isUnlocked ? 'bg-blue-200' : 'bg-gray-200')); ?>">
-                                    <i class="<?php echo e($exam['icon']); ?> <?php echo e($isCompleted ? 'text-green-700' : ($isUnlocked ? 'text-blue-700' : 'text-gray-500')); ?> text-lg"></i>
-                                </div>
-                                
-                                <!-- Test Name & Status -->
-                                <div class="flex-1">
-                                    <h4 class="font-semibold <?php echo e($isCompleted ? 'text-green-900' : ($isUnlocked ? 'text-blue-900' : 'text-gray-500')); ?>">
-                                        <?php echo e($loop->iteration); ?>. <?php echo e($exam['name']); ?>
-
-                                    </h4>
-                                    <p class="text-xs <?php echo e($isCompleted ? 'text-green-600' : ($isUnlocked ? 'text-blue-600' : 'text-gray-400')); ?>">
-                                        <?php if($isCompleted): ?>
-                                            Completed by <?php echo e($completedBy); ?>
-
-                                        <?php elseif($isUnlocked): ?>
-                                            Ready to complete
+                                <div class="flex items-center space-x-6">
+                                    <div class="text-right">
+                                        <label class="block text-sm font-bold text-gray-700 mb-2">Completed by:</label>
+                                        <?php if($isChestXray): ?>
+                                            <input type="text" name="<?php echo e($field); ?>_done_by"
+                                                   value="<?php echo e(old($field . '_done_by', $medicalChecklist->{$field . '_done_by'} ?? '')); ?>"
+                                                   placeholder="Enter your initials"
+                                                   class="w-48 px-4 py-3 rounded-xl border-2 border-cyan-400 bg-white text-gray-900 font-medium text-center focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors shadow-sm"
+                                                   <?php echo e($isCompleted ? 'readonly' : ''); ?>>
                                         <?php else: ?>
-                                            Locked - Complete previous tests first
+                                            <div class="w-48 px-4 py-3 rounded-xl border-2 border-gray-300 bg-gray-100 text-gray-600 font-medium text-center shadow-inner">
+                                                <?php echo e($medicalChecklist->{$field . '_done_by'} ?? 'Not completed'); ?>
+
+                                            </div>
                                         <?php endif; ?>
-                                    </p>
-                                </div>
-                            </div>
-                            
-                            <!-- Right Side: Status/Input -->
-                            <div class="flex items-center">
-                                <?php if($isCompleted): ?>
-                                    <span class="px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg flex items-center">
-                                        <i class="fas fa-check-circle mr-2"></i>
-                                        Completed
-                                    </span>
-                                <?php elseif($isUnlocked): ?>
-                                    <?php if($field === 'chest_xray'): ?>
-                                        <input type="text" name="chest_xray_done_by" value="<?php echo e(old('chest_xray_done_by', '')); ?>" placeholder="Enter your initials" class="w-48 px-4 py-2 text-sm rounded-lg border-2 border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
-                                    <?php else: ?>
-                                        <span class="px-4 py-2 bg-gray-200 text-gray-600 text-sm font-medium rounded-lg flex items-center">
-                                            <i class="fas fa-user-md mr-2"></i>
-                                            Other Staff
-                                        </span>
+                                    </div>
+                                    
+                                    <?php if(!$isChestXray): ?>
+                                        <div class="flex items-center space-x-2 text-gray-500">
+                                            <i class="fas fa-user-md text-sm"></i>
+                                            <span class="text-sm font-medium">Other Staff</span>
+                                        </div>
+                                    <?php elseif($isCompleted): ?>
+                                        <div class="flex items-center space-x-2 text-green-600">
+                                            <i class="fas fa-check-circle text-sm"></i>
+                                            <span class="text-sm font-medium">Completed</span>
+                                        </div>
                                     <?php endif; ?>
-                                <?php else: ?>
-                                    <span class="px-4 py-2 bg-gray-200 text-gray-500 text-sm font-medium rounded-lg flex items-center">
-                                        <i class="fas fa-lock mr-2"></i>
-                                        Locked
-                                    </span>
-                                <?php endif; ?>
+                                </div>
                             </div>
                         </div>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </div>
             </div>
 
-            <!-- Physical Examination Section -->
-            <div class="px-8 pb-8">
-                <div class="bg-teal-50 rounded-lg p-6 border border-teal-200">
-                    <div class="flex items-center mb-4">
-                        <div class="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-heartbeat text-white"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900">Physical Examination</h3>
+            <!-- X-Ray Image Upload Card -->
+            <div class="content-card rounded-xl shadow-xl border-2 border-gray-200 p-8">
+                <div class="flex items-center space-x-4 mb-8">
+                    <div class="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-x-ray text-cyan-600 text-xl"></i>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-900">X-Ray Image Upload</h3>
+                        <p class="text-gray-600 text-base">Upload chest X-ray images for patient records</p>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl border-2 border-cyan-200 p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Upload Section -->
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-2">Optional Examinations</label>
-                            <input type="text" name="optional_exam" value="<?php echo e(old('optional_exam', isset($medicalChecklist) ? $medicalChecklist->optional_exam : 'Audiometry/Ishihara')); ?>" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500" />
+                            <div class="flex items-center space-x-4 mb-4">
+                                <div class="w-8 h-8 bg-cyan-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-upload text-cyan-600"></i>
+                                </div>
+                                <label class="text-lg font-bold text-gray-900">Upload X-Ray Image</label>
+                            </div>
+                            
+                            <input type="file" 
+                                   name="xray_image" 
+                                   accept="image/*"
+                                   class="w-full text-sm file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-cyan-100 file:text-cyan-700 hover:file:bg-cyan-200 transition-colors cursor-pointer">
+                            
+                            <div class="mt-4 text-sm text-gray-600">
+                                <p><strong>Accepted formats:</strong> JPG, PNG, GIF</p>
+                                <p><strong>Maximum size:</strong> 25MB</p>
+                            </div>
                         </div>
+                        
+                        <!-- Current Image Section -->
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-2">Nurse Signature</label>
-                            <input type="text" name="nurse_signature" value="<?php echo e(old('nurse_signature', isset($medicalChecklist) ? $medicalChecklist->nurse_signature : '')); ?>" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500" placeholder="Nurse initials" />
+                            <?php if(isset($medicalChecklist) && $medicalChecklist->xray_image_path): ?>
+                                <div class="flex items-center space-x-4 mb-4">
+                                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-image text-green-600"></i>
+                                    </div>
+                                    <label class="text-lg font-bold text-gray-900">Current X-Ray Image</label>
+                                </div>
+                                
+                                <div class="relative group">
+                                    <img src="<?php echo e(asset('storage/' . $medicalChecklist->xray_image_path)); ?>" 
+                                         alt="X-Ray Image" 
+                                         class="w-full h-48 object-cover rounded-xl border-2 border-gray-300 shadow-lg">
+                                    <div class="absolute inset-0 bg-black bg-opacity-50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <a href="<?php echo e(asset('storage/' . $medicalChecklist->xray_image_path)); ?>" 
+                                           target="_blank" 
+                                           class="px-4 py-2 bg-white text-gray-900 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+                                            <i class="fas fa-expand mr-2"></i>View Full Size
+                                        </a>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <div class="flex items-center space-x-4 mb-4">
+                                    <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-image text-gray-400"></i>
+                                    </div>
+                                    <label class="text-lg font-bold text-gray-500">No Image Uploaded</label>
+                                </div>
+                                
+                                <div class="w-full h-48 bg-gray-100 rounded-xl border-2 border-gray-300 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <i class="fas fa-x-ray text-gray-400 text-4xl mb-2"></i>
+                                        <p class="text-gray-500">No X-ray image available</p>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- X-Ray Image Upload -->
-            <?php if($unlockedTest === 'chest_xray' || (isset($medicalChecklist) && $medicalChecklist->chest_xray_done_by)): ?>
-            <div class="px-8 pb-8">
-                <div class="bg-cyan-50 rounded-lg p-6 border border-cyan-200">
-                    <div class="flex items-center mb-4">
-                        <div class="w-10 h-10 bg-cyan-500 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-x-ray text-white"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900">X-Ray Image</h3>
-                    </div>
-                    <div class="grid grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Upload X-Ray Image</label>
-                            <input type="file" name="xray_image" accept="image/*" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-100 file:text-cyan-700 hover:file:bg-cyan-200">
-                            <p class="text-xs text-gray-500 mt-2">JPG, PNG, GIF (Max: 25MB)</p>
-                        </div>
-                        <?php if(isset($medicalChecklist) && $medicalChecklist->xray_image_path): ?>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Current Image</label>
-                            <img src="<?php echo e(asset('storage/' . $medicalChecklist->xray_image_path)); ?>" alt="X-Ray" class="w-full h-32 object-cover rounded-lg border border-gray-300">
-                        </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-            <?php endif; ?>
+            <!-- Action Buttons -->
+            <div class="flex justify-between items-center pt-6">
+                <a href="<?php echo e(route('radtech.dashboard')); ?>" 
+                   class="inline-flex items-center px-8 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors shadow-lg border-2 border-gray-300">
+                    <i class="fas fa-arrow-left mr-3"></i>
+                    Back to Dashboard
+                </a>
+                
+                <button type="submit" 
+                        class="inline-flex items-center px-12 py-4 bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white font-bold rounded-xl transition-all duration-200 shadow-xl border-2 border-cyan-500 transform hover:scale-105">
+                    <i class="fas fa-save mr-3"></i>
+                    <?php echo e(isset($medicalChecklist) && $medicalChecklist->id ? 'Update X-Ray Data' : 'Save X-Ray Data'); ?>
 
-            <!-- Submit Buttons -->
-            <div class="px-8 pb-8">
-                <div class="flex items-center justify-between pt-6 border-t border-gray-200">
-                    <button type="button" onclick="window.history.back()" class="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
-                        <i class="fas fa-arrow-left mr-2"></i>Cancel
-                    </button>
-                    <button type="submit" class="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-8 py-3 rounded-lg shadow-lg hover:from-teal-600 hover:to-teal-700 font-semibold">
-                        <i class="fas fa-save mr-2"></i><?php echo e(isset($medicalChecklist) && $medicalChecklist->id ? 'Update Checklist' : 'Save Checklist'); ?>
-
-                    </button>
-                </div>
+                </button>
             </div>
         </form>
     </div>
 </div>
 <?php $__env->stopSection(); ?>
 
-<?php $__env->startSection('styles'); ?>
-<style>
-    .content-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-    }
-</style>
-<?php $__env->stopSection(); ?>
 <?php echo $__env->make('layouts.radtech', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\rss_new-1\resources\views/radtech/medical-checklist.blade.php ENDPATH**/ ?>

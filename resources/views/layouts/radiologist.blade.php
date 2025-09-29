@@ -3,24 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Radiologic Technologist Dashboard - RSS Citi Health Services')</title>
+    <title>@yield('title', 'Radiologist Dashboard - RSS Citi Health Services')</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <style>
         :root {
-            --primary-color: #0891b2;
-            --secondary-color: #06b6d4;
-            --accent-color: #0e7490;
-            --info-color: #0369a1;
+            --primary-color: #7c3aed;
+            --secondary-color: #8b5cf6;
+            --accent-color: #6d28d9;
+            --info-color: #5b21b6;
             --warning-color: #ca8a04;
             --danger-color: #dc2626;
             --success-color: #16a34a;
             --dark-color: #1f2937;
             --light-color: #f8fafc;
-            --glass-bg: rgba(6, 182, 212, 0.05);
-            --glass-border: rgba(6, 182, 212, 0.1);
+            --glass-bg: rgba(124, 58, 237, 0.05);
+            --glass-border: rgba(124, 58, 237, 0.1);
         }
         
         body {
@@ -84,9 +84,9 @@
         }
         
         .nav-item.active {
-            background: #0891b2;
+            background: #7c3aed;
             color: white;
-            border-left: 4px solid #06b6d4;
+            border-left: 4px solid #8b5cf6;
         }
         
         .nav-item:hover {
@@ -116,7 +116,7 @@
             left: 50%;
             width: 0;
             height: 2px;
-            background: linear-gradient(90deg, #06b6d4, #0891b2);
+            background: linear-gradient(90deg, #8b5cf6, #7c3aed);
             transition: all 0.3s ease;
             transform: translateX(-50%);
         }
@@ -135,11 +135,11 @@
             <!-- Header -->
             <div class="p-8 border-b border-gray-200 flex-shrink-0">
                 <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 bg-cyan-600 rounded-xl flex items-center justify-center">
-                        <i class="fas fa-x-ray text-white text-xl"></i>
+                    <div class="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-user-md text-white text-xl"></i>
                     </div>
                     <div>
-                        <h1 class="text-xl font-bold text-gray-900">Radiologic Technologist</h1>
+                        <h1 class="text-xl font-bold text-gray-900">Radiologist</h1>
                         <p class="text-gray-600 text-sm">RSS Citi Health Services</p>
                     </div>
                 </div>
@@ -151,7 +151,7 @@
                 <div class="mb-8">
                     <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-3">Main Menu</h3>
                     <div class="space-y-1">
-                        <a href="{{ route('radtech.dashboard') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('radtech.dashboard') ? 'active text-white' : '' }}">
+                        <a href="{{ route('radiologist.dashboard') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('radiologist.dashboard') ? 'active text-white' : '' }}">
                             <i class="fas fa-th-large mr-4 text-lg"></i>
                             <span class="font-medium">Dashboard</span>
                         </a>
@@ -162,11 +162,11 @@
                 <div class="mb-8">
                     <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-3">X-Ray Services</h3>
                     <div class="space-y-1">
-                        <a href="{{ route('radtech.pre-employment-xray') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('radtech.pre-employment-xray*') ? 'active text-white' : '' }}">
+                        <a href="{{ route('radiologist.pre-employment-xray') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('radiologist.pre-employment-xray*') ? 'active text-white' : '' }}">
                             <i class="fas fa-briefcase mr-4 text-lg"></i>
                             <span class="font-medium">Pre-Employment X-Ray</span>
                         </a>
-                        <a href="{{ route('radtech.annual-physical-xray') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('radtech.annual-physical-xray*') ? 'active text-white' : '' }}">
+                        <a href="{{ route('radiologist.annual-physical-xray') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('radiologist.annual-physical-xray*') ? 'active text-white' : '' }}">
                             <i class="fas fa-user-md mr-4 text-lg"></i>
                             <span class="font-medium">Annual Physical X-Ray</span>
                         </a>
@@ -174,19 +174,31 @@
                 </div>
 
                 <!-- Medical Imaging Section -->
-               
+                <div class="mb-8">
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-3">Medical Imaging</h3>
+                    <div class="space-y-1">
+                        <a href="{{ route('radiologist.xray-gallery') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('radiologist.xray-gallery*') ? 'active text-white' : '' }}">
+                            <i class="fas fa-images mr-4 text-lg"></i>
+                            <span class="font-medium">X-Ray Gallery</span>
+                        </a>
+                        <a href="#" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200">
+                            <i class="fas fa-file-medical mr-4 text-lg"></i>
+                            <span class="font-medium">Reports</span>
+                        </a>
+                    </div>
+                </div>
             </nav>
 
             <!-- User Profile Section - Sticky Bottom -->
             <div class="flex-shrink-0 p-6 border-t border-gray-200 mt-auto">
                 <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
                     <div class="flex items-center space-x-3">
-                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                            {{ substr(Auth::user()->fname ?? 'R', 0, 1) }}
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                            {{ substr(Auth::user()->fname ?? 'M', 0, 1) }}
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="text-gray-900 font-semibold text-sm truncate">
-                                {{ Auth::user()->fname ?? 'Radtech' }} {{ Auth::user()->lname ?? 'User' }}
+                                {{ Auth::user()->fname ?? 'Radiologist' }} {{ Auth::user()->lname ?? 'User' }}
                             </p>
                             <p class="text-gray-600 text-xs">Radiologic Technologist</p>
                         </div>
@@ -211,7 +223,7 @@
                     <div class="flex items-center space-x-4">
                         <!-- Notifications -->
                         <div class="relative">
-                            <button class="p-3 text-gray-600 hover:text-cyan-600 hover:bg-cyan-50 rounded-xl transition-all duration-200">
+                            <button class="p-3 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition-all duration-200">
                                 <i class="fas fa-bell text-lg"></i>
                                 <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full notification-badge"></span>
                             </button>
@@ -219,9 +231,9 @@
                         
                         <!-- X-Ray Queue -->
                         <div class="relative">
-                            <button class="p-3 text-gray-600 hover:text-cyan-600 hover:bg-cyan-50 rounded-xl transition-all duration-200">
+                            <button class="p-3 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition-all duration-200">
                                 <i class="fas fa-x-ray text-lg"></i>
-                                <span class="absolute -top-1 -right-1 w-3 h-3 bg-cyan-500 rounded-full notification-badge"></span>
+                                <span class="absolute -top-1 -right-1 w-3 h-3 bg-purple-500 rounded-full notification-badge"></span>
                             </button>
                         </div>
                     </div>
@@ -241,15 +253,15 @@
     <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full hidden z-50 flex items-center justify-center">
         <div class="relative mx-auto p-0 border-0 w-full max-w-md shadow-2xl rounded-2xl bg-white">
             <!-- Modal Header -->
-            <div class="bg-gradient-to-r from-cyan-600 to-cyan-700 px-8 py-6 rounded-t-2xl">
+            <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-8 py-6 rounded-t-2xl">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4">
                         <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20">
-                            <i class="fas fa-x-ray text-white text-xl"></i>
+                            <i class="fas fa-user-md text-white text-xl"></i>
                         </div>
                         <div>
                             <h3 class="text-xl font-bold text-white">Profile</h3>
-                            <p class="text-cyan-100 text-sm">Radiologic Technologist</p>
+                            <p class="text-purple-100 text-sm">Radiologic Technologist</p>
                         </div>
                     </div>
                     <button id="closeModal" class="text-white/70 hover:text-white transition-colors p-2">
@@ -261,15 +273,15 @@
             <!-- Modal Body -->
             <div class="p-8">
                 <!-- Profile Info -->
-                <div class="flex items-center space-x-4 mb-8 p-4 bg-cyan-50 rounded-xl border border-cyan-100">
-                    <div class="w-16 h-16 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <i class="fas fa-x-ray text-white text-2xl"></i>
+                <div class="flex items-center space-x-4 mb-8 p-4 bg-purple-50 rounded-xl border border-purple-100">
+                    <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-user-md text-white text-2xl"></i>
                     </div>
                     <div class="flex-1">
                         <h4 class="text-lg font-bold text-gray-900">{{ Auth::user()->fname }} {{ Auth::user()->lname }}</h4>
                         <p class="text-sm text-gray-600">{{ Auth::user()->email }}</p>
                         <div class="flex items-center space-x-2 mt-1">
-                            <span class="px-2 py-1 bg-cyan-100 text-cyan-700 text-xs font-medium rounded-full">Radiologic Technologist</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">Radiologic Technologist</span>
                             <span class="w-2 h-2 bg-green-500 rounded-full"></span>
                             <span class="text-xs text-green-600 font-medium">Online</span>
                         </div>
@@ -278,26 +290,26 @@
 
                 <!-- Menu Items -->
                 <div class="space-y-2">
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 rounded-xl transition-all duration-200 group">
-                        <div class="w-10 h-10 bg-gray-100 group-hover:bg-cyan-100 rounded-lg flex items-center justify-center mr-3 transition-colors">
-                            <i class="fas fa-user-edit text-gray-500 group-hover:text-cyan-600"></i>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-xl transition-all duration-200 group">
+                        <div class="w-10 h-10 bg-gray-100 group-hover:bg-purple-100 rounded-lg flex items-center justify-center mr-3 transition-colors">
+                            <i class="fas fa-user-edit text-gray-500 group-hover:text-purple-600"></i>
                         </div>
                         <span class="font-medium">Edit Profile</span>
-                        <i class="fas fa-chevron-right ml-auto text-gray-400 group-hover:text-cyan-500"></i>
+                        <i class="fas fa-chevron-right ml-auto text-gray-400 group-hover:text-purple-500"></i>
                     </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 rounded-xl transition-all duration-200 group">
-                        <div class="w-10 h-10 bg-gray-100 group-hover:bg-cyan-100 rounded-lg flex items-center justify-center mr-3 transition-colors">
-                            <i class="fas fa-cog text-gray-500 group-hover:text-cyan-600"></i>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-xl transition-all duration-200 group">
+                        <div class="w-10 h-10 bg-gray-100 group-hover:bg-purple-100 rounded-lg flex items-center justify-center mr-3 transition-colors">
+                            <i class="fas fa-cog text-gray-500 group-hover:text-purple-600"></i>
                         </div>
                         <span class="font-medium">Settings</span>
-                        <i class="fas fa-chevron-right ml-auto text-gray-400 group-hover:text-cyan-500"></i>
+                        <i class="fas fa-chevron-right ml-auto text-gray-400 group-hover:text-purple-500"></i>
                     </a>
-                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 rounded-xl transition-all duration-200 group">
-                        <div class="w-10 h-10 bg-gray-100 group-hover:bg-cyan-100 rounded-lg flex items-center justify-center mr-3 transition-colors">
-                            <i class="fas fa-question-circle text-gray-500 group-hover:text-cyan-600"></i>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-purple-50 hover:text-purple-700 rounded-xl transition-all duration-200 group">
+                        <div class="w-10 h-10 bg-gray-100 group-hover:bg-purple-100 rounded-lg flex items-center justify-center mr-3 transition-colors">
+                            <i class="fas fa-question-circle text-gray-500 group-hover:text-purple-600"></i>
                         </div>
                         <span class="font-medium">Help & Support</span>
-                        <i class="fas fa-chevron-right ml-auto text-gray-400 group-hover:text-cyan-500"></i>
+                        <i class="fas fa-chevron-right ml-auto text-gray-400 group-hover:text-purple-500"></i>
                     </a>
                     
                     <div class="border-t border-gray-200 my-4"></div>

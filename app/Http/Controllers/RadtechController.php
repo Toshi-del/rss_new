@@ -18,21 +18,41 @@ class RadtechController extends Controller
      */
     public function dashboard()
     {
-        // Get pre-employment records not yet submitted
+        // Get pre-employment records not yet submitted and without chest X-ray completion
         $preEmployments = PreEmploymentRecord::where('status', 'approved')
             ->whereDoesntHave('preEmploymentExamination', function ($q) {
                 $q->whereIn('status', ['Approved', 'sent_to_company']);
             })
+            ->whereDoesntHave('medicalChecklist', function ($q) {
+                $q->whereNotNull('chest_xray_done_by');
+            })
             ->latest()->take(5)->get();
-        $preEmploymentCount = PreEmploymentRecord::where('status', 'approved')->count();
+        $preEmploymentCount = PreEmploymentRecord::where('status', 'approved')
+            ->whereDoesntHave('preEmploymentExamination', function ($q) {
+                $q->whereIn('status', ['Approved', 'sent_to_company']);
+            })
+            ->whereDoesntHave('medicalChecklist', function ($q) {
+                $q->whereNotNull('chest_xray_done_by');
+            })
+            ->count();
 
-        // Get patients for annual physical not yet submitted
+        // Get patients for annual physical not yet submitted and without chest X-ray completion
         $patients = Patient::where('status', 'approved')
             ->whereDoesntHave('annualPhysicalExamination', function ($q) {
                 $q->whereIn('status', ['completed', 'sent_to_company']);
             })
+            ->whereDoesntHave('medicalChecklist', function ($q) {
+                $q->whereNotNull('chest_xray_done_by');
+            })
             ->latest()->take(5)->get();
-        $patientCount = Patient::where('status', 'approved')->count();
+        $patientCount = Patient::where('status', 'approved')
+            ->whereDoesntHave('annualPhysicalExamination', function ($q) {
+                $q->whereIn('status', ['completed', 'sent_to_company']);
+            })
+            ->whereDoesntHave('medicalChecklist', function ($q) {
+                $q->whereNotNull('chest_xray_done_by');
+            })
+            ->count();
 
         // Get appointments
         $appointments = Appointment::with('patients')->latest()->take(5)->get();
@@ -58,6 +78,9 @@ class RadtechController extends Controller
             ->whereDoesntHave('preEmploymentExamination', function ($q) {
                 $q->whereIn('status', ['Approved', 'sent_to_company']);
             })
+            ->whereDoesntHave('medicalChecklist', function ($q) {
+                $q->whereNotNull('chest_xray_done_by');
+            })
             ->latest()
             ->get();
 
@@ -72,6 +95,9 @@ class RadtechController extends Controller
         $patients = Patient::where('status', 'approved')
             ->whereDoesntHave('annualPhysicalExamination', function ($q) {
                 $q->whereIn('status', ['completed', 'sent_to_company']);
+            })
+            ->whereDoesntHave('medicalChecklist', function ($q) {
+                $q->whereNotNull('chest_xray_done_by');
             })
             ->latest()
             ->get();
@@ -150,25 +176,23 @@ class RadtechController extends Controller
     }
 
     /**
-     * Update medical checklist (add radtech initials)
+     * Update medical checklist (add radtech initials and X-ray image)
      */
     public function updateMedicalChecklist(Request $request, $id)
     {
         $medicalChecklist = MedicalChecklist::findOrFail($id);
         
         $validated = $request->validate([
-            'chest_xray_done_by' => 'nullable|string|max:100',
+            'chest_xray_done_by' => 'required|string|max:100',
             'xray_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:25000',
         ]);
-
-        // No radtech_id tracking per request
 
         if ($request->hasFile('xray_image') && $request->file('xray_image')->isValid()) {
             $path = $request->file('xray_image')->store('xray-images', 'public');
             $validated['xray_image_path'] = $path;
         }
 
-        // Persist explicitly to avoid mass-assignment surprises on some setups
+        // Update chest X-ray completion
         if (array_key_exists('chest_xray_done_by', $validated)) {
             $medicalChecklist->chest_xray_done_by = $validated['chest_xray_done_by'];
         }
@@ -177,7 +201,17 @@ class RadtechController extends Controller
         }
         $medicalChecklist->save();
 
-        return redirect()->back()->with('success', 'X-ray information updated successfully.');
+        // Determine redirect route based on examination type
+        if ($medicalChecklist->pre_employment_record_id) {
+            return redirect()->route('radtech.pre-employment-xray')
+                ->with('success', 'X-ray information updated successfully. Record removed from your list.');
+        } elseif ($medicalChecklist->patient_id) {
+            return redirect()->route('radtech.annual-physical-xray')
+                ->with('success', 'X-ray information updated successfully. Record removed from your list.');
+        }
+
+        return redirect()->route('radtech.dashboard')
+            ->with('success', 'X-ray information updated successfully.');
     }
 
     /**

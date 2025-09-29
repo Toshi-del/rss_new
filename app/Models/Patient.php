@@ -44,4 +44,9 @@ class Patient extends Model
         return $this->hasOne(AnnualPhysicalExamination::class);
     }
 
+    public function medicalChecklist(): HasOne
+    {
+        return $this->hasOne(MedicalChecklist::class, 'patient_id');
+    }
+
 }

@@ -1,7 +1,8 @@
-@extends('layouts.radtech')
+@extends('layouts.radiologist')
 
 @section('title', 'Annual Physical Examination')
 @section('page-title', 'Annual Physical Examination')
+@section('page-description', 'Review and analyze X-ray images')
 
 @section('content')
 @if(session('success'))
@@ -156,7 +157,13 @@
                 <tbody>
                     <tr>
                         <td class="p-2">Chest X-Ray</td>
-                        <td class="p-2"><input type="text" name="cxr_result" value="{{ old('cxr_result', $cxr_result) }}" class="w-full border rounded p-2" /></td>
+                        <td class="p-2">
+                            <select name="cxr_result" class="w-full border rounded p-2">
+                                <option value="—" {{ old('cxr_result', $cxr_result) == '—' ? 'selected' : '' }}>—</option>
+                                <option value="Normal" {{ old('cxr_result', $cxr_result) == 'Normal' ? 'selected' : '' }}>Normal</option>
+                                <option value="Not Normal" {{ old('cxr_result', $cxr_result) == 'Not Normal' ? 'selected' : '' }}>Not Normal</option>
+                            </select>
+                        </td>
                         <td class="p-2"><input type="text" name="cxr_finding" value="{{ old('cxr_finding', $cxr_finding) }}" class="w-full border rounded p-2" /></td>
                     </tr>
                 </tbody>

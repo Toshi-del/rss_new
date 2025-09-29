@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Radiologic Technologist Dashboard - RSS Citi Health Services')</title>
+    <title><?php echo $__env->yieldContent('title', 'Radiologic Technologist Dashboard - RSS Citi Health Services'); ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
     
     <style>
         :root {
@@ -126,7 +126,7 @@
         }
     </style>
     
-    @yield('styles')
+    <?php echo $__env->yieldContent('styles'); ?>
 </head>
 <body class="h-full bg-gray-900">
     <div class="flex h-screen overflow-hidden">
@@ -151,7 +151,7 @@
                 <div class="mb-8">
                     <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-3">Main Menu</h3>
                     <div class="space-y-1">
-                        <a href="{{ route('radtech.dashboard') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('radtech.dashboard') ? 'active text-white' : '' }}">
+                        <a href="<?php echo e(route('radtech.dashboard')); ?>" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 <?php echo e(request()->routeIs('radtech.dashboard') ? 'active text-white' : ''); ?>">
                             <i class="fas fa-th-large mr-4 text-lg"></i>
                             <span class="font-medium">Dashboard</span>
                         </a>
@@ -162,11 +162,11 @@
                 <div class="mb-8">
                     <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-3">X-Ray Services</h3>
                     <div class="space-y-1">
-                        <a href="{{ route('radtech.pre-employment-xray') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('radtech.pre-employment-xray*') ? 'active text-white' : '' }}">
+                        <a href="<?php echo e(route('radtech.pre-employment-xray')); ?>" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 <?php echo e(request()->routeIs('radtech.pre-employment-xray*') ? 'active text-white' : ''); ?>">
                             <i class="fas fa-briefcase mr-4 text-lg"></i>
                             <span class="font-medium">Pre-Employment X-Ray</span>
                         </a>
-                        <a href="{{ route('radtech.annual-physical-xray') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('radtech.annual-physical-xray*') ? 'active text-white' : '' }}">
+                        <a href="<?php echo e(route('radtech.annual-physical-xray')); ?>" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 <?php echo e(request()->routeIs('radtech.annual-physical-xray*') ? 'active text-white' : ''); ?>">
                             <i class="fas fa-user-md mr-4 text-lg"></i>
                             <span class="font-medium">Annual Physical X-Ray</span>
                         </a>
@@ -182,11 +182,13 @@
                 <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
                     <div class="flex items-center space-x-3">
                         <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                            {{ substr(Auth::user()->fname ?? 'R', 0, 1) }}
+                            <?php echo e(substr(Auth::user()->fname ?? 'R', 0, 1)); ?>
+
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="text-gray-900 font-semibold text-sm truncate">
-                                {{ Auth::user()->fname ?? 'Radtech' }} {{ Auth::user()->lname ?? 'User' }}
+                                <?php echo e(Auth::user()->fname ?? 'Radtech'); ?> <?php echo e(Auth::user()->lname ?? 'User'); ?>
+
                             </p>
                             <p class="text-gray-600 text-xs">Radiologic Technologist</p>
                         </div>
@@ -204,8 +206,8 @@
             <header class="content-card shadow-lg border-b border-gray-200 relative z-20">
                 <div class="flex items-center justify-between px-8 py-6">
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900">@yield('page-title', 'Dashboard')</h1>
-                        <p class="text-sm text-gray-600 mt-1">@yield('page-description', 'Radiologic Technologist Portal')</p>
+                        <h1 class="text-2xl font-bold text-gray-900"><?php echo $__env->yieldContent('page-title', 'Dashboard'); ?></h1>
+                        <p class="text-sm text-gray-600 mt-1"><?php echo $__env->yieldContent('page-description', 'Radiologic Technologist Portal'); ?></p>
                     </div>
                     
                     <div class="flex items-center space-x-4">
@@ -231,7 +233,7 @@
             <!-- Main Content Area -->
             <main class="flex-1 overflow-y-auto p-8 bg-gray-50">
                 <div class="max-w-7xl mx-auto">
-                    @yield('content')
+                    <?php echo $__env->yieldContent('content'); ?>
                 </div>
             </main>
         </div>
@@ -266,8 +268,8 @@
                         <i class="fas fa-x-ray text-white text-2xl"></i>
                     </div>
                     <div class="flex-1">
-                        <h4 class="text-lg font-bold text-gray-900">{{ Auth::user()->fname }} {{ Auth::user()->lname }}</h4>
-                        <p class="text-sm text-gray-600">{{ Auth::user()->email }}</p>
+                        <h4 class="text-lg font-bold text-gray-900"><?php echo e(Auth::user()->fname); ?> <?php echo e(Auth::user()->lname); ?></h4>
+                        <p class="text-sm text-gray-600"><?php echo e(Auth::user()->email); ?></p>
                         <div class="flex items-center space-x-2 mt-1">
                             <span class="px-2 py-1 bg-cyan-100 text-cyan-700 text-xs font-medium rounded-full">Radiologic Technologist</span>
                             <span class="w-2 h-2 bg-green-500 rounded-full"></span>
@@ -302,8 +304,8 @@
                     
                     <div class="border-t border-gray-200 my-4"></div>
                     
-                    <form method="POST" action="{{ route('logout') }}" class="block">
-                        @csrf
+                    <form method="POST" action="<?php echo e(route('logout')); ?>" class="block">
+                        <?php echo csrf_field(); ?>
                         <button type="submit" class="flex items-center w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 group">
                             <div class="w-10 h-10 bg-red-50 group-hover:bg-red-100 rounded-lg flex items-center justify-center mr-3 transition-colors">
                                 <i class="fas fa-sign-out-alt text-red-500"></i>
@@ -317,8 +319,8 @@
         </div>
     </div>
 
-    @yield('scripts')
-    @stack('scripts')
+    <?php echo $__env->yieldContent('scripts'); ?>
+    <?php echo $__env->yieldPushContent('scripts'); ?>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -414,3 +416,4 @@
     </script>
 </body>
 </html>
+<?php /**PATH C:\xampp\htdocs\rss_new-1\resources\views/layouts/radtech.blade.php ENDPATH**/ ?>

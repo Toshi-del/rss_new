@@ -215,7 +215,7 @@ Route::middleware(['auth', 'role:doctor'])->group(function () {
     Route::get('/doctor/annual-physical', [DoctorController::class, 'annualPhysical'])->name('doctor.annual-physical');
     Route::get('/doctor/annual-physical/{id}/edit', [DoctorController::class, 'editAnnualPhysical'])->name('doctor.annual-physical.edit');
     Route::patch('/doctor/annual-physical/{id}', [DoctorController::class, 'updateAnnualPhysical'])->name('doctor.annual-physical.update');
-    Route::get('/doctor/pre-employment/{record}/examination', [DoctorController::class, 'editExaminationByRecordId'])->name('doctor.pre-employment.examination.edit');
+    Route::get('/doctor/pre-employment/{id}/examination', [DoctorController::class, 'showExamination'])->name('doctor.pre-employment.examination.show');
     Route::post('/doctor/pre-employment/{record}/submit', [DoctorController::class, 'submitPreEmploymentByRecordId'])->name('doctor.pre-employment.by-record.submit');
     Route::get('/doctor/annual-physical/patient/{patientId}/edit', [DoctorController::class, 'editAnnualPhysicalByPatientId'])->name('doctor.annual-physical.by-patient.edit');
     Route::post('/doctor/annual-physical/patient/{patientId}/submit', [DoctorController::class, 'submitAnnualPhysicalByPatientId'])->name('doctor.annual-physical.by-patient.submit');
@@ -347,11 +347,17 @@ Route::middleware(['auth', 'role:plebo'])->group(function () {
 
 Route::middleware(['auth', 'role:radiologist'])->group(function () {
     Route::get('/radiologist/dashboard', [RadiologistController::class, 'dashboard'])->name('radiologist.dashboard');
+    
+    // X-Ray List Routes
+    Route::get('/radiologist/pre-employment-xray', [RadiologistController::class, 'preEmploymentXray'])->name('radiologist.pre-employment-xray');
+    Route::get('/radiologist/annual-physical-xray', [RadiologistController::class, 'annualPhysicalXray'])->name('radiologist.annual-physical-xray');
+    Route::get('/radiologist/xray-gallery', [RadiologistController::class, 'xrayGallery'])->name('radiologist.xray-gallery');
+    
+    // Individual X-Ray Review Routes
     Route::get('/radiologist/pre-employment/{id}', [RadiologistController::class, 'showPreEmployment'])->name('radiologist.pre-employment.show');
     Route::patch('/radiologist/pre-employment/{id}', [RadiologistController::class, 'updatePreEmployment'])->name('radiologist.pre-employment.update');
     Route::get('/radiologist/annual-physical/{id}', [RadiologistController::class, 'showAnnualPhysical'])->name('radiologist.annual-physical.show');
     Route::patch('/radiologist/annual-physical/{id}', [RadiologistController::class, 'updateAnnualPhysical'])->name('radiologist.annual-physical.update');
-    // Radiologist "send to doctor" not required; radiologist updates findings only.
 });
 
 Route::middleware(['auth', 'role:ecgtech'])->group(function () {
