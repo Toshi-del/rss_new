@@ -127,4 +127,100 @@ class PreEmploymentRecord extends Model
     {
         return $this->hasOne(\App\Models\DrugTestResult::class);
     }
+
+    /**
+     * Get pathologist-specific tests from selected tests
+     * Expands pre-employment packages to show individual pathologist tests
+     */
+    public function getPathologistTestsAttribute()
+    {
+        $selectedTests = $this->all_selected_tests ?? collect();
+        $pathologistTests = collect();
+
+        foreach ($selectedTests as $test) {
+            // Check if this is a pre-employment package that needs expansion
+            if ($this->isPreEmploymentPackage($test['test_name'])) {
+                // Add the core pathologist tests for pre-employment packages
+                $packageTests = $this->getPreEmploymentPackageTests($test['test_name']);
+                foreach ($packageTests as $packageTest) {
+                    $pathologistTests->push([
+                        'test_name' => $packageTest['name'],
+                        'category_name' => $packageTest['category'],
+                        'price' => 0, // Individual test prices are included in package price
+                        'is_package_component' => true,
+                        'package_name' => $test['test_name'],
+                        'package_price' => $test['price'],
+                    ]);
+                }
+            } else {
+                // For non-package tests, check if it's a pathologist test
+                if ($this->isPathologistTest($test['test_name'], $test['category_name'])) {
+                    $pathologistTests->push(array_merge($test, [
+                        'is_package_component' => false,
+                        'package_name' => null,
+                        'package_price' => 0,
+                    ]));
+                }
+            }
+        }
+
+        return $pathologistTests;
+    }
+
+    /**
+     * Check if a test is a pre-employment package
+     */
+    private function isPreEmploymentPackage($testName)
+    {
+        $preEmploymentPackages = [
+            'Pre-Employment Medical Examination',
+            'Pre-Employment with Drug Test',
+            'Pre-Employment with ECG and Drug test',
+            'Pre-Employment with Drug test and AUDIO and ISHIHARA',
+        ];
+
+        return in_array($testName, $preEmploymentPackages);
+    }
+
+    /**
+     * Get pathologist tests for pre-employment packages
+     */
+    private function getPreEmploymentPackageTests($packageName)
+    {
+        // Core pathologist tests for all pre-employment packages
+        $coreTests = [
+            ['name' => 'CBC', 'category' => 'Routine Examinations'],
+            ['name' => 'Fecalysis', 'category' => 'Routine Examinations'],
+            ['name' => 'Urinalysis', 'category' => 'Clinical Microscopy'],
+        ];
+
+        // Note: Drug test, X-ray, Physical Exam, ECG, Audio, Ishihara are handled by other departments
+        // Pathologist only handles the core lab tests (CBC, Fecalysis, Urinalysis)
+        // Plus any Blood Chemistry tests if they're part of packages
+
+        return $coreTests;
+    }
+
+    /**
+     * Check if a test is handled by pathologist
+     */
+    private function isPathologistTest($testName, $categoryName)
+    {
+        $pathologistCategories = [
+            'Routine Examinations',
+            'Blood Chemistry',
+            'Clinical Microscopy',
+            'Serology',
+            'Special Hematology',
+            'Histology',
+            'Immunology',
+            'Tumor Markers',
+            'Thyroid Function Test',
+            'Complete Hepa-Profile',
+            'Bacteriology',
+        ];
+
+        // Note: Drug Monitoring Assay is handled by medtech/nurse, not pathologist
+        return in_array($categoryName, $pathologistCategories);
+    }
 }

@@ -16,6 +16,28 @@ class CompanyAppointmentController extends Controller
 {
     public function index()
     {
+        // Auto-cancel expired appointments that are still pending
+        $today = Carbon::today();
+        $expiredAppointments = Appointment::where('created_by', Auth::id())
+            ->where('appointment_date', '<', $today)
+            ->where('status', 'pending')
+            ->get();
+        
+        $cancelledCount = 0;
+        foreach ($expiredAppointments as $expiredAppointment) {
+            $expiredAppointment->update([
+                'status' => 'cancelled',
+                'cancellation_reason' => 'Automatically cancelled - appointment date has passed',
+                'cancelled_at' => now()
+            ]);
+            $cancelledCount++;
+        }
+        
+        // Add flash message if appointments were cancelled
+        if ($cancelledCount > 0) {
+            session()->flash('info', "Automatically cancelled {$cancelledCount} expired appointment(s) that had passed today's date.");
+        }
+        
         $appointments = Appointment::with(['patients','medicalTestCategory','medicalTest'])->where('created_by', Auth::id())
             ->orderBy('appointment_date', 'asc')
             ->orderBy('time_slot', 'asc')
@@ -81,10 +103,10 @@ class CompanyAppointmentController extends Controller
             // Ensure the date is in the correct format
             $appointmentDate = Carbon::parse($appointmentDate)->format('Y-m-d');
             
-            // Check if the selected date is a weekend (Saturday = 6, Sunday = 0)
+            // Check if the selected date is a Sunday (Saturday = 6, Sunday = 0)
             $dayOfWeek = Carbon::parse($appointmentDate)->dayOfWeek;
-            if ($dayOfWeek == 0 || $dayOfWeek == 6) {
-                return back()->withInput()->with('error', 'Appointments cannot be scheduled on weekends (Saturday and Sunday). Please select a weekday.');
+            if ($dayOfWeek == 0) {
+                return back()->withInput()->with('error', 'Appointments cannot be scheduled on Sundays. Please select Monday-Saturday.');
             }
 
             // Check if any company has already booked this date (no double booking per day)
@@ -310,8 +332,8 @@ class CompanyAppointmentController extends Controller
             })
             ->toArray();
         
-        // Calculate minimum date (4 days from today)
-        $minDate = Carbon::now()->addDays(4)->format('Y-m-d');
+        // For editing, we only restrict past dates, not the 4-day advance rule
+        $minDate = Carbon::today()->format('Y-m-d');
 
         return view('company.appointments.edit', compact('appointment', 'medicalTestCategories', 'timeSlots', 'bookedDates', 'minDate'));
     }
@@ -329,18 +351,18 @@ class CompanyAppointmentController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        // Calculate minimum date (4 days from today)
-        $minDate = Carbon::now()->addDays(4)->format('Y-m-d');
-        
-        // Validate minimum date requirement
-        if ($request->appointment_date < $minDate) {
-            return back()->withInput()->with('error', 'Appointments must be scheduled at least 4 days in advance.');
+        // For existing appointments, we don't enforce the 4-day advance rule
+        // since they were already created with proper advance notice
+        // Only validate that the date is not in the past
+        $today = Carbon::today()->format('Y-m-d');
+        if ($request->appointment_date < $today) {
+            return back()->withInput()->with('error', 'Appointments cannot be scheduled for past dates.');
         }
         
-        // Check if the selected date is a weekend (Saturday = 6, Sunday = 0)
+        // Check if the selected date is a Sunday (Saturday = 6, Sunday = 0)
         $dayOfWeek = Carbon::parse($request->appointment_date)->dayOfWeek;
-        if ($dayOfWeek == 0 || $dayOfWeek == 6) {
-            return back()->withInput()->with('error', 'Appointments cannot be scheduled on weekends (Saturday and Sunday). Please select a weekday.');
+        if ($dayOfWeek == 0) {
+            return back()->withInput()->with('error', 'Appointments cannot be scheduled on Sundays. Please select Monday-Saturday.');
         }
         
         // Check if any company has already booked this date (no double booking per day, excluding current appointment)

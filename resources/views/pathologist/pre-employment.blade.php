@@ -92,6 +92,9 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Test</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <i class="fas fa-flask mr-2"></i>Lab Status
+                    </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
@@ -125,8 +128,20 @@
                                 {{ $preEmployment->company_name }}
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            @if($preEmployment->medicalTestCategory)
+                        <td class="px-6 py-4 text-sm text-gray-500">
+                            @php
+                                $selectedTests = $preEmployment->all_selected_tests ?? collect();
+                                $groupedTests = $selectedTests->groupBy('category_name');
+                            @endphp
+                            @if($groupedTests->isNotEmpty())
+                                <div class="space-y-1">
+                                    @foreach($groupedTests as $categoryName => $tests)
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800 inline-block mr-1 mb-1">
+                                            {{ $categoryName }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            @elseif($preEmployment->medicalTestCategory)
                                 <span class="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
                                     {{ $preEmployment->medicalTestCategory->name }}
                                 </span>
@@ -134,9 +149,27 @@
                                 <span class="text-gray-400">N/A</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            @if($preEmployment->medicalTest)
-                                {{ $preEmployment->medicalTest->name }}
+                        <td class="px-6 py-4 text-sm text-gray-500">
+                            @if($selectedTests->isNotEmpty())
+                                <div class="space-y-1">
+                                    @foreach($selectedTests as $test)
+                                        <div class="text-xs bg-gray-100 px-2 py-1 rounded mb-1">
+                                            {{ $test['test_name'] }}
+                                            @if($test['price'] > 0)
+                                                <span class="text-emerald-600 font-medium">(₱{{ number_format($test['price'], 2) }})</span>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                    @if($selectedTests->count() > 3)
+                                        <div class="text-xs text-blue-600 font-medium">
+                                            +{{ $selectedTests->count() - 3 }} more tests
+                                        </div>
+                                    @endif
+                                </div>
+                            @elseif($preEmployment->medicalTest)
+                                <div class="text-xs bg-gray-100 px-2 py-1 rounded">
+                                    {{ $preEmployment->medicalTest->name }}
+                                </div>
                             @else
                                 <span class="text-gray-400">N/A</span>
                             @endif
@@ -154,25 +187,108 @@
                                 {{ ucfirst($preEmployment->status) }}
                             </span>
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @php
+                                // Check for examination records with actual data
+                                $examinations = \App\Models\PreEmploymentExamination::where('pre_employment_record_id', $preEmployment->id)
+                                    ->orderBy('updated_at', 'desc')
+                                    ->get();
+                                
+                                $hasSubmittedData = false;
+                                $latestExamination = null;
+                                
+                                foreach($examinations as $exam) {
+                                    $labData = $exam->lab_report;
+                                    if ($labData && is_array($labData)) {
+                                        foreach($labData as $key => $value) {
+                                            if (!empty($value) && $value !== 'Not available' && !str_contains($key, '_others')) {
+                                                $hasSubmittedData = true;
+                                                $latestExamination = $exam;
+                                                break 2;
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                // Check if medical checklist is completed (blood extraction done)
+                                $medicalChecklist = \App\Models\MedicalChecklist::where('pre_employment_record_id', $preEmployment->id)
+                                    ->where('examination_type', 'pre_employment')
+                                    ->whereNotNull('blood_extraction_done_by')
+                                    ->where('blood_extraction_done_by', '!=', '')
+                                    ->first();
+                                
+                                $isChecklistCompleted = $medicalChecklist !== null;
+                            @endphp
+                            
+                            @if($hasSubmittedData)
+                                <div class="flex items-center space-x-2">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 flex items-center">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        Submitted
+                                    </span>
+                                    <div class="text-xs text-gray-500">
+                                        {{ $latestExamination->updated_at->format('M d, Y') }}
+                                    </div>
+                                </div>
+                            @elseif(!$isChecklistCompleted)
+                                <div class="flex flex-col space-y-1">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 flex items-center">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                        Blocked
+                                    </span>
+                                    <div class="text-xs text-gray-500">
+                                        Checklist required
+                                    </div>
+                                </div>
+                            @elseif($examinations->isNotEmpty())
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 flex items-center">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    Ready
+                                </span>
+                            @else
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 flex items-center">
+                                    <i class="fas fa-play mr-1"></i>
+                                    Ready
+                                </span>
+                            @endif
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex flex-wrap gap-2">
                                 <!-- View Record Details -->
-                                <button onclick="openRecordModal({{ $preEmployment->id }})" 
-                                        class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-full transition-all duration-200 flex items-center text-sm font-medium shadow-sm hover:shadow-md" 
-                                        title="View Record Details">
+                                <a href="{{ route('pathologist.pre-employment.show', $preEmployment->id) }}" 
+                                   class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-full transition-all duration-200 flex items-center text-sm font-medium shadow-sm hover:shadow-md" 
+                                   title="View Record Details">
                                     <i class="fas fa-eye mr-2 text-sm"></i>
                                     View
-                                </button>
-                                
-                                <!-- Edit Lab Results -->
-                                <a href="{{ route('pathologist.pre-employment.edit', $preEmployment->id) }}" 
-                                   class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-full transition-all duration-200 flex items-center text-sm font-medium shadow-sm hover:shadow-md" 
-                                   title="Edit Lab Results">
-                                    <i class="fas fa-edit mr-2 text-sm"></i>
-                                    Edit
                                 </a>
                                 
-                                
+                                <!-- Edit Lab Results with checklist validation -->
+                                @if(!$isChecklistCompleted)
+                                    <!-- Disabled Edit Button - Checklist Not Completed -->
+                                    <button class="bg-gray-400 text-white px-3 py-2 rounded-full cursor-not-allowed flex items-center text-sm font-medium shadow-sm opacity-60" 
+                                            title="Medical checklist must be completed first (blood extraction required)"
+                                            disabled>
+                                        <i class="fas fa-lock mr-2 text-sm"></i>
+                                        Edit
+                                    </button>
+                                @elseif($hasSubmittedData)
+                                    <!-- Edit Button - Has Data -->
+                                    <a href="{{ route('pathologist.pre-employment.edit', $preEmployment->id) }}" 
+                                       class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2 rounded-full transition-all duration-200 flex items-center text-sm font-medium shadow-sm hover:shadow-md" 
+                                       title="Edit Lab Results (Has Data)">
+                                        <i class="fas fa-edit mr-2 text-sm"></i>
+                                        <i class="fas fa-check-circle ml-1 text-xs"></i>
+                                        Edit
+                                    </a>
+                                @else
+                                    <!-- Edit Button - Ready for Data Entry -->
+                                    <a href="{{ route('pathologist.pre-employment.edit', $preEmployment->id) }}" 
+                                       class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-full transition-all duration-200 flex items-center text-sm font-medium shadow-sm hover:shadow-md" 
+                                       title="Edit Lab Results">
+                                        <i class="fas fa-edit mr-2 text-sm"></i>
+                                        Edit
+                                    </a>
+                                @endif
                                 
                                 <!-- Medical Checklist -->
                                 <a href="{{ route('pathologist.medical-checklist') }}?pre_employment_record_id={{ $preEmployment->id }}&examination_type=pre_employment" 
@@ -186,7 +302,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="10" class="px-6 py-12 text-center">
+                        <td colspan="11" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center">
                                 <i class="fas fa-briefcase text-gray-300 text-4xl mb-4"></i>
                                 <h3 class="text-lg font-medium text-gray-900 mb-2">No pre-employment records found</h3>
@@ -206,29 +322,6 @@
     @endif
 </div>
 
-<!-- Record Details Modal -->
-<div id="recordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900">
-                    <i class="fas fa-briefcase mr-2 text-teal-600"></i>Pre-Employment Record Details
-                </h3>
-                <button onclick="closeRecordModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            <div id="recordContent">
-                <div class="space-y-4">
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <h4 class="font-semibold text-gray-800 mb-2">Loading record details...</h4>
-                        <p class="text-sm text-gray-600">Please wait while we load the information.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 @endsection
 
@@ -286,118 +379,5 @@
         });
     });
 
-    // Modal functions
-    function openRecordModal(id) {
-        const modal = document.getElementById('recordModal');
-        const modalContent = document.getElementById('recordContent');
-        
-        // Simulate loading record details
-        modalContent.innerHTML = `
-            <div class="space-y-6">
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h4 class="font-semibold text-gray-800 mb-3">
-                        <i class="fas fa-user mr-2 text-teal-600"></i>Personal Information
-                    </h4>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span class="font-medium text-gray-600">Record ID:</span>
-                            <span class="text-gray-800">${id}</span>
-                        </div>
-                        <div>
-                            <span class="font-medium text-gray-600">Status:</span>
-                            <span class="text-green-600 font-medium">Approved</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h4 class="font-semibold text-gray-800 mb-3">
-                        <i class="fas fa-building mr-2 text-teal-600"></i>Company Information
-                    </h4>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span class="font-medium text-gray-600">Company:</span>
-                            <span class="text-gray-800">Loading...</span>
-                        </div>
-                        <div>
-                            <span class="font-medium text-gray-600">Position:</span>
-                            <span class="text-gray-800">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h4 class="font-semibold text-gray-800 mb-3">
-                        <i class="fas fa-stethoscope mr-2 text-teal-600"></i>Medical Test Details
-                    </h4>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span class="font-medium text-gray-600">Category:</span>
-                            <span class="text-gray-800">Loading...</span>
-                        </div>
-                        <div>
-                            <span class="font-medium text-gray-600">Test Type:</span>
-                            <span class="text-gray-800">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-                    <button onclick="closeRecordModal()" class="px-4 py-2 text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">
-                        Close
-                    </button>
-                    <button onclick="editRecord(${id})" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">
-                        Edit Record
-                    </button>
-                </div>
-            </div>
-        `;
-        modal.classList.remove('hidden');
-    }
-
-    function closeRecordModal() {
-        document.getElementById('recordModal').classList.add('hidden');
-    }
-
-    function editRecord(id) {
-        // Implement edit record functionality
-        alert('Edit record ' + id);
-        closeRecordModal();
-    }
-
-    function sendToDoctor(id) {
-        if (confirm('Are you sure you want to send this pre-employment record to the doctor?')) {
-            // Create a form and submit it
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/pathologist/pre-employment/${id}/send-to-doctor`;
-            
-            const csrfToken = document.createElement('input');
-            csrfToken.type = 'hidden';
-            csrfToken.name = '_token';
-            csrfToken.value = '{{ csrf_token() }}';
-            form.appendChild(csrfToken);
-            
-            document.body.appendChild(form);
-            form.submit();
-        }
-    }
-
-    // Close modal when clicking outside
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('fixed')) {
-            e.target.classList.add('hidden');
-        }
-    });
-
-    // Close modal with Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            const modal = document.getElementById('recordModal');
-            if (modal && !modal.classList.contains('hidden')) {
-                modal.classList.add('hidden');
-            }
-        }
-    });
 </script>
 @endsection

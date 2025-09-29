@@ -19,12 +19,15 @@ class Appointment extends Model
         'created_by',
         'status',
         'total_price',
+        'cancellation_reason',
+        'cancelled_at',
     ];
 
     protected $casts = [
         'appointment_date' => 'date',
         'patients_data' => 'array',
         'total_price' => 'decimal:2',
+        'cancelled_at' => 'datetime',
     ];
 
     public function medicalTestCategory(): BelongsTo
@@ -116,5 +119,34 @@ class Appointment extends Model
     public function drugTestResults()
     {
         return $this->hasMany(\App\Models\DrugTestResult::class);
+    }
+
+    /**
+     * Check if appointment was automatically cancelled
+     */
+    public function isAutoCancelled(): bool
+    {
+        return $this->status === 'cancelled' && 
+               $this->cancellation_reason === 'Automatically cancelled - appointment date has passed';
+    }
+
+    /**
+     * Get formatted cancellation information
+     */
+    public function getCancellationInfoAttribute(): ?string
+    {
+        if ($this->status !== 'cancelled') {
+            return null;
+        }
+
+        $info = 'Cancelled';
+        if ($this->cancelled_at) {
+            $info .= ' on ' . $this->cancelled_at->format('M d, Y \a\t g:i A');
+        }
+        if ($this->cancellation_reason) {
+            $info .= ' - ' . $this->cancellation_reason;
+        }
+
+        return $info;
     }
 }

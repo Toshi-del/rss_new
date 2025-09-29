@@ -92,6 +92,17 @@ class PathologistController extends Controller
     }
 
     /**
+     * Show a specific pre-employment record
+     */
+    public function showPreEmployment($id)
+    {
+        $preEmployment = PreEmploymentRecord::with(['medicalTestCategory', 'medicalTest', 'preEmploymentExamination'])
+            ->findOrFail($id);
+        
+        return view('pathologist.pre-employment-show', compact('preEmployment'));
+    }
+
+    /**
      * Show annual physical examination patients with enhanced filtering
      */
     public function annualPhysical(Request $request)

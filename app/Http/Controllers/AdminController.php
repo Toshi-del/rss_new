@@ -281,6 +281,28 @@ class AdminController extends Controller
     }
     
     /**
+     * Show pre-employment details page
+     */
+    public function preEmploymentDetails($id)
+    {
+        $preEmployment = PreEmploymentRecord::with(['medicalTestCategory', 'medicalTest', 'creator'])
+            ->findOrFail($id);
+        
+        return view('admin.pre-employment-details', compact('preEmployment'));
+    }
+    
+    /**
+     * Show appointment details page
+     */
+    public function appointmentDetails($id)
+    {
+        $appointment = Appointment::with(['medicalTestCategory', 'medicalTest', 'creator', 'patients'])
+            ->findOrFail($id);
+        
+        return view('admin.appointment-details', compact('appointment'));
+    }
+    
+    /**
      * Show tests page
      */
     public function tests()

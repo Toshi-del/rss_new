@@ -159,7 +159,7 @@
                                     </li>
                                     <li class="flex items-center space-x-2">
                                         <i class="fas fa-check text-blue-500 text-xs"></i>
-                                        <span>No weekend appointments available</span>
+                                        <span>No Sunday appointments (Saturdays available)</span>
                                     </li>
                                 </ul>
                             </div>
@@ -488,12 +488,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
         
-        // Check if selected date is a weekend
+        // Check if selected date is a Sunday (Saturdays are now allowed)
         const selectedDateObj = new Date(selectedDate);
         const dayOfWeek = selectedDateObj.getDay(); // 0 = Sunday, 6 = Saturday
-        if (dayOfWeek === 0 || dayOfWeek === 6) {
-            const dayName = dayOfWeek === 0 ? 'Sunday' : 'Saturday';
-            dateAvailabilityMessage.innerHTML = '<i class="fas fa-calendar-times text-gray-500 mr-1"></i><span class="text-gray-600">Appointments cannot be scheduled on weekends (' + dayName + '). Please select a weekday.</span>';
+        if (dayOfWeek === 0) {
+            dateAvailabilityMessage.innerHTML = '<i class="fas fa-calendar-times text-gray-500 mr-1"></i><span class="text-gray-600">Appointments cannot be scheduled on Sundays. Please select Monday-Saturday.</span>';
             dateAvailabilityMessage.style.display = 'block';
             return false;
         }
@@ -525,7 +524,7 @@ document.addEventListener('DOMContentLoaded', function() {
         checkDateAvailability(appointmentDateInput.value);
     }
     
-    // Disable dates that are too early (today and next 3 days) and weekends
+    // Disable dates that are too early (today and next 3 days) and Sundays
     function disableInvalidDates() {
         // Add CSS to grey out disabled dates and weekends
         const style = document.createElement('style');
@@ -553,11 +552,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const selectedDateObj = new Date(selectedDate);
                 const dayOfWeek = selectedDateObj.getDay();
                 
-                // If weekend is selected, clear the input and show message
-                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                // If Sunday is selected, clear the input and show message
+                if (dayOfWeek === 0) {
                     e.target.value = '';
-                    const dayName = dayOfWeek === 0 ? 'Sunday' : 'Saturday';
-                    dateAvailabilityMessage.innerHTML = '<i class="fas fa-calendar-times text-gray-500 mr-1"></i><span class="text-gray-600">Weekends (' + dayName + ') are not available for appointments. Please select a weekday.</span>';
+                    dateAvailabilityMessage.innerHTML = '<i class="fas fa-calendar-times text-gray-500 mr-1"></i><span class="text-gray-600">Sundays are not available for appointments. Please select Monday-Saturday.</span>';
                     dateAvailabilityMessage.style.display = 'block';
                 }
             }
@@ -577,18 +575,23 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateHiddenInputs() {
         const checkedTests = Array.from(testCheckboxes).filter(cb => cb.checked);
         if (checkedTests.length > 0) {
-            // Since we only allow one test selection, get the first (and only) checked test
-            const selectedTest = checkedTests[0];
-            const categoryId = selectedTest.getAttribute('data-category-id');
-            const testId = selectedTest.getAttribute('data-test-id');
-            
-            // Store as single values for the backend validation
-            hiddenCategoryInput.value = categoryId;
-            hiddenTestInput.value = testId;
-            
-            // Calculate total price
-            const price = extractPrice(selectedTest);
-            totalPriceInput.value = price.toFixed(2);
+            // Build arrays of category IDs and test IDs (one per category)
+            const categoryIds = [];
+            const testIds = [];
+            let total = 0;
+
+            checkedTests.forEach(cb => {
+                const categoryId = cb.getAttribute('data-category-id');
+                const testId = cb.getAttribute('data-test-id');
+                categoryIds.push(Number(categoryId));
+                testIds.push(Number(testId));
+                total += extractPrice(cb);
+            });
+
+            // Store as JSON arrays for backend decoding
+            hiddenCategoryInput.value = JSON.stringify(categoryIds);
+            hiddenTestInput.value = JSON.stringify(testIds);
+            totalPriceInput.value = total.toFixed(2);
         } else {
             hiddenCategoryInput.value = '';
             hiddenTestInput.value = '';
@@ -616,11 +619,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const current = e.target;
 
         if (current.checked) {
-            // If checking a test, uncheck all other tests (only one test allowed)
-            Array.from(testCheckboxes).forEach(cb => {
-                if (cb !== current) {
-                    cb.checked = false;
-                }
+            // Enforce one selection PER CATEGORY: uncheck other tests in the same category only
+            const categoryId = current.getAttribute('data-category-id');
+            const sameCategory = document.querySelectorAll(`input[name=\"appointment_selected_test\"][data-category-id=\"${categoryId}\"]`);
+            Array.from(sameCategory).forEach(cb => {
+                if (cb !== current) cb.checked = false;
             });
         }
 
@@ -628,7 +631,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateHiddenInputs();
         
         // Update all category counters since we changed selections
-        const allCategoryIds = [...new Set(Array.from(testCheckboxes).map(cb => cb.getAttribute('data-category-id')))];
+        const allCategoryIds = [...new Set(Array.from(testCheckboxes).map(cb => cb.getAttribute('data-category-id')))]
         allCategoryIds.forEach(categoryId => {
             updateCategoryCount(categoryId);
         });
@@ -748,15 +751,32 @@ document.addEventListener('DOMContentLoaded', function() {
             const hiddenCategoryInput = document.getElementById('medical_test_categories_id');
             const hiddenTestInput = document.getElementById('medical_test_id');
             
-            // Check if a test is selected
+            // Validate JSON arrays of selections (one test per category)
             if (!hiddenCategoryInput.value || !hiddenTestInput.value) {
                 e.preventDefault();
-                alert('Please select a medical test before submitting the appointment.');
+                alert('Please select at least one medical test before submitting the appointment.');
                 return false;
             }
-            
-            // Additional validation to ensure the values are numeric
-            if (isNaN(hiddenCategoryInput.value) || isNaN(hiddenTestInput.value)) {
+
+            let categoryIds, testIds;
+            try {
+                categoryIds = JSON.parse(hiddenCategoryInput.value);
+                testIds = JSON.parse(hiddenTestInput.value);
+            } catch (err) {
+                e.preventDefault();
+                alert('Invalid test selection data. Please reselect your tests.');
+                return false;
+            }
+
+            if (!Array.isArray(categoryIds) || !Array.isArray(testIds) || categoryIds.length === 0 || categoryIds.length !== testIds.length) {
+                e.preventDefault();
+                alert('Please ensure one test is selected per category.');
+                return false;
+            }
+
+            // Ensure numeric values
+            const numericOk = categoryIds.every(id => !isNaN(id)) && testIds.every(id => !isNaN(id));
+            if (!numericOk) {
                 e.preventDefault();
                 alert('Invalid test selection. Please refresh the page and try again.');
                 return false;

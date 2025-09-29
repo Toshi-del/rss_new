@@ -39,8 +39,24 @@
     </div>
     @endif
 
+    @if(session('info'))
+    <div class="content-card rounded-xl p-4 shadow-lg border border-blue-200 bg-blue-50">
+        <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-info-circle text-blue-600"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-blue-800 font-medium">{{ session('info') }}</p>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" class="text-blue-400 hover:text-blue-600 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+    @endif
+
     <!-- Quick Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
         <div class="content-card rounded-xl p-6 shadow-lg border border-gray-200">
             <div class="flex items-center justify-between">
                 <div>
@@ -71,6 +87,17 @@
                 </div>
                 <div class="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
                     <i class="fas fa-check-circle text-emerald-600"></i>
+                </div>
+            </div>
+        </div>
+        <div class="content-card rounded-xl p-6 shadow-lg border border-gray-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Cancelled</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-1">{{ $appointments->where('status', 'cancelled')->count() }}</p>
+                </div>
+                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-times-circle text-red-600"></i>
                 </div>
             </div>
         </div>
@@ -136,6 +163,14 @@
                     <div class="flex items-center space-x-1 text-sm text-gray-600">
                         <div class="w-3 h-3 bg-emerald-500 rounded-full"></div>
                         <span>Scheduled</span>
+                    </div>
+                    <div class="flex items-center space-x-1 text-sm text-gray-600">
+                        <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+                        <span>Cancelled</span>
+                    </div>
+                    <div class="flex items-center space-x-1 text-sm text-gray-600">
+                        <div class="w-3 h-3 bg-red-400 rounded-full"></div>
+                        <span>Blocked/Closed</span>
                     </div>
                     <div class="flex items-center space-x-1 text-sm text-gray-600">
                         <div class="w-3 h-3 bg-gray-300 rounded-full"></div>
@@ -224,6 +259,14 @@
                             </span>
                             @endif
                         </div>
+                        @if($appointment->status === 'cancelled' && $appointment->cancellation_info)
+                        <div class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <div class="flex items-start space-x-2">
+                                <i class="fas fa-info-circle text-red-500 mt-0.5 text-sm"></i>
+                                <p class="text-sm text-red-700">{{ $appointment->cancellation_info }}</p>
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -246,6 +289,7 @@
                         <a href="{{ route('company.appointments.show', $appointment) }}" class="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors" title="View Details">
                             <i class="fas fa-eye"></i>
                         </a>
+                        @if($appointment->status !== 'cancelled')
                         <a href="{{ route('company.appointments.edit', $appointment) }}" class="p-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors" title="Edit Appointment">
                             <i class="fas fa-edit"></i>
                         </a>
@@ -256,6 +300,14 @@
                                 <i class="fas fa-trash"></i>
                             </button>
                         </form>
+                        @else
+                        <span class="p-2 text-gray-400 cursor-not-allowed rounded-lg" title="Cannot edit cancelled appointments">
+                            <i class="fas fa-edit"></i>
+                        </span>
+                        <span class="p-2 text-gray-400 cursor-not-allowed rounded-lg" title="Cannot delete cancelled appointments">
+                            <i class="fas fa-trash"></i>
+                        </span>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -301,6 +353,11 @@ document.addEventListener('DOMContentLoaded', function() {
         return appointments.some(apt => apt.date === dateString);
     }
     
+    function getAppointmentStatus(dateString) {
+        const appointment = appointments.find(apt => apt.date === dateString);
+        return appointment ? appointment.status : null;
+    }
+    
     function generateCalendar(month, year) {
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
@@ -323,8 +380,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const isCurrentMonth = date.getMonth() === month;
             const isToday = date.toDateString() === new Date().toDateString();
             const isPast = date < new Date().setHours(0, 0, 0, 0);
+            
+            // Block next 4 days from today (including today) and all Sundays
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const blockedUntil = new Date(today);
+            blockedUntil.setDate(today.getDate() + 4);
+            const isWithinBlockedDays = date >= today && date < blockedUntil;
+            const isSunday = date.getDay() === 0; // Sunday = 0
+            const isBlocked = isWithinBlockedDays || isSunday;
+            
             const dateString = date.toISOString().split('T')[0];
             const hasAppt = hasAppointment(dateString);
+            const appointmentStatus = getAppointmentStatus(dateString);
             
             // Base styling
             let dayClasses = 'relative rounded-xl min-h-[100px] p-3 transition-all duration-200 cursor-pointer border-2 border-transparent';
@@ -332,10 +400,16 @@ document.addEventListener('DOMContentLoaded', function() {
             if (isCurrentMonth) {
                 if (isPast) {
                     dayClasses += ' bg-gray-100 text-gray-400 cursor-not-allowed';
+                } else if (isBlocked) {
+                    dayClasses += ' bg-red-50 text-red-400 cursor-not-allowed border-red-200';
                 } else if (isToday) {
                     dayClasses += ' bg-blue-500 text-white shadow-lg transform scale-105';
                 } else if (hasAppt) {
-                    dayClasses += ' bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-200';
+                    if (appointmentStatus === 'cancelled') {
+                        dayClasses += ' bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200';
+                    } else {
+                        dayClasses += ' bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-200';
+                    }
                 } else {
                     dayClasses += ' bg-white text-gray-900 hover:bg-blue-50 hover:border-blue-200 shadow-sm';
                 }
@@ -372,10 +446,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
             }
             
+            if (isBlocked && isCurrentMonth && !isPast) {
+                let blockedReason = '';
+                if (isSunday) {
+                    blockedReason = '<i class="fas fa-calendar-times mr-1"></i>Closed';
+                } else if (isWithinBlockedDays) {
+                    blockedReason = '<i class="fas fa-ban mr-1"></i>Blocked';
+                }
+                
+                dayContent += `
+                    <div class="absolute bottom-2 left-2 right-2">
+                        <div class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full text-center border border-red-200">
+                            ${blockedReason}
+                        </div>
+                    </div>
+                `;
+            }
+            
             dayElement.innerHTML = dayContent;
             
-            // Add click event for future dates in current month
-            if (!isPast && isCurrentMonth) {
+            // Add click event for future dates in current month (excluding blocked dates)
+            if (!isPast && !isBlocked && isCurrentMonth) {
                 dayElement.addEventListener('click', function() {
                     // Add selection effect
                     document.querySelectorAll('.calendar-selected').forEach(el => {
@@ -398,13 +489,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Add hover effect for available dates
                 dayElement.addEventListener('mouseenter', function() {
-                    if (!hasAppt && !isToday) {
+                    if (!hasAppt && !isToday && !isBlocked) {
                         dayElement.classList.add('transform', 'scale-105', 'shadow-md');
                     }
                 });
                 
                 dayElement.addEventListener('mouseleave', function() {
-                    if (!hasAppt && !isToday) {
+                    if (!hasAppt && !isToday && !isBlocked) {
                         dayElement.classList.remove('transform', 'scale-105', 'shadow-md');
                     }
                 });

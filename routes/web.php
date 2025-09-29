@@ -66,7 +66,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/admin/patients', [AdminController::class, 'patients'])->name('admin.patients');
     Route::get('/admin/appointments', [AdminController::class, 'appointments'])->name('admin.appointments');
+    Route::get('/admin/appointments/{id}/details', [AdminController::class, 'appointmentDetails'])->name('admin.appointments.details');
     Route::get('/admin/pre-employment', [AdminController::class, 'preEmployment'])->name('admin.pre-employment');
+    Route::get('/admin/pre-employment/{id}/details', [AdminController::class, 'preEmploymentDetails'])->name('admin.pre-employment.details');
     Route::get('/admin/tests', [AdminController::class, 'tests'])->name('admin.tests');
     
     // Examination view and send routes
@@ -416,6 +418,7 @@ Route::middleware(['auth', 'role:pathologist'])->group(function () {
     
     // Pre-Employment
     Route::get('/pathologist/pre-employment', [PathologistController::class, 'preEmployment'])->name('pathologist.pre-employment');
+    Route::get('/pathologist/pre-employment/{id}', [PathologistController::class, 'showPreEmployment'])->name('pathologist.pre-employment.show');
     Route::get('/pathologist/pre-employment/{id}/edit', [PathologistController::class, 'editPreEmployment'])->name('pathologist.pre-employment.edit');
     Route::put('/pathologist/pre-employment/{id}', [PathologistController::class, 'updatePreEmployment'])->name('pathologist.pre-employment.update');
     

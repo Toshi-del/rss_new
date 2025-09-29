@@ -272,12 +272,11 @@
                                             Send Link
                                         </button>
                                     @endif
-                                    <button type="button" 
-                                            class="inline-flex items-center px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium transition-all duration-150 border border-gray-200"
-                                            onclick="openPreEmploymentViewModal({{ $preEmployment->id }})">
+                                    <a href="{{ route('admin.pre-employment.details', $preEmployment->id) }}" 
+                                       class="inline-flex items-center px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium transition-all duration-150 border border-gray-200">
                                         <i class="fas fa-eye mr-1"></i>
                                         View
-                                    </button>
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -518,36 +517,6 @@
     </div>
 </div>
 
-<!-- Pre-Employment View Modal -->
-<div id="preEmploymentViewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 transform transition-all duration-300">
-        <div class="bg-cyan-600 px-6 py-4 rounded-t-xl">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-user-tie text-white text-lg"></i>
-                    </div>
-                    <h3 class="text-lg font-bold text-white">Pre-Employment Details</h3>
-                </div>
-                <button onclick="closePreEmploymentViewModal()" class="text-white/80 hover:text-white transition-colors">
-                    <i class="fas fa-times text-lg"></i>
-                </button>
-            </div>
-        </div>
-        <div class="p-6">
-            <div id="preEmploymentDetails" class="space-y-6">
-                <!-- Pre-employment details will be loaded here -->
-            </div>
-            <div class="flex items-center justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
-                <button type="button" 
-                        onclick="closePreEmploymentViewModal()" 
-                        class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-all duration-150 border border-gray-200">
-                    Close
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Hidden Forms for Actions -->
 <form id="preEmploymentApproveForm" action="" method="POST" style="display: none;">
@@ -635,77 +604,6 @@ function confirmPreEmploymentSendEmail() {
     }
 }
 
-function openPreEmploymentViewModal(preEmploymentId) {
-    currentPreEmploymentId = preEmploymentId;
-    
-    // In a real implementation, you would fetch pre-employment details via AJAX
-    const preEmploymentDetails = document.getElementById('preEmploymentDetails');
-    preEmploymentDetails.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-4">
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h5 class="font-semibold text-gray-900 mb-2">Candidate Information</h5>
-                    <div class="space-y-2 text-sm">
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">ID:</span>
-                            <span class="font-medium">#${preEmploymentId}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Name:</span>
-                            <span class="font-medium">Loading...</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Email:</span>
-                            <span class="font-medium">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-amber-50 p-4 rounded-lg">
-                    <h5 class="font-semibold text-gray-900 mb-2">Medical Examination</h5>
-                    <div class="space-y-2 text-sm">
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Type:</span>
-                            <span class="font-medium">Loading...</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Price:</span>
-                            <span class="font-medium">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="space-y-4">
-                <div class="bg-green-50 p-4 rounded-lg">
-                    <h5 class="font-semibold text-gray-900 mb-2">Status</h5>
-                    <div class="space-y-2 text-sm">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-                            <i class="fas fa-clock mr-1"></i>
-                            Loading...
-                        </span>
-                    </div>
-                </div>
-                <div class="bg-blue-50 p-4 rounded-lg">
-                    <h5 class="font-semibold text-gray-900 mb-2">Registration Link</h5>
-                    <div class="space-y-2 text-sm">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
-                            <i class="fas fa-times-circle mr-1"></i>
-                            Loading...
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.getElementById('preEmploymentViewModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-}
-
-function closePreEmploymentViewModal() {
-    document.getElementById('preEmploymentViewModal').classList.add('hidden');
-    document.body.style.overflow = 'auto';
-    currentPreEmploymentId = null;
-}
 
 function openBulkSendEmailModal() {
     const approvedCount = {{ \App\Models\PreEmploymentRecord::where('status', 'Approved')->where('registration_link_sent', false)->count() }};
@@ -726,7 +624,7 @@ function confirmBulkSendEmail() {
 
 // Close modals when clicking outside
 document.addEventListener('click', function(event) {
-    const modals = ['preEmploymentApproveModal', 'preEmploymentDeclineModal', 'preEmploymentSendEmailModal', 'preEmploymentViewModal', 'bulkSendEmailModal'];
+    const modals = ['preEmploymentApproveModal', 'preEmploymentDeclineModal', 'preEmploymentSendEmailModal', 'bulkSendEmailModal'];
     modals.forEach(modalId => {
         const modal = document.getElementById(modalId);
         if (event.target === modal) {
@@ -743,7 +641,7 @@ document.addEventListener('click', function(event) {
 // Close modals with Escape key
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
-        const modals = ['preEmploymentApproveModal', 'preEmploymentDeclineModal', 'preEmploymentSendEmailModal', 'preEmploymentViewModal', 'bulkSendEmailModal'];
+        const modals = ['preEmploymentApproveModal', 'preEmploymentDeclineModal', 'preEmploymentSendEmailModal', 'bulkSendEmailModal'];
         modals.forEach(modalId => {
             const modal = document.getElementById(modalId);
             if (!modal.classList.contains('hidden')) {

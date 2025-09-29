@@ -201,6 +201,13 @@
                                                 @if($categoryName === 'appointment')
                                                     @continue
                                                 @endif
+                                                @php
+                                                    // Skip package-type tests in Blood Chemistry category
+                                                    $isPackageTest = str_contains(strtolower($test->name), 'package');
+                                                    if($categoryName === 'blood chemistry' && $isPackageTest) {
+                                                        continue;
+                                                    }
+                                                @endphp
                                                 <label for="pe_test_{{ $test->id }}" class="cursor-pointer block">
                                                     <div class="bg-white rounded-lg p-5 border-2 border-gray-200 hover:border-blue-400 hover:shadow-md transition-all duration-200">
                                                         <div class="flex items-start">

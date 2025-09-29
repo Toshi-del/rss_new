@@ -48,89 +48,133 @@
             </div>
         </div>
 
-        <!-- Laboratory Examination Report -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 class="text-xl font-bold text-gray-800 mb-6">
-                <i class="fas fa-flask mr-2 text-teal-600"></i>Laboratory Examination Report
-            </h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Row 1 -->
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700">Urinalysis</label>
-                    <input type="text" name="lab_report[urinalysis]" 
-                           value="{{ old('lab_report.urinalysis', $examination->lab_report['urinalysis'] ?? '') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
-                           placeholder="Enter urinalysis results">
-                </div>
-                
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700">CBC</label>
-                    <input type="text" name="lab_report[cbc]" 
-                           value="{{ old('lab_report.cbc', $examination->lab_report['cbc'] ?? '') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
-                           placeholder="Enter CBC results">
-                </div>
-                
-                
-                <!-- Row 2 -->
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700">Fecalysis</label>
-                    <input type="text" name="lab_report[fecalysis]" 
-                           value="{{ old('lab_report.fecalysis', $examination->lab_report['fecalysis'] ?? '') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
-                           placeholder="Enter fecalysis results">
-                </div>
-                
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700">Blood Chemistry</label>
-                    <input type="text" name="lab_report[blood_chemistry]" 
-                           value="{{ old('lab_report.blood_chemistry', $examination->lab_report['blood_chemistry'] ?? '') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
-                           placeholder="Enter blood chemistry results">
-                </div>
-                
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700">Others</label>
-                    <input type="text" name="lab_report[others]" 
-                           value="{{ old('lab_report.others', $examination->lab_report['others'] ?? '') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
-                           placeholder="Enter other test results">
-                </div>
-            </div>
-        </div>
+        <!-- Pathologist Medical Tests -->
+        @php
+            $pathologistTests = $examination->preEmploymentRecord->pathologist_tests ?? collect();
+            $groupedTests = $pathologistTests->groupBy('category_name');
+        @endphp
 
-        <!-- Additional Laboratory Tests -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 class="text-xl font-bold text-gray-800 mb-6">
-                <i class="fas fa-vial mr-2 text-teal-600"></i>Additional Laboratory Tests
-            </h3>
-            
-            <div class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-2">
-                        <label class="block text-sm font-semibold text-gray-700">HBsAg Screening</label>
-                        <input type="text" name="lab_report[hbsag_screening]" 
-                               value="{{ old('lab_report.hbsag_screening', $examination->lab_report['hbsag_screening'] ?? '') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
-                               placeholder="Enter HBsAg screening results">
-                    </div>
+        @if($pathologistTests->isNotEmpty())
+            @foreach($groupedTests as $categoryName => $tests)
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6">
+                        <i class="fas fa-flask mr-2 text-teal-600"></i>{{ $categoryName }} Results
+                    </h3>
                     
-                    <div class="space-y-2">
-                        <label class="block text-sm font-semibold text-gray-700">HEPA A IGG & IGM</label>
-                        <input type="text" name="lab_report[hepa_a_igg_igm]" 
-                               value="{{ old('lab_report.hepa_a_igg_igm', $examination->lab_report['hepa_a_igg_igm'] ?? '') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
-                               placeholder="Enter HEPA A IGG & IGM results">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        @foreach($tests as $test)
+                            @php
+                                $fieldName = 'lab_report[' . strtolower(str_replace([' ', '-', '&'], '_', $test['test_name'])) . ']';
+                            @endphp
+                            <div class="space-y-2">
+                                <label class="block text-sm font-semibold text-gray-700">
+                                    {{ $test['test_name'] }}
+                                    @if($test['is_package_component'] ?? false)
+                                        <div class="text-xs text-blue-600 font-medium mt-1">
+                                            <i class="fas fa-box mr-1"></i>From: {{ $test['package_name'] }}
+                                            @if($test['package_price'] > 0)
+                                                (Package: ₱{{ number_format($test['package_price'], 2) }})
+                                            @endif
+                                        </div>
+                                    @elseif($test['price'] > 0)
+                                        <span class="text-xs text-emerald-600 font-medium">(₱{{ number_format($test['price'], 2) }})</span>
+                                    @endif
+                                </label>
+                                @php
+                                    $currentResult = old($fieldName, $examination->lab_report[strtolower(str_replace([' ', '-', '&'], '_', $test['test_name']))] ?? '');
+                                    $isOthers = !in_array($currentResult, ['', 'Not available', 'Normal', 'Not normal']) && !empty($currentResult);
+                                    $othersValue = $isOthers ? $currentResult : '';
+                                    $selectValue = $isOthers ? 'Others' : ($currentResult ?: 'Not available');
+                                    $testSlug = strtolower(str_replace([' ', '-', '&'], '_', $test['test_name']));
+                                @endphp
+                                <select name="{{ $fieldName }}" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 result-dropdown"
+                                        data-test-slug="{{ $testSlug }}">
+                                    <option value="Not available" {{ $selectValue == 'Not available' ? 'selected' : '' }}>Not available</option>
+                                    <option value="Normal" {{ $selectValue == 'Normal' ? 'selected' : '' }}>Normal</option>
+                                    <option value="Not normal" {{ $selectValue == 'Not normal' ? 'selected' : '' }}>Not normal</option>
+                                    <option value="Others" {{ $selectValue == 'Others' ? 'selected' : '' }}>Others (specify)</option>
+                                </select>
+                                <input type="text" 
+                                       name="{{ $fieldName }}_others" 
+                                       value="{{ $othersValue }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 mt-2 others-input" 
+                                       data-test-slug="{{ $testSlug }}"
+                                       placeholder="Specify other result"
+                                       style="{{ $selectValue == 'Others' ? '' : 'display: none;' }}">
+                            </div>
+                        @endforeach
                     </div>
                 </div>
+            @endforeach
+        @else
+            <!-- Fallback for records without selected tests data -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-flask mr-2 text-teal-600"></i>Laboratory Examination Report
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    @if($examination->preEmploymentRecord->medicalTest)
+                        @php
+                            $testName = $examination->preEmploymentRecord->medicalTest->name;
+                            $fieldName = 'lab_report[' . strtolower(str_replace([' ', '-', '&'], '_', $testName)) . ']';
+                        @endphp
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700">{{ $testName }}</label>
+                            @php
+                                $currentResult = old($fieldName, $examination->lab_report[strtolower(str_replace([' ', '-', '&'], '_', $testName))] ?? '');
+                                $isOthers = !in_array($currentResult, ['', 'Not available', 'Normal', 'Not normal']) && !empty($currentResult);
+                                $othersValue = $isOthers ? $currentResult : '';
+                                $selectValue = $isOthers ? 'Others' : ($currentResult ?: 'Not available');
+                                $testSlug = strtolower(str_replace([' ', '-', '&'], '_', $testName));
+                            @endphp
+                            <select name="{{ $fieldName }}" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 result-dropdown"
+                                    data-test-slug="{{ $testSlug }}">
+                                <option value="Not available" {{ $selectValue == 'Not available' ? 'selected' : '' }}>Not available</option>
+                                <option value="Normal" {{ $selectValue == 'Normal' ? 'selected' : '' }}>Normal</option>
+                                <option value="Not normal" {{ $selectValue == 'Not normal' ? 'selected' : '' }}>Not normal</option>
+                                <option value="Others" {{ $selectValue == 'Others' ? 'selected' : '' }}>Others (specify)</option>
+                            </select>
+                            <input type="text" 
+                                   name="{{ $fieldName }}_others" 
+                                   value="{{ $othersValue }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 mt-2 others-input" 
+                                   data-test-slug="{{ $testSlug }}"
+                                   placeholder="Specify other result"
+                                   style="{{ $selectValue == 'Others' ? '' : 'display: none;' }}">
+                        </div>
+                    @endif
+                </div>
             </div>
-        </div>
+        @endif
+
+        <!-- Additional Notes Section -->
+        @if($examination->preEmploymentRecord->other_exams && !empty($examination->preEmploymentRecord->parsed_other_exams['additional_exams']))
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-clipboard-list mr-2 text-teal-600"></i>Additional Examinations
+                </h3>
+                
+                <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <h4 class="text-sm font-semibold text-blue-800 mb-2">Requested Additional Exams:</h4>
+                    <p class="text-sm text-blue-700">{{ $examination->preEmploymentRecord->parsed_other_exams['additional_exams'] }}</p>
+                </div>
+                
+                <div class="mt-4 space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">Additional Examination Results</label>
+                    <textarea name="lab_report[additional_exams_results]" rows="3"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500"
+                              placeholder="Enter results for additional examinations">{{ old('lab_report.additional_exams_results', $examination->lab_report['additional_exams_results'] ?? '') }}</textarea>
+                </div>
+            </div>
+        @endif
 
         <!-- Laboratory Examinations Report Table -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h3 class="text-xl font-bold text-gray-800 mb-6">
-                <i class="fas fa-flask mr-2 text-teal-600"></i>Laboratory Examinations Report
+                <i class="fas fa-flask mr-2 text-teal-600"></i>Laboratory Examinations Report Summary
             </h3>
             
             <div class="overflow-x-auto">
@@ -143,94 +187,78 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @if($pathologistTests->isNotEmpty())
+                            @foreach($pathologistTests as $test)
+                                @php
+                                    $testNameSlug = strtolower(str_replace([' ', '-', '&'], '_', $test['test_name']));
+                                    $resultFieldName = 'lab_report[' . $testNameSlug . '_result]';
+                                    $findingsFieldName = 'lab_report[' . $testNameSlug . '_findings]';
+                                @endphp
+                                <tr>
+                                    <td class="border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700">
+                                        {{ $test['test_name'] }}
+                                        @if($test['is_package_component'] ?? false)
+                                            <div class="text-xs text-blue-600 mt-1">
+                                                <i class="fas fa-box mr-1"></i>{{ $test['package_name'] }}
+                                            </div>
+                                        @elseif($test['price'] > 0)
+                                            <div class="text-xs text-emerald-600">(₱{{ number_format($test['price'], 2) }})</div>
+                                        @endif
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-3">
+                                        <input type="text" 
+                                               name="{{ $resultFieldName }}" 
+                                               value="{{ old($resultFieldName, $examination->lab_report[$testNameSlug . '_result'] ?? '') }}"
+                                               class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-sm bg-gray-50 table-result-display"
+                                               data-test-slug="{{ $testNameSlug }}"
+                                               readonly
+                                               placeholder="Auto-filled from above">
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-3">
+                                        <input type="text" name="{{ $findingsFieldName }}" 
+                                               value="{{ old($findingsFieldName, $examination->lab_report[$testNameSlug . '_findings'] ?? '') }}"
+                                               class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-sm"
+                                               placeholder="Enter findings">
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @else
+                            <!-- Fallback for records without selected tests data -->
+                            @if($examination->preEmploymentRecord->medicalTest)
+                                @php
+                                    $testName = $examination->preEmploymentRecord->medicalTest->name;
+                                    $testNameSlug = strtolower(str_replace([' ', '-', '&'], '_', $testName));
+                                    $resultFieldName = 'lab_report[' . $testNameSlug . '_result]';
+                                    $findingsFieldName = 'lab_report[' . $testNameSlug . '_findings]';
+                                @endphp
+                                <tr>
+                                    <td class="border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700">{{ $testName }}</td>
+                                    <td class="border border-gray-300 px-4 py-3">
+                                        <input type="text" 
+                                               name="{{ $resultFieldName }}" 
+                                               value="{{ old($resultFieldName, $examination->lab_report[$testNameSlug . '_result'] ?? '') }}"
+                                               class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-sm bg-gray-50 table-result-display"
+                                               data-test-slug="{{ $testNameSlug }}"
+                                               readonly
+                                               placeholder="Auto-filled from above">
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-3">
+                                        <input type="text" name="{{ $findingsFieldName }}" 
+                                               value="{{ old($findingsFieldName, $examination->lab_report[$testNameSlug . '_findings'] ?? '') }}"
+                                               class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-sm"
+                                               placeholder="Enter findings">
+                                    </td>
+                                </tr>
+                            @endif
+                        @endif
+                        
+                        <!-- Additional row for any extra findings -->
                         <tr>
-                            <td class="border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700">Urinalysis</td>
-                            <td class="border border-gray-300 px-4 py-3">
-                                <input type="text" name="lab_report[urinalysis_result]" 
-                                       value="{{ old('lab_report.urinalysis_result', $examination->lab_report['urinalysis_result'] ?? '') }}"
-                                       class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-sm"
-                                       placeholder="Enter result">
-                            </td>
-                            <td class="border border-gray-300 px-4 py-3">
-                                <input type="text" name="lab_report[urinalysis_findings]" 
-                                       value="{{ old('lab_report.urinalysis_findings', $examination->lab_report['urinalysis_findings'] ?? '') }}"
-                                       class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-sm"
-                                       placeholder="Enter findings">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700">Fecalysis</td>
-                            <td class="border border-gray-300 px-4 py-3">
-                                <input type="text" name="lab_report[fecalysis_result]" 
-                                       value="{{ old('lab_report.fecalysis_result', $examination->lab_report['fecalysis_result'] ?? '') }}"
-                                       class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-sm"
-                                       placeholder="Enter result">
-                            </td>
-                            <td class="border border-gray-300 px-4 py-3">
-                                <input type="text" name="lab_report[fecalysis_findings]" 
-                                       value="{{ old('lab_report.fecalysis_findings', $examination->lab_report['fecalysis_findings'] ?? '') }}"
-                                       class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-sm"
-                                       placeholder="Enter findings">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700">CBC</td>
-                            <td class="border border-gray-300 px-4 py-3">
-                                <input type="text" name="lab_report[cbc_result]" 
-                                       value="{{ old('lab_report.cbc_result', $examination->lab_report['cbc_result'] ?? '') }}"
-                                       class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-sm"
-                                       placeholder="Enter result">
-                            </td>
-                            <td class="border border-gray-300 px-4 py-3">
-                                <input type="text" name="lab_report[cbc_findings]" 
-                                       value="{{ old('lab_report.cbc_findings', $examination->lab_report['cbc_findings'] ?? '') }}"
-                                       class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-sm"
-                                       placeholder="Enter findings">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700">HBsAg Screening</td>
-                            <td class="border border-gray-300 px-4 py-3">
-                                <input type="text" name="lab_report[hbsag_result]" 
-                                       value="{{ old('lab_report.hbsag_result', $examination->lab_report['hbsag_result'] ?? '') }}"
-                                       class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-sm"
-                                       placeholder="Enter result">
-                            </td>
-                            <td class="border border-gray-300 px-4 py-3">
-                                <input type="text" name="lab_report[hbsag_findings]" 
-                                       value="{{ old('lab_report.hbsag_findings', $examination->lab_report['hbsag_findings'] ?? '') }}"
-                                       class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-sm"
-                                       placeholder="Enter findings">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700">HEPA A IGG & IGM</td>
-                            <td class="border border-gray-300 px-4 py-3">
-                                <input type="text" name="lab_report[hepa_result]" 
-                                       value="{{ old('lab_report.hepa_result', $examination->lab_report['hepa_result'] ?? '') }}"
-                                       class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-sm"
-                                       placeholder="Enter result">
-                            </td>
-                            <td class="border border-gray-300 px-4 py-3">
-                                <input type="text" name="lab_report[hepa_findings]" 
-                                       value="{{ old('lab_report.hepa_findings', $examination->lab_report['hepa_findings'] ?? '') }}"
-                                       class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-sm"
-                                       placeholder="Enter findings">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700">Others</td>
-                            <td class="border border-gray-300 px-4 py-3">
-                                <input type="text" name="lab_report[others_result]" 
-                                       value="{{ old('lab_report.others_result', $examination->lab_report['others_result'] ?? '') }}"
-                                       class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-sm"
-                                       placeholder="Enter result">
-                            </td>
-                            <td class="border border-gray-300 px-4 py-3">
-                                <input type="text" name="lab_report[others_findings]" 
-                                       value="{{ old('lab_report.others_findings', $examination->lab_report['others_findings'] ?? '') }}"
-                                       class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-sm"
-                                       placeholder="Enter findings">
+                            <td class="border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700">Additional Notes</td>
+                            <td class="border border-gray-300 px-4 py-3" colspan="2">
+                                <textarea name="lab_report[additional_notes]" rows="2"
+                                          class="w-full px-2 py-1 border-0 focus:ring-0 focus:outline-none text-sm resize-none"
+                                          placeholder="Enter any additional notes or observations">{{ old('lab_report.additional_notes', $examination->lab_report['additional_notes'] ?? '') }}</textarea>
                             </td>
                         </tr>
                     </tbody>
@@ -270,6 +298,77 @@
 
 @section('scripts')
 <script>
+    // Result dropdown functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to update table result display
+        function updateTableResult(testSlug) {
+            const dropdown = document.querySelector(`.result-dropdown[data-test-slug="${testSlug}"]`);
+            const othersInput = document.querySelector(`.others-input[data-test-slug="${testSlug}"]`);
+            const tableResultDisplay = document.querySelector(`.table-result-display[data-test-slug="${testSlug}"]`);
+            
+            if (dropdown && tableResultDisplay) {
+                let resultValue = dropdown.value;
+                
+                // If "Others" is selected and there's a value in the others input, use that
+                if (dropdown.value === 'Others' && othersInput && othersInput.value.trim()) {
+                    resultValue = othersInput.value.trim();
+                }
+                
+                tableResultDisplay.value = resultValue;
+            }
+        }
+        
+        // Handle result dropdown changes
+        document.querySelectorAll('.result-dropdown').forEach(dropdown => {
+            const testSlug = dropdown.getAttribute('data-test-slug');
+            
+            // Initial sync on page load
+            updateTableResult(testSlug);
+            
+            dropdown.addEventListener('change', function() {
+                const othersInput = document.querySelector(`.others-input[data-test-slug="${testSlug}"]`);
+                
+                if (this.value === 'Others') {
+                    othersInput.style.display = 'block';
+                    othersInput.focus();
+                } else {
+                    othersInput.style.display = 'none';
+                    othersInput.value = '';
+                }
+                
+                // Update table result
+                updateTableResult(testSlug);
+            });
+        });
+        
+        // Handle others input changes
+        document.querySelectorAll('.others-input').forEach(othersInput => {
+            othersInput.addEventListener('input', function() {
+                const testSlug = this.getAttribute('data-test-slug');
+                updateTableResult(testSlug);
+            });
+        });
+        
+        // Handle form submission to merge Others input with dropdown value
+        document.querySelector('form').addEventListener('submit', function(e) {
+            document.querySelectorAll('.result-dropdown').forEach(dropdown => {
+                if (dropdown.value === 'Others') {
+                    const testSlug = dropdown.getAttribute('data-test-slug');
+                    const othersInput = document.querySelector(`.others-input[data-test-slug="${testSlug}"]`);
+                    if (othersInput && othersInput.value.trim()) {
+                        // Create a hidden input with the others value as the main result
+                        const hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = dropdown.name;
+                        hiddenInput.value = othersInput.value.trim();
+                        dropdown.parentNode.appendChild(hiddenInput);
+                        dropdown.disabled = true; // Disable dropdown so it doesn't submit
+                    }
+                }
+            });
+        });
+    });
+
     // Auto-save functionality
     let autoSaveTimeout;
     document.querySelectorAll('input, textarea, select').forEach(field => {
