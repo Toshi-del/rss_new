@@ -49,6 +49,37 @@ class RadtechController extends Controller
     }
 
     /**
+     * Show pre-employment X-ray records
+     */
+    public function preEmploymentXray()
+    {
+        $preEmployments = PreEmploymentRecord::with(['medicalTestCategory', 'medicalTest'])
+            ->where('status', 'approved')
+            ->whereDoesntHave('preEmploymentExamination', function ($q) {
+                $q->whereIn('status', ['Approved', 'sent_to_company']);
+            })
+            ->latest()
+            ->get();
+
+        return view('radtech.pre-employment-xray', compact('preEmployments'));
+    }
+
+    /**
+     * Show annual physical X-ray records
+     */
+    public function annualPhysicalXray()
+    {
+        $patients = Patient::where('status', 'approved')
+            ->whereDoesntHave('annualPhysicalExamination', function ($q) {
+                $q->whereIn('status', ['completed', 'sent_to_company']);
+            })
+            ->latest()
+            ->get();
+
+        return view('radtech.annual-physical-xray', compact('patients'));
+    }
+
+    /**
      * Show medical checklist for pre-employment
      */
     public function showMedicalChecklistPreEmployment($recordId)
@@ -61,7 +92,26 @@ class RadtechController extends Controller
         $age = $preEmploymentRecord->age ?? null;
         $date = now()->format('Y-m-d');
         
-        return view('radtech.medical-checklist', compact('medicalChecklist', 'preEmploymentRecord', 'examinationType', 'number', 'name', 'age', 'date'));
+        $examinations = [
+            'chest_xray' => ['name' => 'Chest X-Ray', 'icon' => 'fas fa-x-ray', 'color' => 'cyan'],
+            'stool_exam' => ['name' => 'Stool Examination', 'icon' => 'fas fa-flask', 'color' => 'amber'],
+            'urinalysis' => ['name' => 'Urinalysis', 'icon' => 'fas fa-tint', 'color' => 'blue'],
+            'drug_test' => ['name' => 'Drug Test', 'icon' => 'fas fa-pills', 'color' => 'red'],
+            'blood_extraction' => ['name' => 'Blood Extraction', 'icon' => 'fas fa-syringe', 'color' => 'rose'],
+            'ecg' => ['name' => 'ElectroCardioGram (ECG)', 'icon' => 'fas fa-heartbeat', 'color' => 'green'],
+            'physical_exam' => ['name' => 'Physical Examination', 'icon' => 'fas fa-stethoscope', 'color' => 'purple'],
+        ];
+        
+        return view('radtech.medical-checklist', compact(
+            'medicalChecklist', 
+            'preEmploymentRecord', 
+            'examinationType', 
+            'number', 
+            'name', 
+            'age', 
+            'date',
+            'examinations'
+        ));
     }
 
     /**
@@ -72,12 +122,31 @@ class RadtechController extends Controller
         $patient = Patient::findOrFail($patientId);
         $medicalChecklist = MedicalChecklist::where('patient_id', $patientId)->first();
         $examinationType = 'annual-physical';
+        
+        $examinations = [
+            'chest_xray' => ['name' => 'Chest X-Ray', 'icon' => 'fas fa-x-ray', 'color' => 'cyan'],
+            'stool_exam' => ['name' => 'Stool Examination', 'icon' => 'fas fa-flask', 'color' => 'amber'],
+            'urinalysis' => ['name' => 'Urinalysis', 'icon' => 'fas fa-tint', 'color' => 'blue'],
+            'drug_test' => ['name' => 'Drug Test', 'icon' => 'fas fa-pills', 'color' => 'red'],
+            'blood_extraction' => ['name' => 'Blood Extraction', 'icon' => 'fas fa-syringe', 'color' => 'rose'],
+            'ecg' => ['name' => 'ElectroCardioGram (ECG)', 'icon' => 'fas fa-heartbeat', 'color' => 'green'],
+            'physical_exam' => ['name' => 'Physical Examination', 'icon' => 'fas fa-stethoscope', 'color' => 'purple'],
+        ];
         $number = 'PAT-' . str_pad($patient->id, 4, '0', STR_PAD_LEFT);
         $name = trim(($patient->first_name ?? '') . ' ' . ($patient->last_name ?? ''));
         $age = $patient->age ?? null;
         $date = now()->format('Y-m-d');
         
-        return view('radtech.medical-checklist', compact('medicalChecklist', 'patient', 'examinationType', 'number', 'name', 'age', 'date'));
+        return view('radtech.medical-checklist', compact(
+            'medicalChecklist', 
+            'patient', 
+            'examinationType', 
+            'number', 
+            'name', 
+            'age', 
+            'date',
+            'examinations'
+        ));
     }
 
     /**

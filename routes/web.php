@@ -320,6 +320,10 @@ Route::middleware(['auth', 'role:nurse'])->group(function () {
 Route::middleware(['auth', 'role:radtech'])->group(function () {
     Route::get('/radtech/dashboard', [RadtechController::class, 'dashboard'])->name('radtech.dashboard');
     
+    // Radtech X-Ray Service Routes
+    Route::get('/radtech/pre-employment-xray', [RadtechController::class, 'preEmploymentXray'])->name('radtech.pre-employment-xray');
+    Route::get('/radtech/annual-physical-xray', [RadtechController::class, 'annualPhysicalXray'])->name('radtech.annual-physical-xray');
+    
     // Radtech Medical Checklist Routes
     Route::get('/radtech/medical-checklist/pre-employment/{recordId}', [RadtechController::class, 'showMedicalChecklistPreEmployment'])->name('radtech.medical-checklist.pre-employment');
     Route::get('/radtech/medical-checklist/annual-physical/{patientId}', [RadtechController::class, 'showMedicalChecklistAnnualPhysical'])->name('radtech.medical-checklist.annual-physical');

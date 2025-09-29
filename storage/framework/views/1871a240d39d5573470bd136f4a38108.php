@@ -1,7 +1,5 @@
-@extends('layouts.radtech')
-
-@section('content')
-@php
+<?php $__env->startSection('content'); ?>
+<?php
     // Determine which test should be unlocked (first incomplete test)
     $unlockedTest = null;
     foreach($examinations as $field => $exam) {
@@ -11,7 +9,7 @@
             break;
         }
     }
-@endphp
+?>
 
 <div class="max-w-5xl mx-auto py-8 px-4">
     <!-- Header -->
@@ -28,18 +26,18 @@
     </div>
 
     <div class="bg-white rounded-b-xl shadow-lg">
-        <form action="{{ isset($medicalChecklist) && $medicalChecklist->id ? route('radtech.medical-checklist.update', $medicalChecklist->id) : route('radtech.medical-checklist.store') }}" method="POST" enctype="multipart/form-data">
-            @csrf
-            @if(isset($medicalChecklist) && $medicalChecklist->id)
-                @method('PATCH')
-            @endif
-            <input type="hidden" name="examination_type" value="{{ $examinationType }}">
-            @if(isset($preEmploymentRecord))
-                <input type="hidden" name="pre_employment_record_id" value="{{ $preEmploymentRecord->id }}">
-            @endif
-            @if(isset($patient))
-                <input type="hidden" name="patient_id" value="{{ $patient->id }}">
-            @endif
+        <form action="<?php echo e(isset($medicalChecklist) && $medicalChecklist->id ? route('radtech.medical-checklist.update', $medicalChecklist->id) : route('radtech.medical-checklist.store')); ?>" method="POST" enctype="multipart/form-data">
+            <?php echo csrf_field(); ?>
+            <?php if(isset($medicalChecklist) && $medicalChecklist->id): ?>
+                <?php echo method_field('PATCH'); ?>
+            <?php endif; ?>
+            <input type="hidden" name="examination_type" value="<?php echo e($examinationType); ?>">
+            <?php if(isset($preEmploymentRecord)): ?>
+                <input type="hidden" name="pre_employment_record_id" value="<?php echo e($preEmploymentRecord->id); ?>">
+            <?php endif; ?>
+            <?php if(isset($patient)): ?>
+                <input type="hidden" name="patient_id" value="<?php echo e($patient->id); ?>">
+            <?php endif; ?>
 
             <!-- Patient Information -->
             <div class="p-8 border-b border-gray-200">
@@ -53,25 +51,26 @@
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">Patient Name</label>
-                        <input type="text" name="name" value="{{ old('name', $medicalChecklist->name ?? (isset($preEmploymentRecord) ? ($preEmploymentRecord->first_name . ' ' . $preEmploymentRecord->last_name) : (isset($patient) ? ($patient->first_name . ' ' . $patient->last_name) : '')) ) }}" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500" required />
+                        <input type="text" name="name" value="<?php echo e(old('name', $medicalChecklist->name ?? (isset($preEmploymentRecord) ? ($preEmploymentRecord->first_name . ' ' . $preEmploymentRecord->last_name) : (isset($patient) ? ($patient->first_name . ' ' . $patient->last_name) : '')) )); ?>" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500" required />
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">Examination Date</label>
-                        @php
+                        <?php
                             $currentDate = old('date', ($medicalChecklist->date ?? now()->format('Y-m-d')));
-                        @endphp
+                        ?>
                         <div class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-gray-50 text-gray-700">
-                            {{ \Carbon\Carbon::parse($currentDate)->format('M d, Y') }}
+                            <?php echo e(\Carbon\Carbon::parse($currentDate)->format('M d, Y')); ?>
+
                         </div>
-                        <input type="hidden" name="date" value="{{ $currentDate }}" />
+                        <input type="hidden" name="date" value="<?php echo e($currentDate); ?>" />
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">Age</label>
-                        <input type="number" name="age" value="{{ old('age', $medicalChecklist->age ?? (isset($preEmploymentRecord) ? $preEmploymentRecord->age : (isset($patient) ? $patient->age : '')) ) }}" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500" required />
+                        <input type="number" name="age" value="<?php echo e(old('age', $medicalChecklist->age ?? (isset($preEmploymentRecord) ? $preEmploymentRecord->age : (isset($patient) ? $patient->age : '')) )); ?>" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500" required />
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">Record Number</label>
-                        @php($displayNumber = old('number', $medicalChecklist->number ?? ($number ?? '')))
+                        <?php($displayNumber = old('number', $medicalChecklist->number ?? ($number ?? '')))
                         @if($displayNumber)
                             <div class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-gray-50 text-gray-700">
                                 {{ $displayNumber }}
@@ -104,63 +103,66 @@
                             $completedBy = isset($medicalChecklist) ? ($medicalChecklist->{$field . '_done_by'} ?? null) : null;
                             $isUnlocked = ($field === $unlockedTest);
                             $isCompleted = !empty($completedBy);
-                        @endphp
+                        ?>
                         
-                        <div class="flex items-center justify-between p-4 rounded-lg border-2 {{ $isCompleted ? 'bg-green-50 border-green-300' : ($isUnlocked ? 'bg-blue-50 border-blue-400 shadow-md' : 'bg-gray-50 border-gray-200') }}">
+                        <div class="flex items-center justify-between p-4 rounded-lg border-2 <?php echo e($isCompleted ? 'bg-green-50 border-green-300' : ($isUnlocked ? 'bg-blue-50 border-blue-400 shadow-md' : 'bg-gray-50 border-gray-200')); ?>">
                             <!-- Left Side: Number, Icon, Name -->
                             <div class="flex items-center space-x-4 flex-1">
                                 <!-- Number Badge -->
-                                <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold {{ $isCompleted ? 'bg-green-500 text-white' : ($isUnlocked ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-600') }}">
-                                    {{ $loop->iteration }}
+                                <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold <?php echo e($isCompleted ? 'bg-green-500 text-white' : ($isUnlocked ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-600')); ?>">
+                                    <?php echo e($loop->iteration); ?>
+
                                 </div>
                                 
                                 <!-- Icon -->
-                                <div class="w-10 h-10 rounded-lg flex items-center justify-center {{ $isCompleted ? 'bg-green-200' : ($isUnlocked ? 'bg-blue-200' : 'bg-gray-200') }}">
-                                    <i class="{{ $exam['icon'] }} {{ $isCompleted ? 'text-green-700' : ($isUnlocked ? 'text-blue-700' : 'text-gray-500') }} text-lg"></i>
+                                <div class="w-10 h-10 rounded-lg flex items-center justify-center <?php echo e($isCompleted ? 'bg-green-200' : ($isUnlocked ? 'bg-blue-200' : 'bg-gray-200')); ?>">
+                                    <i class="<?php echo e($exam['icon']); ?> <?php echo e($isCompleted ? 'text-green-700' : ($isUnlocked ? 'text-blue-700' : 'text-gray-500')); ?> text-lg"></i>
                                 </div>
                                 
                                 <!-- Test Name & Status -->
                                 <div class="flex-1">
-                                    <h4 class="font-semibold {{ $isCompleted ? 'text-green-900' : ($isUnlocked ? 'text-blue-900' : 'text-gray-500') }}">
-                                        {{ $loop->iteration }}. {{ $exam['name'] }}
+                                    <h4 class="font-semibold <?php echo e($isCompleted ? 'text-green-900' : ($isUnlocked ? 'text-blue-900' : 'text-gray-500')); ?>">
+                                        <?php echo e($loop->iteration); ?>. <?php echo e($exam['name']); ?>
+
                                     </h4>
-                                    <p class="text-xs {{ $isCompleted ? 'text-green-600' : ($isUnlocked ? 'text-blue-600' : 'text-gray-400') }}">
-                                        @if($isCompleted)
-                                            Completed by {{ $completedBy }}
-                                        @elseif($isUnlocked)
+                                    <p class="text-xs <?php echo e($isCompleted ? 'text-green-600' : ($isUnlocked ? 'text-blue-600' : 'text-gray-400')); ?>">
+                                        <?php if($isCompleted): ?>
+                                            Completed by <?php echo e($completedBy); ?>
+
+                                        <?php elseif($isUnlocked): ?>
                                             Ready to complete
-                                        @else
+                                        <?php else: ?>
                                             Locked - Complete previous tests first
-                                        @endif
+                                        <?php endif; ?>
                                     </p>
                                 </div>
                             </div>
                             
                             <!-- Right Side: Status/Input -->
                             <div class="flex items-center">
-                                @if($isCompleted)
+                                <?php if($isCompleted): ?>
                                     <span class="px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg flex items-center">
                                         <i class="fas fa-check-circle mr-2"></i>
                                         Completed
                                     </span>
-                                @elseif($isUnlocked)
-                                    @if($field === 'chest_xray')
-                                        <input type="text" name="chest_xray_done_by" value="{{ old('chest_xray_done_by', '') }}" placeholder="Enter your initials" class="w-48 px-4 py-2 text-sm rounded-lg border-2 border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
-                                    @else
+                                <?php elseif($isUnlocked): ?>
+                                    <?php if($field === 'chest_xray'): ?>
+                                        <input type="text" name="chest_xray_done_by" value="<?php echo e(old('chest_xray_done_by', '')); ?>" placeholder="Enter your initials" class="w-48 px-4 py-2 text-sm rounded-lg border-2 border-blue-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                    <?php else: ?>
                                         <span class="px-4 py-2 bg-gray-200 text-gray-600 text-sm font-medium rounded-lg flex items-center">
                                             <i class="fas fa-user-md mr-2"></i>
                                             Other Staff
                                         </span>
-                                    @endif
-                                @else
+                                    <?php endif; ?>
+                                <?php else: ?>
                                     <span class="px-4 py-2 bg-gray-200 text-gray-500 text-sm font-medium rounded-lg flex items-center">
                                         <i class="fas fa-lock mr-2"></i>
                                         Locked
                                     </span>
-                                @endif
+                                <?php endif; ?>
                             </div>
                         </div>
-                    @endforeach
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </div>
             </div>
 
@@ -176,18 +178,18 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-2">Optional Examinations</label>
-                            <input type="text" name="optional_exam" value="{{ old('optional_exam', isset($medicalChecklist) ? $medicalChecklist->optional_exam : 'Audiometry/Ishihara') }}" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500" />
+                            <input type="text" name="optional_exam" value="<?php echo e(old('optional_exam', isset($medicalChecklist) ? $medicalChecklist->optional_exam : 'Audiometry/Ishihara')); ?>" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500" />
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-2">Nurse Signature</label>
-                            <input type="text" name="nurse_signature" value="{{ old('nurse_signature', isset($medicalChecklist) ? $medicalChecklist->nurse_signature : '') }}" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500" placeholder="Nurse initials" />
+                            <input type="text" name="nurse_signature" value="<?php echo e(old('nurse_signature', isset($medicalChecklist) ? $medicalChecklist->nurse_signature : '')); ?>" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500" placeholder="Nurse initials" />
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- X-Ray Image Upload -->
-            @if($unlockedTest === 'chest_xray' || (isset($medicalChecklist) && $medicalChecklist->chest_xray_done_by))
+            <?php if($unlockedTest === 'chest_xray' || (isset($medicalChecklist) && $medicalChecklist->chest_xray_done_by)): ?>
             <div class="px-8 pb-8">
                 <div class="bg-cyan-50 rounded-lg p-6 border border-cyan-200">
                     <div class="flex items-center mb-4">
@@ -202,16 +204,16 @@
                             <input type="file" name="xray_image" accept="image/*" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-100 file:text-cyan-700 hover:file:bg-cyan-200">
                             <p class="text-xs text-gray-500 mt-2">JPG, PNG, GIF (Max: 25MB)</p>
                         </div>
-                        @if(isset($medicalChecklist) && $medicalChecklist->xray_image_path)
+                        <?php if(isset($medicalChecklist) && $medicalChecklist->xray_image_path): ?>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Current Image</label>
-                            <img src="{{ asset('storage/' . $medicalChecklist->xray_image_path) }}" alt="X-Ray" class="w-full h-32 object-cover rounded-lg border border-gray-300">
+                            <img src="<?php echo e(asset('storage/' . $medicalChecklist->xray_image_path)); ?>" alt="X-Ray" class="w-full h-32 object-cover rounded-lg border border-gray-300">
                         </div>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
-            @endif
+            <?php endif; ?>
 
             <!-- Submit Buttons -->
             <div class="px-8 pb-8">
@@ -220,20 +222,22 @@
                         <i class="fas fa-arrow-left mr-2"></i>Cancel
                     </button>
                     <button type="submit" class="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-8 py-3 rounded-lg shadow-lg hover:from-teal-600 hover:to-teal-700 font-semibold">
-                        <i class="fas fa-save mr-2"></i>{{ isset($medicalChecklist) && $medicalChecklist->id ? 'Update Checklist' : 'Save Checklist' }}
+                        <i class="fas fa-save mr-2"></i><?php echo e(isset($medicalChecklist) && $medicalChecklist->id ? 'Update Checklist' : 'Save Checklist'); ?>
+
                     </button>
                 </div>
             </div>
         </form>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('styles')
+<?php $__env->startSection('styles'); ?>
 <style>
     .content-card {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
     }
 </style>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.radtech', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\rss_new-1\resources\views/radtech/medical-checklist.blade.php ENDPATH**/ ?>
