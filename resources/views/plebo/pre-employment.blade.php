@@ -1,241 +1,275 @@
 @extends('layouts.plebo')
 
-@section('title', 'Pre-Employment Records')
+@section('title', 'Pre-Employment Blood Collection')
 
 @section('page-title', 'Pre-Employment Records')
 
 @section('content')
-<div class="min-h-screen bg-gray-50" style="font-family: 'Inter', sans-serif;">
-    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        
-        <!-- Header Section -->
-        <div class="mb-8">
-            <div class="bg-white shadow rounded-lg overflow-hidden">
-                <div class="px-6 py-5 bg-gradient-to-r from-blue-50 to-white border-b border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-900 mb-2" style="font-family: 'Poppins', sans-serif; color: #800000;">
-                                <i class="fas fa-user-md mr-3"></i>Pre-Employment Records
-                            </h1>
-                            <p class="text-sm text-gray-600">Manage medical checklist for pre-employment examinations</p>
-                        </div>
-                        <div class="flex items-center space-x-4">
-                            <div class="text-right">
-                                <div class="text-2xl font-bold text-blue-600">{{ $preEmployments->total() }}</div>
-                                <div class="text-sm text-gray-500">Total Records</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<!-- Success/Error Messages -->
+@if(session('success'))
+<div class="mb-6 p-4 rounded-2xl bg-green-50 border border-green-200 flex items-center space-x-3">
+    <div class="flex-shrink-0">
+        <i class="fas fa-check-circle text-green-600 text-xl"></i>
+    </div>
+    <div>
+        <p class="text-green-800 font-medium">{{ session('success') }}</p>
+    </div>
+    <button onclick="this.parentElement.remove()" class="ml-auto text-green-600 hover:text-green-800">
+        <i class="fas fa-times"></i>
+    </button>
+</div>
+@endif
 
-        @if(session('success'))
-        <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-            <div class="flex items-center">
-                <i class="fas fa-check-circle mr-2"></i>
-                <span class="block sm:inline">{{ session('success') }}</span>
-            </div>
-        </div>
-        @endif
+@if(session('error'))
+<div class="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 flex items-center space-x-3">
+    <div class="flex-shrink-0">
+        <i class="fas fa-exclamation-circle text-red-600 text-xl"></i>
+    </div>
+    <div>
+        <p class="text-red-800 font-medium">{{ session('error') }}</p>
+    </div>
+    <button onclick="this.parentElement.remove()" class="ml-auto text-red-600 hover:text-red-800">
+        <i class="fas fa-times"></i>
+    </button>
+</div>
+@endif
 
-        @if(session('error'))
-        <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-            <div class="flex items-center">
-                <i class="fas fa-exclamation-circle mr-2"></i>
-                <span class="block sm:inline">{{ session('error') }}</span>
+<!-- Stats Overview -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <!-- Total Records -->
+    <div class="content-card rounded-2xl p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-orange-500">
+        <div class="flex items-center space-x-4">
+            <div class="w-12 h-12 bg-orange-100 rounded-2xl flex items-center justify-center">
+                <i class="fas fa-user-md text-orange-600 text-xl"></i>
+            </div>
+            <div>
+                <h3 class="text-2xl font-bold text-gray-900">{{ $preEmployments->total() }}</h3>
+                <p class="text-sm text-gray-600">Total Records</p>
             </div>
         </div>
-        @endif
+        <p class="text-gray-600 text-sm mt-4">Pre-employment medical examinations</p>
+    </div>
 
-        <!-- Records Table -->
-        <div class="bg-white shadow rounded-lg overflow-hidden">
-            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900" style="font-family: 'Poppins', sans-serif;">
-                            <i class="fas fa-list mr-2 text-blue-600"></i>Pre-Employment Records
-                        </h2>
-                        <p class="text-sm text-gray-600 mt-1">Click to open medical checklist or generate barcode</p>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Approved Records Only
-                        </span>
-                    </div>
-                </div>
+    <!-- Approved Records -->
+    <div class="content-card rounded-2xl p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-green-500">
+        <div class="flex items-center space-x-4">
+            <div class="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center">
+                <i class="fas fa-check-circle text-green-600 text-xl"></i>
             </div>
-            
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <i class="fas fa-user mr-1"></i>Patient Information
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <i class="fas fa-building mr-1"></i>Company
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <i class="fas fa-info-circle mr-1"></i>Status
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <i class="fas fa-calendar mr-1"></i>Date
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <i class="fas fa-cogs mr-1"></i>Actions
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($preEmployments as $preEmployment)
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-10 w-10">
-                                        <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                            <i class="fas fa-user text-blue-600"></i>
-                                        </div>
-                                    </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">
-                                            {{ $preEmployment->first_name }} {{ $preEmployment->last_name }}
-                                        </div>
-                                        <div class="text-sm text-gray-500">
-                                            {{ $preEmployment->age }} years old • {{ ucfirst($preEmployment->sex) }}
-                                        </div>
-                                        @if($preEmployment->email)
-                                        <div class="text-xs text-blue-600">
-                                            <i class="fas fa-envelope mr-1"></i>{{ $preEmployment->email }}
-                                        </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900 font-medium">{{ $preEmployment->company_name }}</div>
-                                @if($preEmployment->phone_number)
-                                <div class="text-sm text-gray-500">
-                                    <i class="fas fa-phone mr-1"></i>{{ $preEmployment->phone_number }}
-                                </div>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @php
-                                    $statusConfig = match($preEmployment->status) {
-                                        'approved' => ['class' => 'bg-green-100 text-green-800', 'icon' => 'check-circle'],
-                                        'declined' => ['class' => 'bg-red-100 text-red-800', 'icon' => 'times-circle'],
-                                        'pending' => ['class' => 'bg-yellow-100 text-yellow-800', 'icon' => 'clock'],
-                                        default => ['class' => 'bg-gray-100 text-gray-800', 'icon' => 'question-circle']
-                                    };
-                                @endphp
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $statusConfig['class'] }}">
-                                    <i class="fas fa-{{ $statusConfig['icon'] }} mr-1"></i>
-                                    {{ ucfirst($preEmployment->status) }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <div class="flex items-center">
-                                    <i class="fas fa-calendar mr-2 text-gray-400"></i>
-                                    {{ $preEmployment->created_at->format('M d, Y') }}
-                                </div>
-                                <div class="text-xs text-gray-400 mt-1">
-                                    {{ $preEmployment->created_at->format('h:i A') }}
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div class="flex items-center space-x-2">
-                                    <!-- Medical Checklist Button -->
-                                    <a href="{{ route('plebo.medical-checklist.pre-employment', $preEmployment->id) }}" 
-                                       class="inline-flex items-center px-3 py-2 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
-                                       title="Medical Checklist">
-                                        <i class="fas fa-clipboard-list mr-1"></i>
-                                        Checklist
-                                    </a>
-                                    
-                                    <!-- Generate Barcode Button -->
-                                    <button type="button" 
-                                            data-record-id="{{ $preEmployment->id }}"
-                                            class="generate-barcode-btn inline-flex items-center px-3 py-2 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-                                            title="Generate Barcode">
-                                        <i class="fas fa-barcode mr-1"></i>
-                                        Barcode
-                                    </button>
-                                    
-                                    <!-- Send to Doctor Button -->
-                                    @php
-                                        $hasMedicalChecklist = \App\Models\MedicalChecklist::where('pre_employment_record_id', $preEmployment->id)->exists();
-                                    @endphp
-                                    <form action="{{ route('plebo.pre-employment.send-to-doctor', $preEmployment->id) }}" method="POST" class="inline">
-                                        @csrf
-                                        <button type="submit" 
-                                                class="inline-flex items-center px-3 py-2 border border-transparent text-xs font-medium rounded-md text-white {{ $hasMedicalChecklist ? 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500' : 'bg-gray-400 cursor-not-allowed' }} focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors"
-                                                title="{{ $hasMedicalChecklist ? 'Send to Doctor' : 'Complete medical checklist first' }}"
-                                                {{ $hasMedicalChecklist ? 'onclick="return confirm(\'Are you sure you want to send this record to the doctor?\')"' : 'disabled' }}>
-                                            <i class="fas fa-paper-plane mr-1"></i>
-                                            Send
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="5" class="px-6 py-12 text-center">
-                                <div class="flex flex-col items-center">
-                                    <i class="fas fa-user-md text-4xl text-gray-400 mb-4"></i>
-                                    <h3 class="text-lg font-medium text-gray-900 mb-2">No pre-employment records found</h3>
-                                    <p class="text-gray-500">There are no approved pre-employment records to display.</p>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+            <div>
+                <h3 class="text-2xl font-bold text-gray-900">{{ $preEmployments->where('status', 'approved')->count() }}</h3>
+                <p class="text-sm text-gray-600">Approved</p>
             </div>
-            
-            <!-- Pagination -->
-            @if($preEmployments->hasPages())
-            <div class="px-6 py-4 border-t border-gray-200">
-                {{ $preEmployments->links() }}
-            </div>
-            @endif
         </div>
+        <p class="text-gray-600 text-sm mt-4">Ready for blood collection</p>
+    </div>
+
+    <!-- Pending Records -->
+    <div class="content-card rounded-2xl p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-yellow-500">
+        <div class="flex items-center space-x-4">
+            <div class="w-12 h-12 bg-yellow-100 rounded-2xl flex items-center justify-center">
+                <i class="fas fa-clock text-yellow-600 text-xl"></i>
+            </div>
+            <div>
+                <h3 class="text-2xl font-bold text-gray-900">{{ $preEmployments->where('status', 'pending')->count() }}</h3>
+                <p class="text-sm text-gray-600">Pending</p>
+            </div>
+        </div>
+        <p class="text-gray-600 text-sm mt-4">Awaiting approval</p>
     </div>
 </div>
 
-<!-- Barcode Modal -->
-<div id="barcodeModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" style="display: none;">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900">
-                    <i class="fas fa-barcode mr-2 text-blue-600"></i>Generated Barcode
-                </h3>
-                <button onclick="closeBarcodeModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times"></i>
+<!-- Pre-Employment Records Table -->
+<div class="content-card rounded-2xl mb-8 overflow-hidden">
+    <div class="bg-gradient-to-r from-orange-600 to-orange-700 px-6 py-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-user-md text-white text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-white">Pre-Employment Blood Collection</h2>
+                    <p class="text-orange-100 text-sm">Manage blood collection for employment medical examinations</p>
+                </div>
+            </div>
+            <div class="bg-white/20 px-3 py-1 rounded-full">
+                <span class="text-white font-semibold">{{ $preEmployments->count() }} Records</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50/80">
+                <tr>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Patient</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Company</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-100">
+                @forelse($preEmployments as $preEmployment)
+                    <tr class="hover:bg-orange-50/50 transition-colors duration-200">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                                    <span class="text-orange-600 font-bold text-sm">
+                                        {{ substr($preEmployment->first_name, 0, 1) }}{{ substr($preEmployment->last_name, 0, 1) }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-900">{{ $preEmployment->first_name }} {{ $preEmployment->last_name }}</p>
+                                    <p class="text-sm text-gray-500">{{ $preEmployment->age }} years • {{ ucfirst($preEmployment->sex) }}</p>
+                                    @if($preEmployment->email)
+                                    <p class="text-xs text-orange-600">
+                                        <i class="fas fa-envelope mr-1"></i>{{ $preEmployment->email }}
+                                    </p>
+                                    @endif
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm">
+                                <p class="text-gray-900 font-medium">{{ $preEmployment->company_name }}</p>
+                                @if($preEmployment->phone_number)
+                                <p class="text-gray-500">
+                                    <i class="fas fa-phone mr-1"></i>{{ $preEmployment->phone_number }}
+                                </p>
+                                @endif
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @php
+                                $statusConfig = match($preEmployment->status) {
+                                    'approved' => ['class' => 'bg-green-100 text-green-800 border-green-200', 'icon' => 'fa-check-circle'],
+                                    'declined' => ['class' => 'bg-red-100 text-red-800 border-red-200', 'icon' => 'fa-times-circle'],
+                                    'pending' => ['class' => 'bg-yellow-100 text-yellow-800 border-yellow-200', 'icon' => 'fa-clock'],
+                                    default => ['class' => 'bg-gray-100 text-gray-800 border-gray-200', 'icon' => 'fa-question-circle']
+                                };
+                            @endphp
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border {{ $statusConfig['class'] }}">
+                                <i class="fas {{ $statusConfig['icon'] }} mr-1"></i>
+                                {{ ucfirst($preEmployment->status) }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                <p class="font-medium">{{ $preEmployment->created_at->format('M d, Y') }}</p>
+                                <p class="text-gray-500">{{ $preEmployment->created_at->format('h:i A') }}</p>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex items-center space-x-2">
+                                <!-- Blood Collection Checklist -->
+                                <a href="{{ route('plebo.medical-checklist.pre-employment', $preEmployment->id) }}" 
+                                   class="inline-flex items-center px-3 py-1 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-lg transition-colors duration-200"
+                                   title="Blood Collection Checklist">
+                                    <i class="fas fa-vial mr-2"></i>
+                                    Checklist
+                                </a>
+                                
+                                <!-- Generate Barcode -->
+                                <button type="button" 
+                                        data-record-id="{{ $preEmployment->id }}"
+                                        class="generate-barcode-btn inline-flex items-center px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors duration-200"
+                                        title="Generate Patient Barcode">
+                                    <i class="fas fa-barcode mr-2"></i>
+                                    Barcode
+                                </button>
+                                
+                                <!-- Send to Doctor -->
+                                @php
+                                    $hasMedicalChecklist = \App\Models\MedicalChecklist::where('pre_employment_record_id', $preEmployment->id)->exists();
+                                @endphp
+                                <form action="{{ route('plebo.pre-employment.send-to-doctor', $preEmployment->id) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit" 
+                                            class="inline-flex items-center px-3 py-1 rounded-lg transition-colors duration-200 {{ $hasMedicalChecklist ? 'bg-purple-100 hover:bg-purple-200 text-purple-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed' }}"
+                                            title="{{ $hasMedicalChecklist ? 'Send to Doctor for Review' : 'Complete blood collection first' }}"
+                                            {{ $hasMedicalChecklist ? 'onclick="return confirm(\'Send this record to the doctor for review?\')"' : 'disabled' }}>
+                                        <i class="fas fa-paper-plane mr-2"></i>
+                                        Send
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center space-y-3">
+                                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user-md text-gray-400 text-2xl"></i>
+                                </div>
+                                <p class="text-gray-500 font-medium">No pre-employment records found</p>
+                                <p class="text-gray-400 text-sm">Pre-employment patients will appear here when available</p>
+                            </div>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    @if($preEmployments->hasPages())
+    <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+        {{ $preEmployments->links() }}
+    </div>
+    @endif
+</div>
+
+<!-- Enhanced Barcode Modal -->
+<div id="barcodeModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50" style="display: none;">
+    <div class="relative top-20 mx-auto p-0 border-0 w-96 max-w-md shadow-2xl rounded-2xl bg-white overflow-hidden">
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-orange-600 to-orange-700 px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-barcode text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Patient Barcode</h3>
+                        <p class="text-orange-100 text-sm">Pre-employment record identifier</p>
+                    </div>
+                </div>
+                <button onclick="closeBarcodeModal()" class="text-orange-200 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-xl transition-all duration-200">
+                    <i class="fas fa-times text-lg"></i>
                 </button>
             </div>
-            
+        </div>
+        
+        <!-- Modal Content -->
+        <div class="p-6">
             <div class="text-center">
-                <div id="barcodeContainer" class="mb-4 p-4 bg-white border-2 border-dashed border-gray-300 rounded-lg">
-                    <p class="text-gray-500">Barcode will appear here</p>
+                <!-- Barcode Display Area -->
+                <div id="barcodeContainer" class="mb-6 p-6 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl">
+                    <div class="flex items-center justify-center py-8">
+                        <div class="text-center space-y-3">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+                            <p class="text-gray-500 text-sm">Generating barcode...</p>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="mb-4">
-                    <p class="text-sm text-gray-600 mb-2">Record Number:</p>
-                    <p id="recordNumber" class="text-lg font-semibold text-gray-900"></p>
+                <!-- Record Information -->
+                <div class="mb-6 p-4 bg-orange-50 rounded-xl">
+                    <p class="text-sm text-orange-700 font-medium mb-1">Record Number</p>
+                    <p id="recordNumber" class="text-xl font-bold text-orange-900"></p>
                 </div>
                 
+                <!-- Action Buttons -->
                 <div class="flex justify-center space-x-3">
                     <button onclick="printBarcode()" 
-                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            class="inline-flex items-center px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl transition-colors duration-200 font-medium">
                         <i class="fas fa-print mr-2"></i>
                         Print
                     </button>
                     <button onclick="downloadBarcode()" 
-                            class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors duration-200 font-medium">
                         <i class="fas fa-download mr-2"></i>
                         Download
                     </button>
@@ -276,17 +310,35 @@ function createFallbackBarcode(container, text) {
     `;
 }
 function generateBarcode(recordId) {
+    const modal = document.getElementById('barcodeModal');
+    const barcodeContainer = document.getElementById('barcodeContainer');
+    const recordNumberElement = document.getElementById('recordNumber');
+    
     // Generate the record number (same format as in PleboController)
     const recordNumber = 'EMP-' + String(recordId).padStart(4, '0');
     
     // Update the modal content
-    document.getElementById('recordNumber').textContent = recordNumber;
+    recordNumberElement.textContent = recordNumber;
     
-    // Clear previous barcode
-    document.getElementById('barcodeContainer').innerHTML = '';
+    // Show loading state
+    barcodeContainer.innerHTML = `
+        <div class="flex items-center justify-center py-8">
+            <div class="text-center space-y-3">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+                <p class="text-gray-500 text-sm">Generating barcode...</p>
+            </div>
+        </div>
+    `;
     
-    // Show modal first
-    document.getElementById('barcodeModal').style.display = 'block';
+    // Show modal with animation
+    modal.style.display = 'block';
+    document.body.classList.add('overflow-hidden');
+    
+    // Add entrance animation
+    setTimeout(() => {
+        modal.querySelector('.relative').style.transform = 'scale(1)';
+        modal.querySelector('.relative').style.opacity = '1';
+    }, 10);
     
     // Wait a bit for modal to be visible, then generate barcode
     setTimeout(() => {
@@ -294,14 +346,15 @@ function generateBarcode(recordId) {
             // Check if JsBarcode is loaded and not in fallback mode
             if (typeof JsBarcode === 'undefined' || JsBarcode.fallback) {
                 console.log('Using fallback barcode generation');
-                createFallbackBarcode(document.getElementById('barcodeContainer'), recordNumber);
+                createFallbackBarcode(barcodeContainer, recordNumber);
                 return;
             }
             
             // Create canvas element for barcode
             const canvas = document.createElement('canvas');
             canvas.id = 'barcodeCanvas';
-            document.getElementById('barcodeContainer').appendChild(canvas);
+            barcodeContainer.innerHTML = '';
+            barcodeContainer.appendChild(canvas);
             
             // Generate barcode using JsBarcode
             JsBarcode(canvas, recordNumber, {
@@ -323,23 +376,34 @@ function generateBarcode(recordId) {
             console.error('Error generating barcode:', error);
             // Try fallback method
             try {
-                createFallbackBarcode(document.getElementById('barcodeContainer'), recordNumber);
+                createFallbackBarcode(barcodeContainer, recordNumber);
             } catch (fallbackError) {
                 console.error('Fallback also failed:', fallbackError);
-                document.getElementById('barcodeContainer').innerHTML = `
-                    <div class="text-center p-4">
-                        <i class="fas fa-exclamation-triangle text-red-500 text-2xl mb-2"></i>
-                        <p class="text-red-500 font-medium">Error generating barcode</p>
-                        <p class="text-sm text-gray-500 mt-1">Please try again or contact support</p>
+                barcodeContainer.innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                        </div>
+                        <p class="text-red-600 font-medium mb-2">Error generating barcode</p>
+                        <p class="text-gray-500 text-sm">Please try again or contact support</p>
                     </div>
                 `;
             }
         }
-    }, 100);
+    }, 300);
 }
 
 function closeBarcodeModal() {
-    document.getElementById('barcodeModal').style.display = 'none';
+    const modal = document.getElementById('barcodeModal');
+    
+    // Add exit animation
+    modal.querySelector('.relative').style.transform = 'scale(0.95)';
+    modal.querySelector('.relative').style.opacity = '0.8';
+    
+    setTimeout(() => {
+        modal.style.display = 'none';
+        document.body.classList.remove('overflow-hidden');
+    }, 200);
 }
 
 function printBarcode() {
@@ -462,8 +526,16 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Add event listeners when DOM is loaded
+// Initialize modal animations and event listeners
 document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('barcodeModal');
+    const modalContent = modal.querySelector('.relative');
+    
+    // Set initial animation state
+    modalContent.style.transition = 'all 0.3s ease';
+    modalContent.style.transform = 'scale(0.95)';
+    modalContent.style.opacity = '0.8';
+    
     // Add click event listeners to all barcode buttons
     document.querySelectorAll('.generate-barcode-btn').forEach(function(button) {
         button.addEventListener('click', function() {
@@ -474,7 +546,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    console.log('Barcode functionality initialized');
+    // Close modal when clicking outside
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeBarcodeModal();
+        }
+    });
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display !== 'none') {
+            closeBarcodeModal();
+        }
+    });
+    
+    console.log('Pre-employment page functionality initialized');
 });
 </script>
 @endsection

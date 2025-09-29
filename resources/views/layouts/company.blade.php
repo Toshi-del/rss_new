@@ -78,9 +78,10 @@
         }
         
         .glass-sidebar {
-            background: #1e40af;
+            background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: 2px solid #e5e7eb;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
         }
         
         .nav-item {
@@ -105,17 +106,18 @@
         }
         
         .nav-item:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: #f3f4f6;
             transform: translateX(4px);
         }
         
         .nav-item.active {
-            background: rgba(255, 255, 255, 0.15);
+            background: #1e40af;
+            color: white;
             border-left: 4px solid #3b82f6;
         }
         
         .nav-section {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid #e5e7eb;
             margin-bottom: 1rem;
             padding-bottom: 1rem;
         }
@@ -127,7 +129,7 @@
         }
         
         .nav-section-title {
-            color: rgba(255, 255, 255, 0.6);
+            color: #6b7280;
             font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
@@ -200,14 +202,14 @@
         <!-- Sidebar -->
         <div id="sidebar" class="w-72 glass-sidebar relative z-10 shadow-2xl flex flex-col h-full">
             <!-- Header -->
-            <div class="p-8 border-b border-white/10 flex-shrink-0">
+            <div class="p-8 border-b border-gray-200 flex-shrink-0">
                 <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20">
+                    <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
                         <i class="fas fa-building text-white text-xl"></i>
                     </div>
                     <div>
-                        <h1 class="text-xl font-bold text-white">Company Portal</h1>
-                        <p class="text-blue-200 text-sm">RSS Citi Health Services</p>
+                        <h1 class="text-xl font-bold text-gray-900">Company Portal</h1>
+                        <p class="text-gray-600 text-sm">RSS Citi Health Services</p>
                     </div>
                 </div>
             </div>
@@ -216,22 +218,22 @@
             <nav class="flex-1 px-6 py-8 space-y-2 overflow-y-auto">
                 <!-- Main Menu Section -->
                 <div class="mb-8">
-                    <h3 class="text-xs font-semibold text-blue-200 uppercase tracking-wider mb-4 px-3">Main Menu</h3>
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-3">Main Menu</h3>
                     <div class="space-y-1">
-                        <a href="{{ route('company.dashboard') }}" class="nav-item flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {{ request()->routeIs('company.dashboard') ? 'active text-white' : '' }}">
+                        <a href="{{ route('company.dashboard') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('company.dashboard') ? 'active text-white' : '' }}">
                             <i class="fas fa-chart-line mr-4 text-lg"></i>
                             <span class="font-medium">Dashboard</span>
                         </a>
-                        <a href="{{ route('company.appointments.index') }}" class="nav-item flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {{ request()->routeIs('company.appointments.*') ? 'active text-white' : '' }}">
+                        <a href="{{ route('company.appointments.index') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('company.appointments.*') ? 'active text-white' : '' }}">
                             <i class="fas fa-calendar-check mr-4 text-lg"></i>
                             <span class="font-medium">Appointments</span>
                             <span class="ml-auto notification-badge w-2 h-2 bg-red-500 rounded-full"></span>
                         </a>
-                        <a href="{{ route('company.pre-employment.index') }}" class="nav-item flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {{ request()->routeIs('company.pre-employment.*') ? 'active text-white' : '' }}">
+                        <a href="{{ route('company.pre-employment.index') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('company.pre-employment.*') ? 'active text-white' : '' }}">
                             <i class="fas fa-briefcase mr-4 text-lg"></i>
                             <span class="font-medium">Pre-Employment</span>
                         </a>
-                        <a href="{{ route('company.medical-results') }}" class="nav-item flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {{ request()->routeIs('company.medical-results*') ? 'active text-white' : '' }}">
+                        <a href="{{ route('company.medical-results') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('company.medical-results*') ? 'active text-white' : '' }}">
                             <i class="fas fa-file-medical mr-4 text-lg"></i>
                             <span class="font-medium">Medical Results</span>
                         </a>
@@ -240,9 +242,9 @@
 
                 <!-- Employee Management Section -->
                 <div class="mb-8">
-                    <h3 class="text-xs font-semibold text-blue-200 uppercase tracking-wider mb-4 px-3">Employee Management</h3>
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-3">Employee Management</h3>
                     <div class="space-y-1">
-                        <a href="{{ route('company.account-invitations.index') }}" class="nav-item flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {{ request()->routeIs('company.account-invitations*') ? 'active text-white' : '' }}">
+                        <a href="{{ route('company.account-invitations.index') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('company.account-invitations*') ? 'active text-white' : '' }}">
                             <i class="fas fa-user-plus mr-4 text-lg"></i>
                             <span class="font-medium">Account Invitations</span>
                         </a>
@@ -251,14 +253,14 @@
 
                 <!-- Communication Section -->
                 <div class="mb-8">
-                    <h3 class="text-xs font-semibold text-blue-200 uppercase tracking-wider mb-4 px-3">Communication</h3>
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-3">Communication</h3>
                     <div class="space-y-1">
-                        <a href="{{ route('company.messages') }}" class="nav-item flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {{ request()->routeIs('company.messages') ? 'active text-white' : '' }}">
+                        <a href="{{ route('company.messages') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('company.messages') ? 'active text-white' : '' }}">
                             <i class="fas fa-comments mr-4 text-lg"></i>
                             <span class="font-medium">Messages</span>
                             <span class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">3</span>
                         </a>
-                        <a href="{{ route('company.settings') }}" class="nav-item flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {{ request()->routeIs('company.settings*') ? 'active text-white' : '' }}">
+                        <a href="{{ route('company.settings') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('company.settings*') ? 'active text-white' : '' }}">
                             <i class="fas fa-cog mr-4 text-lg"></i>
                             <span class="font-medium">Settings</span>
                         </a>
@@ -267,19 +269,19 @@
             </nav>
 
             <!-- User Profile Section - Sticky Bottom -->
-            <div class="flex-shrink-0 p-6 border-t border-white/10 mt-auto">
-                <div class="bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/20">
+            <div class="flex-shrink-0 p-6 border-t border-gray-200 mt-auto">
+                <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
                     <div class="flex items-center space-x-3">
                         <div class="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
                             {{ substr(Auth::user()->full_name ?? 'C', 0, 1) }}
                         </div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-white font-semibold text-sm truncate">
+                            <p class="text-gray-900 font-semibold text-sm truncate">
                                 {{ Auth::user()->full_name ?? 'Company Admin' }}
                             </p>
-                            <p class="text-blue-200 text-xs">Company Administrator</p>
+                            <p class="text-gray-600 text-xs">Company Administrator</p>
                         </div>
-                        <button id="profileButton" class="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-lg transition-all duration-300">
+                        <button id="profileButton" class="text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-100 p-2 rounded-lg transition-all duration-300 border border-gray-200">
                             <i class="fas fa-user-cog text-lg"></i>
                         </button>
                     </div>

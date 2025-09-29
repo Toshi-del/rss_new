@@ -56,9 +56,10 @@
         }
         
         .glass-sidebar {
-            background: linear-gradient(135deg, rgba(5, 150, 105, 0.9) 0%, rgba(16, 185, 129, 0.8) 50%, rgba(6, 95, 70, 0.9) 100%);
+            background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: 2px solid #e5e7eb;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
         }
         
         .nav-item {
@@ -83,8 +84,13 @@
         }
         
         .nav-item.active {
-            background: rgba(255, 255, 255, 0.15);
+            background: #059669;
+            color: white;
             border-left: 4px solid #10b981;
+        }
+        
+        .nav-item:hover {
+            background: #f3f4f6;
         }
         
         .modal-active {
@@ -127,14 +133,14 @@
         <!-- Sidebar -->
         <div class="w-72 glass-sidebar relative z-10 shadow-2xl flex flex-col h-full">
             <!-- Header -->
-            <div class="p-8 border-b border-white/10 flex-shrink-0">
+            <div class="p-8 border-b border-gray-200 flex-shrink-0">
                 <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20">
+                    <div class="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center">
                         <i class="fas fa-user-nurse text-white text-xl"></i>
                     </div>
                     <div>
-                        <h1 class="text-xl font-bold text-white">Medical Technologist</h1>
-                        <p class="text-emerald-200 text-sm">RSS Citi Health Services</p>
+                        <h1 class="text-xl font-bold text-gray-900">Medical Technologist</h1>
+                        <p class="text-gray-600 text-sm">RSS Citi Health Services</p>
                     </div>
                 </div>
             </div>
@@ -143,9 +149,9 @@
             <nav class="flex-1 px-6 py-8 space-y-2 overflow-y-auto">
                 <!-- Main Menu Section -->
                 <div class="mb-8">
-                    <h3 class="text-xs font-semibold text-emerald-200 uppercase tracking-wider mb-4 px-3">Main Menu</h3>
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-3">Main Menu</h3>
                     <div class="space-y-1">
-                        <a href="{{ route('nurse.dashboard') }}" class="nav-item flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {{ request()->routeIs('nurse.dashboard') ? 'active text-white' : '' }}">
+                        <a href="{{ route('nurse.dashboard') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('nurse.dashboard') ? 'active text-white' : '' }}">
                             <i class="fas fa-th-large mr-4 text-lg"></i>
                             <span class="font-medium">Dashboard</span>
                         </a>
@@ -154,17 +160,17 @@
 
                 <!-- Medical Services Section -->
                 <div class="mb-8">
-                    <h3 class="text-xs font-semibold text-emerald-200 uppercase tracking-wider mb-4 px-3">Medical Services</h3>
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-3">Medical Services</h3>
                     <div class="space-y-1">
-                        <a href="{{ route('nurse.pre-employment') }}" class="nav-item flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {{ request()->routeIs('nurse.pre-employment*') ? 'active text-white' : '' }}">
+                        <a href="{{ route('nurse.pre-employment') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('nurse.pre-employment*') ? 'active text-white' : '' }}">
                             <i class="fas fa-user-md mr-4 text-lg"></i>
                             <span class="font-medium">Pre-Employment</span>
                         </a>
-                        <a href="{{ route('nurse.annual-physical') }}" class="nav-item flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {{ request()->routeIs('nurse.annual-physical*') ? 'active text-white' : '' }}">
+                        <a href="{{ route('nurse.annual-physical') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('nurse.annual-physical*') ? 'active text-white' : '' }}">
                             <i class="fas fa-file-medical mr-4 text-lg"></i>
                             <span class="font-medium">Annual Physical</span>
                         </a>
-                        <a href="{{ route('nurse.opd') }}" class="nav-item flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {{ request()->routeIs('nurse.opd*') ? 'active text-white' : '' }}">
+                        <a href="{{ route('nurse.opd') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('nurse.opd*') ? 'active text-white' : '' }}">
                             <i class="fas fa-walking mr-4 text-lg"></i>
                             <span class="font-medium">OPD Walk-ins</span>
                         </a>
@@ -173,9 +179,9 @@
 
                 <!-- Communication Section -->
                 <div class="mb-8">
-                    <h3 class="text-xs font-semibold text-emerald-200 uppercase tracking-wider mb-4 px-3">Communication</h3>
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 px-3">Communication</h3>
                     <div class="space-y-1">
-                        <a href="{{ route('nurse.messages') }}" class="nav-item flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {{ request()->routeIs('nurse.messages*') ? 'active text-white' : '' }}">
+                        <a href="{{ route('nurse.messages') }}" class="nav-item flex items-center px-4 py-3 text-gray-700 hover:text-gray-900 rounded-xl transition-all duration-200 {{ request()->routeIs('nurse.messages*') ? 'active text-white' : '' }}">
                             <i class="fas fa-comments mr-4 text-lg"></i>
                             <span class="font-medium">Messages</span>
                             <span class="ml-auto notification-badge w-2 h-2 bg-red-500 rounded-full"></span>
@@ -185,19 +191,19 @@
             </nav>
 
             <!-- User Profile Section - Sticky Bottom -->
-            <div class="flex-shrink-0 p-6 border-t border-white/10 mt-auto">
-                <div class="bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/20">
+            <div class="flex-shrink-0 p-6 border-t border-gray-200 mt-auto">
+                <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
                     <div class="flex items-center space-x-3">
                         <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
                             {{ substr(Auth::user()->fname ?? 'M', 0, 1) }}
                         </div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-white font-semibold text-sm truncate">
+                            <p class="text-gray-900 font-semibold text-sm truncate">
                                 {{ Auth::user()->fname ?? 'Medical' }} {{ Auth::user()->lname ?? 'Tech' }}
                             </p>
-                            <p class="text-emerald-200 text-xs">Medical Technologist</p>
+                            <p class="text-gray-600 text-xs">Medical Technologist</p>
                         </div>
-                        <button id="profileButton" class="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-lg transition-all duration-300">
+                        <button id="profileButton" class="text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-100 p-2 rounded-lg transition-all duration-300 border border-gray-200">
                             <i class="fas fa-user-cog text-lg"></i>
                         </button>
                     </div>
