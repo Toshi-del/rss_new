@@ -58,16 +58,39 @@
                         Needs Review
                         @php
                             $needsAttentionCount = \App\Models\PreEmploymentRecord::where('status', 'approved')
+                                ->where(function($query) {
+                                    // Check medical test relationships OR other_exams column for X-ray services
+                                    $query->whereHas('medicalTest', function($q) {
+                                        $q->where(function($subQ) {
+                                            $subQ->where('name', 'like', '%Pre-Employment%')
+                                                 ->orWhere('name', 'like', '%X-ray%')
+                                                 ->orWhere('name', 'like', '%Chest%')
+                                                 ->orWhere('name', 'like', '%Radiology%');
+                                        });
+                                    })->orWhereHas('medicalTests', function($q) {
+                                        $q->where(function($subQ) {
+                                            $subQ->where('name', 'like', '%Pre-Employment%')
+                                                 ->orWhere('name', 'like', '%X-ray%')
+                                                 ->orWhere('name', 'like', '%Chest%')
+                                                 ->orWhere('name', 'like', '%Radiology%');
+                                        });
+                                    })->orWhere(function($q) {
+                                        // Also check other_exams column for X-ray services
+                                        $q->where('other_exams', 'like', '%Pre-Employment%')
+                                          ->orWhere('other_exams', 'like', '%X-ray%')
+                                          ->orWhere('other_exams', 'like', '%Chest%')
+                                          ->orWhere('other_exams', 'like', '%Radiology%');
+                                    });
+                                })
                                 ->whereHas('medicalChecklist', function($q) {
-                                    $q->where('examination_type', 'pre-employment')
-                                      ->whereNotNull('chest_xray_done_by')
+                                    $q->whereNotNull('chest_xray_done_by')
                                       ->where('chest_xray_done_by', '!=', '')
                                       ->whereNotNull('xray_image_path')
                                       ->where('xray_image_path', '!=', '');
                                 })
                                 ->whereDoesntHave('preEmploymentExamination', function($q) {
-                                    $q->whereNotNull('findings')
-                                      ->where('findings', '!=', '');
+                                    $q->whereNotNull('xray_findings')
+                                      ->where('xray_findings', '!=', '');
                                 })
                                 ->count();
                         @endphp
@@ -82,16 +105,39 @@
                         Review Completed
                         @php
                             $completedCount = \App\Models\PreEmploymentRecord::where('status', 'approved')
+                                ->where(function($query) {
+                                    // Check medical test relationships OR other_exams column for X-ray services
+                                    $query->whereHas('medicalTest', function($q) {
+                                        $q->where(function($subQ) {
+                                            $subQ->where('name', 'like', '%Pre-Employment%')
+                                                 ->orWhere('name', 'like', '%X-ray%')
+                                                 ->orWhere('name', 'like', '%Chest%')
+                                                 ->orWhere('name', 'like', '%Radiology%');
+                                        });
+                                    })->orWhereHas('medicalTests', function($q) {
+                                        $q->where(function($subQ) {
+                                            $subQ->where('name', 'like', '%Pre-Employment%')
+                                                 ->orWhere('name', 'like', '%X-ray%')
+                                                 ->orWhere('name', 'like', '%Chest%')
+                                                 ->orWhere('name', 'like', '%Radiology%');
+                                        });
+                                    })->orWhere(function($q) {
+                                        // Also check other_exams column for X-ray services
+                                        $q->where('other_exams', 'like', '%Pre-Employment%')
+                                          ->orWhere('other_exams', 'like', '%X-ray%')
+                                          ->orWhere('other_exams', 'like', '%Chest%')
+                                          ->orWhere('other_exams', 'like', '%Radiology%');
+                                    });
+                                })
                                 ->whereHas('medicalChecklist', function($q) {
-                                    $q->where('examination_type', 'pre-employment')
-                                      ->whereNotNull('chest_xray_done_by')
+                                    $q->whereNotNull('chest_xray_done_by')
                                       ->where('chest_xray_done_by', '!=', '')
                                       ->whereNotNull('xray_image_path')
                                       ->where('xray_image_path', '!=', '');
                                 })
                                 ->whereHas('preEmploymentExamination', function($q) {
-                                    $q->whereNotNull('findings')
-                                      ->where('findings', '!=', '');
+                                    $q->whereNotNull('xray_findings')
+                                      ->where('xray_findings', '!=', '');
                                 })
                                 ->count();
                         @endphp

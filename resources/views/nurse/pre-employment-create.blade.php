@@ -326,64 +326,46 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-2">
                             <label class="block text-sm font-semibold text-gray-700">
-                                Patient Name <span class="text-red-500">*</span>
+                                Patient Name
                             </label>
                             <input type="text" name="drug_test[patient_name]" 
                                    value="{{ old('drug_test.patient_name', ($preEmploymentRecord->full_name ?? ($preEmploymentRecord->first_name . ' ' . $preEmploymentRecord->last_name))) }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('drug_test.patient_name') border-red-500 ring-2 ring-red-200 @enderror" 
-                                   placeholder="Full name" required />
-                            @error('drug_test.patient_name')
-                                <p class="mt-1 text-sm text-red-600 flex items-center">
-                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
-                                </p>
-                            @enderror
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed" 
+                                   placeholder="Full name" readonly />
+                            <p class="text-xs text-gray-500 flex items-center">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Patient information is automatically loaded from records
+                            </p>
                         </div>
 
                         <div class="space-y-2">
                             <label class="block text-sm font-semibold text-gray-700">
-                                Address <span class="text-red-500">*</span>
+                                Address
                             </label>
-                            <input type="text" name="drug_test[address]" value="{{ old('drug_test.address') }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('drug_test.address') border-red-500 ring-2 ring-red-200 @enderror" 
-                                   placeholder="Patient address" required />
-                            @error('drug_test.address')
-                                <p class="mt-1 text-sm text-red-600 flex items-center">
-                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
-                                </p>
-                            @enderror
+                            <input type="text" name="drug_test[address]" 
+                                   value="{{ old('drug_test.address', $preEmploymentRecord->address ?? '') }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed" 
+                                   placeholder="Patient address" readonly />
                         </div>
 
                         <div class="space-y-2">
                             <label class="block text-sm font-semibold text-gray-700">
-                                Age <span class="text-red-500">*</span>
+                                Age
                             </label>
                             <input type="number" name="drug_test[age]" 
                                    value="{{ old('drug_test.age', $preEmploymentRecord->age ?? '') }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('drug_test.age') border-red-500 ring-2 ring-red-200 @enderror" 
-                                   placeholder="Age" required />
-                            @error('drug_test.age')
-                                <p class="mt-1 text-sm text-red-600 flex items-center">
-                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
-                                </p>
-                            @enderror
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed" 
+                                   placeholder="Age" readonly />
                         </div>
 
                         <div class="space-y-2">
                             <label class="block text-sm font-semibold text-gray-700">
-                                Gender <span class="text-red-500">*</span>
+                                Gender
                             </label>
-                            <select name="drug_test[gender]" 
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('drug_test.gender') border-red-500 ring-2 ring-red-200 @enderror" 
-                                    required>
-                                <option value="">Select Gender</option>
-                                <option value="Male" {{ old('drug_test.gender', ucfirst($preEmploymentRecord->sex ?? '')) == 'Male' ? 'selected' : '' }}>Male</option>
-                                <option value="Female" {{ old('drug_test.gender', ucfirst($preEmploymentRecord->sex ?? '')) == 'Female' ? 'selected' : '' }}>Female</option>
-                            </select>
-                            @error('drug_test.gender')
-                                <p class="mt-1 text-sm text-red-600 flex items-center">
-                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
-                                </p>
-                            @enderror
+                            <input type="text" name="drug_test[gender]" 
+                                   value="{{ old('drug_test.gender', ucfirst($preEmploymentRecord->sex ?? '')) }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed" 
+                                   placeholder="Gender" readonly />
                         </div>
                     </div>
                 </div>

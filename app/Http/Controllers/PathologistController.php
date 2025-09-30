@@ -13,6 +13,7 @@ use App\Models\OpdExamination;
 use App\Models\MedicalTest;
 use App\Models\MedicalTestCategory;
 use App\Models\MedicalChecklist;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -974,6 +975,29 @@ class PathologistController extends Controller
                 'findings' => $request->findings,
             ]);
 
+            // Create notification for admin when pathologist completes lab report
+            if (!empty($request->lab_report) && is_array($request->lab_report) && count(array_filter($request->lab_report)) > 0) {
+                $pathologist = Auth::user();
+                $patientName = $examination->name ?? 'Unknown Patient';
+                
+                Notification::createForAdmin(
+                    'pathologist_report_submitted',
+                    'Lab Report Submitted - Annual Physical',
+                    "Pathologist {$pathologist->name} has submitted lab report for patient {$patientName} (Annual Physical).",
+                    [
+                        'examination_id' => $examination->id,
+                        'patient_name' => $patientName,
+                        'pathologist_name' => $pathologist->name,
+                        'examination_type' => 'annual_physical',
+                        'status' => $request->status,
+                        'lab_report_fields' => array_keys(array_filter($request->lab_report ?? []))
+                    ],
+                    'medium',
+                    $pathologist,
+                    $examination
+                );
+            }
+
             DB::commit();
 
             return redirect()->route('pathologist.annual-physical')->with('success', 'Annual physical examination updated successfully.');
@@ -1061,6 +1085,29 @@ class PathologistController extends Controller
                 'lab_findings' => $request->lab_findings,
                 'findings' => $request->findings,
             ]);
+
+            // Create notification for admin when pathologist completes lab report
+            if (!empty($request->lab_report) && is_array($request->lab_report) && count(array_filter($request->lab_report)) > 0) {
+                $pathologist = Auth::user();
+                $patientName = $examination->name ?? 'Unknown Patient';
+                
+                Notification::createForAdmin(
+                    'pathologist_report_submitted',
+                    'Lab Report Submitted - Pre-Employment',
+                    "Pathologist {$pathologist->name} has submitted lab report for patient {$patientName} (Pre-Employment).",
+                    [
+                        'examination_id' => $examination->id,
+                        'patient_name' => $patientName,
+                        'pathologist_name' => $pathologist->name,
+                        'examination_type' => 'pre_employment',
+                        'status' => $request->status,
+                        'lab_report_fields' => array_keys(array_filter($request->lab_report ?? []))
+                    ],
+                    'medium',
+                    $pathologist,
+                    $examination
+                );
+            }
 
             DB::commit();
 
@@ -1284,6 +1331,29 @@ class PathologistController extends Controller
                 'lab_findings' => $request->lab_findings,
                 'findings' => $request->findings,
             ]);
+
+            // Create notification for admin when pathologist completes lab report
+            if (!empty($request->lab_report) && is_array($request->lab_report) && count(array_filter($request->lab_report)) > 0) {
+                $pathologist = Auth::user();
+                $patientName = $examination->name ?? 'Unknown Patient';
+                
+                Notification::createForAdmin(
+                    'pathologist_report_submitted',
+                    'Lab Report Submitted - OPD',
+                    "Pathologist {$pathologist->name} has submitted lab report for patient {$patientName} (OPD).",
+                    [
+                        'examination_id' => $examination->id,
+                        'patient_name' => $patientName,
+                        'pathologist_name' => $pathologist->name,
+                        'examination_type' => 'opd',
+                        'status' => $request->status,
+                        'lab_report_fields' => array_keys(array_filter($request->lab_report ?? []))
+                    ],
+                    'medium',
+                    $pathologist,
+                    $examination
+                );
+            }
 
             DB::commit();
 

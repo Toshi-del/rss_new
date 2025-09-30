@@ -7,6 +7,9 @@ use App\Models\PreEmploymentExamination;
 use App\Models\AnnualPhysicalExamination;
 use App\Models\PreEmploymentRecord;
 use App\Models\Patient;
+use App\Models\Notification;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class RadiologistController extends Controller
@@ -210,6 +213,28 @@ class RadiologistController extends Controller
         $exam->lab_findings = $lab;
         $exam->save();
         
+        // Create notification for admin when X-ray interpretation is completed
+        $radiologist = Auth::user();
+        $patientName = $record->full_name;
+        
+        Notification::createForAdmin(
+            'xray_interpreted',
+            'X-Ray Interpretation Completed - Pre-Employment',
+            "Radiologist {$radiologist->name} has completed X-ray interpretation for {$patientName} (Pre-Employment). Result: " . ($request->input('cxr_result') ?: 'No result specified'),
+            [
+                'examination_id' => $exam->id,
+                'patient_name' => $patientName,
+                'radiologist_name' => $radiologist->name,
+                'examination_type' => 'pre_employment',
+                'xray_result' => $request->input('cxr_result'),
+                'xray_finding' => $request->input('cxr_finding'),
+                'has_findings' => !empty($request->input('cxr_finding'))
+            ],
+            'medium',
+            $radiologist,
+            $exam
+        );
+        
         return redirect()->route('radiologist.pre-employment-xray')->with('success', 'Chest X-Ray findings updated successfully. The record will remain visible to other radiologists.');
     }
 
@@ -246,27 +271,89 @@ class RadiologistController extends Controller
         $exam->lab_findings = $lab;
         $exam->save();
         
+        // Create notification for admin when X-ray interpretation is completed
+        $radiologist = Auth::user();
+        $patientName = $patient->full_name;
+        
+        Notification::createForAdmin(
+            'xray_interpreted',
+            'X-Ray Interpretation Completed - Annual Physical',
+            "Radiologist {$radiologist->name} has completed X-ray interpretation for {$patientName} (Annual Physical). Result: " . ($request->input('cxr_result') ?: 'No result specified'),
+            [
+                'examination_id' => $exam->id,
+                'patient_name' => $patientName,
+                'radiologist_name' => $radiologist->name,
+                'examination_type' => 'annual_physical',
+                'xray_result' => $request->input('cxr_result'),
+                'xray_finding' => $request->input('cxr_finding'),
+                'has_findings' => !empty($request->input('cxr_finding'))
+            ],
+            'medium',
+            $radiologist,
+            $exam
+        );
+        
         return redirect()->route('radiologist.annual-physical-xray')->with('success', 'Chest X-Ray findings updated successfully. The record will remain visible to other radiologists.');
     }
 
     /**
      * Show pre-employment X-ray list
      */
-    public function preEmploymentXray()
+    public function preEmploymentXray(Request $request)
     {
-        $preEmployments = PreEmploymentRecord::with(['medicalTestCategory', 'medicalTest', 'medicalChecklist'])
+        $query = PreEmploymentRecord::with(['medicalTestCategory', 'medicalTest', 'medicalChecklist'])
             ->where('status', 'approved')
-            ->whereHas('medicalChecklist', function ($q) {
+            ->where(function($query) {
+                // Check medical test relationships OR other_exams column for X-ray services
+                $query->whereHas('medicalTest', function($q) {
+                    $q->where(function($subQ) {
+                        $subQ->where('name', 'like', '%Pre-Employment%')
+                             ->orWhere('name', 'like', '%X-ray%')
+                             ->orWhere('name', 'like', '%Chest%')
+                             ->orWhere('name', 'like', '%Radiology%');
+                    });
+                })->orWhereHas('medicalTests', function($q) {
+                    $q->where(function($subQ) {
+                        $subQ->where('name', 'like', '%Pre-Employment%')
+                             ->orWhere('name', 'like', '%X-ray%')
+                             ->orWhere('name', 'like', '%Chest%')
+                             ->orWhere('name', 'like', '%Radiology%');
+                    });
+                })->orWhere(function($q) {
+                    // Also check other_exams column for X-ray services
+                    $q->where('other_exams', 'like', '%Pre-Employment%')
+                      ->orWhere('other_exams', 'like', '%X-ray%')
+                      ->orWhere('other_exams', 'like', '%Chest%')
+                      ->orWhere('other_exams', 'like', '%Radiology%');
+                });
+            });
+
+        // Handle tab filtering
+        $xrayStatus = $request->get('xray_status', 'needs_attention');
+        
+        if ($xrayStatus === 'needs_attention') {
+            // Records that need radiologist review (X-ray completed but no findings)
+            $query->whereHas('medicalChecklist', function ($q) {
                 $q->whereNotNull('chest_xray_done_by')
                   ->whereNotNull('xray_image_path');
             })
             ->whereDoesntHave('preEmploymentExamination', function ($q) {
-                $q->whereNotNull('lab_findings->chest_xray->result')
-                  ->whereNotNull('lab_findings->chest_xray->finding')
-                  ->where('lab_findings->chest_xray->reviewed_by', auth()->id());
+                $q->whereNotNull('xray_findings')
+                  ->where('xray_findings', '!=', '');
+            });
+        } elseif ($xrayStatus === 'review_completed') {
+            // Records where radiologist review is completed
+            $query->whereHas('medicalChecklist', function ($q) {
+                $q->whereNotNull('chest_xray_done_by')
+                  ->whereNotNull('xray_image_path');
             })
-            ->latest()
-            ->get();
+            ->whereHas('preEmploymentExamination', function ($q) {
+                $q->whereNotNull('xray_findings')
+                  ->where('xray_findings', '!=', '');
+            });
+        }
+
+        $preEmployments = $query->latest()->get();
 
         return view('radiologist.pre-employment-xray', compact('preEmployments'));
     }

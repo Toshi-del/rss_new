@@ -9,6 +9,8 @@ use App\Models\Appointment;
 use App\Models\Patient;
 use App\Models\MedicalTest;
 use App\Models\MedicalTestCategory;
+use App\Models\Notification;
+use App\Models\User;
 use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -198,6 +200,36 @@ class CompanyAppointmentController extends Controller
                     'patients_count' => $appointment->patients()->count()
                 ]);
             }
+
+            // Create notification for admin
+            $companyUser = Auth::user();
+            $patientCount = $appointment->patients()->count();
+            $testNames = [];
+            
+            // Get test names for notification
+            for ($i = 0; $i < count($testIds); $i++) {
+                $test = MedicalTest::find($testIds[$i]);
+                if ($test) {
+                    $testNames[] = $test->name;
+                }
+            }
+            
+            Notification::createForAdmin(
+                'appointment_created',
+                'New Appointment Created',
+                "Company '{$companyUser->company}' has created a new appointment for " . Carbon::parse($appointmentDate)->format('M d, Y') . " with {$patientCount} patient(s). Tests: " . implode(', ', $testNames),
+                [
+                    'appointment_id' => $appointment->id,
+                    'company_name' => $companyUser->company,
+                    'appointment_date' => $appointmentDate,
+                    'patient_count' => $patientCount,
+                    'tests' => $testNames,
+                    'total_price' => $totalPrice
+                ],
+                'medium',
+                $companyUser,
+                $appointment
+            );
 
             return redirect()->route('company.appointments.index')
                 ->with('success', 'Appointment created successfully.');

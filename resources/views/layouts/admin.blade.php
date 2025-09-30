@@ -120,6 +120,11 @@
             overflow: hidden;
         }
         
+        /* Ensure notifications dropdown is always on top */
+        #notifications-dropdown {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
         
     </style>
     @stack('styles')
@@ -194,6 +199,15 @@
                     <span>Messages</span>
                     <div class="ml-auto flex items-center space-x-2">
                         <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">3</span>
+                        <i class="fas fa-chevron-right text-xs opacity-60"></i>
+                    </div>
+                </a>
+                
+                <a href="{{ route('admin.notifications') }}" class="nav-item flex items-center px-4 py-4 rounded-2xl font-medium {{ request()->routeIs('admin.notifications*') ? 'active' : '' }}">
+                    <i class="fas fa-bell text-lg mr-4"></i>
+                    <span>Notifications</span>
+                    <div class="ml-auto flex items-center space-x-2">
+                        <span id="notification-count" class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full hidden">0</span>
                         <i class="fas fa-chevron-right text-xs opacity-60"></i>
                     </div>
                 </a>
@@ -296,6 +310,13 @@
                             </div>
                         </div>
                         
+                        <!-- Notifications -->
+                        <div class="relative">
+                            <button id="notifications-toggle" class="bg-gray-50 hover:bg-gray-100 border border-gray-200 p-3 rounded-2xl text-gray-600 hover:text-gray-900 transition-all duration-300 relative">
+                                <i class="fas fa-bell text-lg"></i>
+                                <span id="header-notification-count" class="absolute -top-1 -right-1 bg-blue-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
+                            </button>
+                        </div>
                         
                         <!-- Settings -->
                         <button class="bg-gray-50 hover:bg-gray-100 border border-gray-200 p-3 rounded-2xl text-gray-600 hover:text-gray-900 transition-all duration-300">
@@ -361,11 +382,218 @@
             
             // Navigation items are now ready without stagger animation
             
-            
+            // Notifications functionality
+            initializeNotifications();
         });
+        
+        function initializeNotifications() {
+            const notificationsToggle = document.getElementById('notifications-toggle');
+            const notificationsDropdown = document.getElementById('notifications-dropdown');
+            const markAllReadBtn = document.getElementById('mark-all-read');
+            
+            // Toggle notifications dropdown
+            if (notificationsToggle) {
+                notificationsToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    if (notificationsDropdown.classList.contains('hidden')) {
+                        // Position the dropdown relative to the button
+                        const rect = notificationsToggle.getBoundingClientRect();
+                        notificationsDropdown.style.top = (rect.bottom + 8) + 'px';
+                        notificationsDropdown.style.right = (window.innerWidth - rect.right) + 'px';
+                        notificationsDropdown.style.left = 'auto';
+                        
+                        notificationsDropdown.classList.remove('hidden');
+                        loadNotifications();
+                    } else {
+                        notificationsDropdown.classList.add('hidden');
+                    }
+                });
+            }
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!notificationsDropdown.contains(e.target) && !notificationsToggle.contains(e.target)) {
+                    notificationsDropdown.classList.add('hidden');
+                }
+            });
+            
+            // Mark all as read
+            if (markAllReadBtn) {
+                markAllReadBtn.addEventListener('click', function() {
+                    markAllNotificationsAsRead();
+                });
+            }
+            
+            // Load initial notification count
+            loadNotificationCount();
+            
+            // Refresh notifications every 30 seconds
+            setInterval(loadNotificationCount, 30000);
+        }
+        
+        function loadNotificationCount() {
+            fetch('/admin/notifications/count')
+                .then(response => response.json())
+                .then(data => {
+                    updateNotificationCount(data.count);
+                })
+                .catch(error => {
+                    console.log('Error loading notification count:', error);
+                });
+        }
+        
+        function updateNotificationCount(count) {
+            const headerCount = document.getElementById('header-notification-count');
+            const sidebarCount = document.getElementById('notification-count');
+            
+            if (count > 0) {
+                if (headerCount) {
+                    headerCount.textContent = count > 99 ? '99+' : count;
+                    headerCount.classList.remove('hidden');
+                }
+                if (sidebarCount) {
+                    sidebarCount.textContent = count > 99 ? '99+' : count;
+                    sidebarCount.classList.remove('hidden');
+                }
+            } else {
+                if (headerCount) headerCount.classList.add('hidden');
+                if (sidebarCount) sidebarCount.classList.add('hidden');
+            }
+        }
+        
+        function loadNotifications() {
+            const notificationsList = document.getElementById('notifications-list');
+            
+            fetch('/admin/notifications/recent')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.notifications && data.notifications.length > 0) {
+                        notificationsList.innerHTML = data.notifications.map(notification => `
+                            <div class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer notification-item ${notification.is_read ? 'opacity-75' : ''}" 
+                                 data-id="${notification.id}" onclick="markAsRead(${notification.id})">
+                                <div class="flex items-start space-x-3">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas ${getNotificationIcon(notification.type)} text-lg ${getNotificationColor(notification.priority)}"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-900 truncate">${notification.title}</p>
+                                        <p class="text-xs text-gray-600 line-clamp-2">${notification.message}</p>
+                                        <p class="text-xs text-gray-400 mt-1">${notification.time_ago}</p>
+                                    </div>
+                                    ${!notification.is_read ? '<div class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>' : ''}
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        notificationsList.innerHTML = `
+                            <div class="p-4 text-center text-gray-500">
+                                <i class="fas fa-bell-slash text-2xl mb-2 opacity-50"></i>
+                                <p>No notifications</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.log('Error loading notifications:', error);
+                    notificationsList.innerHTML = `
+                        <div class="p-4 text-center text-red-500">
+                            <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                            <p>Error loading notifications</p>
+                        </div>
+                    `;
+                });
+        }
+        
+        function markAsRead(notificationId) {
+            fetch(`/admin/notifications/${notificationId}/mark-read`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadNotificationCount();
+                    loadNotifications();
+                }
+            })
+            .catch(error => {
+                console.log('Error marking notification as read:', error);
+            });
+        }
+        
+        function markAllNotificationsAsRead() {
+            fetch('/admin/notifications/mark-all-read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadNotificationCount();
+                    loadNotifications();
+                }
+            })
+            .catch(error => {
+                console.log('Error marking all notifications as read:', error);
+            });
+        }
+        
+        function getNotificationIcon(type) {
+            const icons = {
+                'appointment_created': 'fa-calendar-plus',
+                'pre_employment_created': 'fa-user-plus',
+                'annual_physical_created': 'fa-heartbeat',
+                'checklist_completed': 'fa-check-square',
+                'lab_exam_completed': 'fa-flask',
+                'xray_completed': 'fa-x-ray',
+                'ecg_completed': 'fa-heartbeat',
+                'pathologist_report_submitted': 'fa-microscope',
+                'patient_registered': 'fa-user-check',
+                'examination_updated': 'fa-edit',
+                'specimen_collected': 'fa-vial',
+                'xray_interpreted': 'fa-search',
+                'system_alert': 'fa-exclamation-circle'
+            };
+            return icons[type] || 'fa-bell';
+        }
+        
+        function getNotificationColor(priority) {
+            const colors = {
+                'high': 'text-red-500',
+                'medium': 'text-yellow-500',
+                'low': 'text-green-500'
+            };
+            return colors[priority] || 'text-gray-500';
+        }
         
         
     </script>
     @stack('scripts')
+
+    <!-- Notifications Dropdown Portal (Outside of header to avoid z-index issues) -->
+    <div id="notifications-dropdown" class="fixed w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 hidden" style="z-index: 999999;">
+        <div class="p-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900">Notifications</h3>
+                <a href="{{ route('admin.notifications') }}" class="text-blue-600 hover:text-blue-700 text-sm font-medium">View All</a>
+            </div>
+        </div>
+        <div id="notifications-list" class="max-h-96 overflow-y-auto custom-scrollbar">
+            <div class="p-4 text-center text-gray-500">
+                <i class="fas fa-bell-slash text-2xl mb-2 opacity-50"></i>
+                <p>Loading notifications...</p>
+            </div>
+        </div>
+        <div class="p-3 border-t border-gray-200 text-center">
+            <button id="mark-all-read" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Mark All as Read</button>
+        </div>
+    </div>
 </body>
 </html> 

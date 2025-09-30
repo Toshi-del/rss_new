@@ -9,6 +9,8 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Models\PreEmploymentRecord;
 use App\Models\MedicalTestCategory;
 use App\Models\MedicalTest;
+use App\Models\Notification;
+use App\Models\User;
 
 class CompanyPreEmploymentController extends Controller
 {
@@ -270,6 +272,29 @@ class CompanyPreEmploymentController extends Controller
                         $message .= " {$duplicateCount} duplicate records were skipped.";
                     }
                 }
+                
+                // Create notification for admin
+                $companyUser = Auth::user();
+                $testNames = array_map(function($test) {
+                    return $test->name;
+                }, $selectedTests);
+                
+                Notification::createForAdmin(
+                    'pre_employment_created',
+                    'New Pre-Employment Records Created',
+                    "Company '{$companyUser->company}' has created {$processedRows} new pre-employment record(s). Tests: " . implode(', ', $testNames) . ". Total value: ₱" . number_format($totalPrice * $processedRows, 2),
+                    [
+                        'company_name' => $companyUser->company,
+                        'records_count' => $processedRows,
+                        'tests' => $testNames,
+                        'total_price_per_record' => $totalPrice,
+                        'total_value' => $totalPrice * $processedRows,
+                        'billing_type' => $request->billing_type,
+                        'company_billing_name' => $request->company_name
+                    ],
+                    'medium',
+                    $companyUser
+                );
                 
                 \Log::info('=== PRE-EMPLOYMENT CREATION COMPLETED SUCCESSFULLY ===', [
                     'processed_rows' => $processedRows,

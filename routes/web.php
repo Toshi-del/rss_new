@@ -88,6 +88,15 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('/admin/messages/send', [AdminController::class, 'sendMessage']);
     Route::post('/admin/messages/mark-read', [AdminController::class, 'markAsRead']);
     Route::get('/admin/chat-users', [AdminController::class, 'chatUsers']);
+    
+    // Admin Notifications Routes
+    Route::get('/admin/notifications', [App\Http\Controllers\AdminNotificationController::class, 'index'])->name('admin.notifications');
+    Route::get('/admin/notifications/count', [App\Http\Controllers\AdminNotificationController::class, 'getCount']);
+    Route::get('/admin/notifications/recent', [App\Http\Controllers\AdminNotificationController::class, 'getRecent']);
+    Route::post('/admin/notifications/{id}/mark-read', [App\Http\Controllers\AdminNotificationController::class, 'markAsRead']);
+    Route::post('/admin/notifications/mark-all-read', [App\Http\Controllers\AdminNotificationController::class, 'markAllAsRead']);
+    Route::delete('/admin/notifications/{id}', [App\Http\Controllers\AdminNotificationController::class, 'destroy']);
+    
     Route::get('/admin/report', [AdminController::class, 'report'])->name('admin.report');
     
     

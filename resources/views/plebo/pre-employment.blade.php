@@ -50,16 +50,45 @@
                     Needs Attention
                     @php
                         $needsAttentionCount = \App\Models\PreEmploymentRecord::where('status', 'approved')
-                            ->whereHas('medicalChecklist', function($q) {
-                                $q->where('examination_type', 'pre-employment')
-                                  ->whereNotNull('stool_exam_done_by')
-                                  ->where('stool_exam_done_by', '!=', '')
-                                  ->whereNotNull('urinalysis_done_by')
-                                  ->where('urinalysis_done_by', '!=', '');
+                            ->where(function($query) {
+                                // Check medical test relationships OR other_exams column
+                                $query->whereHas('medicalTest', function($q) {
+                                    $q->where(function($subQ) {
+                                        $subQ->where('name', 'like', '%Pre-Employment%')
+                                             ->orWhere('name', 'like', '%CBC%')
+                                             ->orWhere('name', 'like', '%FECA%')
+                                             ->orWhere('name', 'like', '%Urine%')
+                                             ->orWhere('name', 'like', '%Blood%')
+                                             ->orWhere('name', 'like', '%Laboratory%');
+                                    });
+                                })->orWhereHas('medicalTests', function($q) {
+                                    $q->where(function($subQ) {
+                                        $subQ->where('name', 'like', '%Pre-Employment%')
+                                             ->orWhere('name', 'like', '%CBC%')
+                                             ->orWhere('name', 'like', '%FECA%')
+                                             ->orWhere('name', 'like', '%Urine%')
+                                             ->orWhere('name', 'like', '%Blood%')
+                                             ->orWhere('name', 'like', '%Laboratory%');
+                                    });
+                                })->orWhere(function($q) {
+                                    // Also check other_exams column for medical test information
+                                    $q->where('other_exams', 'like', '%Pre-Employment%')
+                                      ->orWhere('other_exams', 'like', '%CBC%')
+                                      ->orWhere('other_exams', 'like', '%FECA%')
+                                      ->orWhere('other_exams', 'like', '%Urine%')
+                                      ->orWhere('other_exams', 'like', '%Blood%')
+                                      ->orWhere('other_exams', 'like', '%Laboratory%');
+                                });
                             })
-                            ->whereDoesntHave('preEmploymentExamination', function($q) {
-                                $q->whereNotNull('lab_report')
-                                  ->where('lab_report', '!=', '');
+                            ->where(function($q) {
+                                $q->whereDoesntHave('medicalChecklist')
+                                  ->orWhereHas('medicalChecklist', function($subQ) {
+                                      $subQ->where(function($checkQ) {
+                                          $checkQ->whereNull('stool_exam_done_by')
+                                                 ->orWhereNull('urinalysis_done_by')
+                                                 ->orWhereNull('blood_extraction_done_by');
+                                      });
+                                  });
                             })
                             ->count();
                     @endphp
@@ -74,16 +103,43 @@
                     Collection Completed
                     @php
                         $completedCount = \App\Models\PreEmploymentRecord::where('status', 'approved')
+                            ->where(function($query) {
+                                // Check medical test relationships OR other_exams column
+                                $query->whereHas('medicalTest', function($q) {
+                                    $q->where(function($subQ) {
+                                        $subQ->where('name', 'like', '%Pre-Employment%')
+                                             ->orWhere('name', 'like', '%CBC%')
+                                             ->orWhere('name', 'like', '%FECA%')
+                                             ->orWhere('name', 'like', '%Urine%')
+                                             ->orWhere('name', 'like', '%Blood%')
+                                             ->orWhere('name', 'like', '%Laboratory%');
+                                    });
+                                })->orWhereHas('medicalTests', function($q) {
+                                    $q->where(function($subQ) {
+                                        $subQ->where('name', 'like', '%Pre-Employment%')
+                                             ->orWhere('name', 'like', '%CBC%')
+                                             ->orWhere('name', 'like', '%FECA%')
+                                             ->orWhere('name', 'like', '%Urine%')
+                                             ->orWhere('name', 'like', '%Blood%')
+                                             ->orWhere('name', 'like', '%Laboratory%');
+                                    });
+                                })->orWhere(function($q) {
+                                    // Also check other_exams column for medical test information
+                                    $q->where('other_exams', 'like', '%Pre-Employment%')
+                                      ->orWhere('other_exams', 'like', '%CBC%')
+                                      ->orWhere('other_exams', 'like', '%FECA%')
+                                      ->orWhere('other_exams', 'like', '%Urine%')
+                                      ->orWhere('other_exams', 'like', '%Blood%')
+                                      ->orWhere('other_exams', 'like', '%Laboratory%');
+                                });
+                            })
                             ->whereHas('medicalChecklist', function($q) {
-                                $q->where('examination_type', 'pre-employment')
-                                  ->whereNotNull('stool_exam_done_by')
+                                $q->whereNotNull('stool_exam_done_by')
                                   ->where('stool_exam_done_by', '!=', '')
                                   ->whereNotNull('urinalysis_done_by')
-                                  ->where('urinalysis_done_by', '!=', '');
-                            })
-                            ->whereHas('preEmploymentExamination', function($q) {
-                                $q->whereNotNull('lab_report')
-                                  ->where('lab_report', '!=', '');
+                                  ->where('urinalysis_done_by', '!=', '')
+                                  ->whereNotNull('blood_extraction_done_by')
+                                  ->where('blood_extraction_done_by', '!=', '');
                             })
                             ->count();
                     @endphp

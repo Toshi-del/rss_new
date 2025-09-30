@@ -8,6 +8,7 @@ use App\Models\PreEmploymentRecord;
 use App\Models\MedicalChecklist;
 use App\Models\PreEmploymentExamination;
 use App\Models\AnnualPhysicalExamination;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -71,18 +72,52 @@ class RadtechController extends Controller
     /**
      * Show pre-employment X-ray records
      */
-    public function preEmploymentXray()
+    public function preEmploymentXray(Request $request)
     {
-        $preEmployments = PreEmploymentRecord::with(['medicalTestCategory', 'medicalTest'])
+        $query = PreEmploymentRecord::with(['medicalTestCategory', 'medicalTest'])
             ->where('status', 'approved')
-            ->whereDoesntHave('preEmploymentExamination', function ($q) {
-                $q->whereIn('status', ['Approved', 'sent_to_company']);
-            })
-            ->whereDoesntHave('medicalChecklist', function ($q) {
+            ->where(function($query) {
+                // Check medical test relationships OR other_exams column for X-ray services
+                $query->whereHas('medicalTest', function($q) {
+                    $q->where(function($subQ) {
+                        $subQ->where('name', 'like', '%Pre-Employment%')
+                             ->orWhere('name', 'like', '%X-ray%')
+                             ->orWhere('name', 'like', '%Chest%')
+                             ->orWhere('name', 'like', '%Radiology%');
+                    });
+                })->orWhereHas('medicalTests', function($q) {
+                    $q->where(function($subQ) {
+                        $subQ->where('name', 'like', '%Pre-Employment%')
+                             ->orWhere('name', 'like', '%X-ray%')
+                             ->orWhere('name', 'like', '%Chest%')
+                             ->orWhere('name', 'like', '%Radiology%');
+                    });
+                })->orWhere(function($q) {
+                    // Also check other_exams column for X-ray services
+                    $q->where('other_exams', 'like', '%Pre-Employment%')
+                      ->orWhere('other_exams', 'like', '%X-ray%')
+                      ->orWhere('other_exams', 'like', '%Chest%')
+                      ->orWhere('other_exams', 'like', '%Radiology%');
+                });
+            });
+
+        // Handle tab filtering
+        $xrayStatus = $request->get('xray_status', 'needs_attention');
+        
+        if ($xrayStatus === 'needs_attention') {
+            // Records that need X-ray imaging (no chest_xray_done_by)
+            $query->whereDoesntHave('medicalChecklist', function ($q) {
                 $q->whereNotNull('chest_xray_done_by');
-            })
-            ->latest()
-            ->get();
+            });
+        } elseif ($xrayStatus === 'xray_completed') {
+            // Records where X-ray imaging is completed
+            $query->whereHas('medicalChecklist', function ($q) {
+                $q->whereNotNull('chest_xray_done_by')
+                  ->where('chest_xray_done_by', '!=', '');
+            });
+        }
+
+        $preEmployments = $query->latest()->get();
 
         return view('radtech.pre-employment-xray', compact('preEmployments'));
     }
@@ -200,6 +235,28 @@ class RadtechController extends Controller
             $medicalChecklist->xray_image_path = $validated['xray_image_path'];
         }
         $medicalChecklist->save();
+
+        // Create notification for admin when X-ray is completed
+        $radtech = Auth::user();
+        $patientName = $medicalChecklist->name;
+        $examinationType = $medicalChecklist->pre_employment_record_id ? 'Pre-Employment' : 'Annual Physical';
+        
+        Notification::createForAdmin(
+            'xray_completed',
+            'X-Ray Examination Completed',
+            "Radtech {$radtech->name} has completed X-ray examination for {$patientName} ({$examinationType}).",
+            [
+                'checklist_id' => $medicalChecklist->id,
+                'patient_name' => $patientName,
+                'radtech_name' => $radtech->name,
+                'examination_type' => strtolower(str_replace('-', '_', $examinationType)),
+                'completed_by' => $validated['chest_xray_done_by'],
+                'has_image' => !empty($validated['xray_image_path'])
+            ],
+            'medium',
+            $radtech,
+            $medicalChecklist
+        );
 
         // Determine redirect route based on examination type
         if ($medicalChecklist->pre_employment_record_id) {
