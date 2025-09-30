@@ -1,37 +1,35 @@
-@extends('layouts.ecgtech')
+<?php $__env->startSection('title', 'Edit Pre-Employment ECG Examination'); ?>
+<?php $__env->startSection('page-title', 'Edit Pre-Employment ECG Examination'); ?>
+<?php $__env->startSection('page-description', 'Update ECG examination results and cardiac assessment for pre-employment screening'); ?>
 
-@section('title', 'Edit Pre-Employment ECG Examination')
-@section('page-title', 'Edit Pre-Employment ECG Examination')
-@section('page-description', 'Update ECG examination results and cardiac assessment for pre-employment screening')
-
-@section('content')
-@if(session('success'))
+<?php $__env->startSection('content'); ?>
+<?php if(session('success')): ?>
     <div class="mb-8 p-4 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 flex items-center space-x-3">
         <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
             <i class="fas fa-check text-white text-sm"></i>
         </div>
         <div>
-            <p class="text-green-800 font-semibold">{{ session('success') }}</p>
+            <p class="text-green-800 font-semibold"><?php echo e(session('success')); ?></p>
         </div>
         <button onclick="this.parentElement.remove()" class="ml-auto text-green-600 hover:text-green-800">
             <i class="fas fa-times"></i>
         </button>
     </div>
-@endif
+<?php endif; ?>
 
-@if(session('error'))
+<?php if(session('error')): ?>
     <div class="mb-8 p-4 rounded-xl bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 flex items-center space-x-3">
         <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
             <i class="fas fa-exclamation-triangle text-white text-sm"></i>
         </div>
         <div>
-            <p class="text-red-800 font-semibold">{{ session('error') }}</p>
+            <p class="text-red-800 font-semibold"><?php echo e(session('error')); ?></p>
         </div>
         <button onclick="this.parentElement.remove()" class="ml-auto text-red-600 hover:text-red-800">
             <i class="fas fa-times"></i>
         </button>
     </div>
-@endif
+<?php endif; ?>
 
 <div class="max-w-5xl mx-auto">
     <div class="bg-white rounded-xl shadow-sm border border-gray-100">
@@ -49,7 +47,7 @@
                 </div>
                 <div class="text-right">
                     <div class="text-sm text-gray-500">Record ID</div>
-                    <div class="text-lg font-bold text-blue-600">#{{ $preEmployment->preEmploymentRecord->id ?? 'N/A' }}</div>
+                    <div class="text-lg font-bold text-blue-600">#<?php echo e($preEmployment->preEmploymentRecord->id ?? 'N/A'); ?></div>
                 </div>
             </div>
         </div>
@@ -57,7 +55,7 @@
         <!-- Enhanced Form Container -->
         <div class="p-8">
         
-            @if($preEmployment->preEmploymentRecord)
+            <?php if($preEmployment->preEmploymentRecord): ?>
             <!-- Enhanced Applicant Information -->
             <div class="bg-gray-50 rounded-xl p-6 border border-gray-200 mb-8">
                 <div class="flex items-center space-x-3 mb-6">
@@ -70,27 +68,27 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div class="bg-white rounded-lg p-4 border border-gray-200">
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Applicant Name</label>
-                        <div class="text-lg font-semibold text-gray-900">{{ $preEmployment->preEmploymentRecord->full_name ?? ($preEmployment->preEmploymentRecord->first_name . ' ' . $preEmployment->preEmploymentRecord->last_name) }}</div>
+                        <div class="text-lg font-semibold text-gray-900"><?php echo e($preEmployment->preEmploymentRecord->full_name ?? ($preEmployment->preEmploymentRecord->first_name . ' ' . $preEmployment->preEmploymentRecord->last_name)); ?></div>
                     </div>
                     <div class="bg-white rounded-lg p-4 border border-gray-200">
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Age</label>
-                        <div class="text-lg font-semibold text-gray-900">{{ $preEmployment->preEmploymentRecord->age }} years</div>
+                        <div class="text-lg font-semibold text-gray-900"><?php echo e($preEmployment->preEmploymentRecord->age); ?> years</div>
                     </div>
                     <div class="bg-white rounded-lg p-4 border border-gray-200">
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Gender</label>
-                        <div class="text-lg font-semibold text-gray-900">{{ $preEmployment->preEmploymentRecord->sex }}</div>
+                        <div class="text-lg font-semibold text-gray-900"><?php echo e($preEmployment->preEmploymentRecord->sex); ?></div>
                     </div>
                     <div class="bg-white rounded-lg p-4 border border-gray-200">
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Company</label>
-                        <div class="text-lg font-semibold text-gray-900">{{ $preEmployment->preEmploymentRecord->company_name }}</div>
+                        <div class="text-lg font-semibold text-gray-900"><?php echo e($preEmployment->preEmploymentRecord->company_name); ?></div>
                     </div>
                 </div>
             </div>
-            @endif
+            <?php endif; ?>
 
-            <form action="{{ route('ecgtech.pre-employment.update', $preEmployment->preEmploymentRecord->id) }}" method="POST" class="space-y-8">
-                @csrf
-                @method('PATCH')
+            <form action="<?php echo e(route('ecgtech.pre-employment.update', $preEmployment->preEmploymentRecord->id)); ?>" method="POST" class="space-y-8">
+                <?php echo csrf_field(); ?>
+                <?php echo method_field('PATCH'); ?>
                 
                 <!-- Enhanced ECG Examination Section -->
                 <div class="bg-white rounded-xl p-6 border border-gray-200">
@@ -110,12 +108,19 @@
                                   rows="6" 
                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-none" 
                                   placeholder="Enter comprehensive ECG examination results for pre-employment screening, including rhythm, rate, intervals, and any abnormalities..." 
-                                  required>{{ old('ecg', $preEmployment->ecg ?? '') }}</textarea>
-                        @error('ecg')
+                                  required><?php echo e(old('ecg', $preEmployment->ecg ?? '')); ?></textarea>
+                        <?php $__errorArgs = ['ecg'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                             <div class="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                                <p class="text-red-600 text-sm font-medium">{{ $message }}</p>
+                                <p class="text-red-600 text-sm font-medium"><?php echo e($message); ?></p>
                             </div>
-                        @enderror
+                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                         <div class="mt-3 flex items-center space-x-2 text-xs text-gray-500">
                             <i class="fas fa-info-circle"></i>
                             <span>Include rhythm analysis, rate measurements, and fitness for employment assessment</span>
@@ -133,7 +138,7 @@
                     </div>
                     
                     <div class="flex space-x-4">
-                        <a href="{{ route('ecgtech.pre-employment') }}" 
+                        <a href="<?php echo e(route('ecgtech.pre-employment')); ?>" 
                            class="inline-flex items-center px-6 py-3 border border-gray-300 rounded-xl text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200 font-semibold">
                             <i class="fas fa-arrow-left mr-2"></i>
                             Back to Pre-Employment
@@ -149,9 +154,9 @@
         </div>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('scripts')
+<?php $__env->startSection('scripts'); ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form');
@@ -382,4 +387,6 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.ecgtech', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\rss_new-1\resources\views/ecgtech/pre-employment-edit.blade.php ENDPATH**/ ?>

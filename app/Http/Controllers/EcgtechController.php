@@ -22,44 +22,50 @@ class EcgtechController extends Controller
      */
     public function dashboard()
     {
-        // Get pre-employment records not yet submitted - only those with ECG and Drug test
+        // Get pre-employment records not yet submitted - only those with ECG and Drug test or packages A-E
         $preEmployments = PreEmploymentRecord::where('status', 'approved')
             ->whereHas('medicalTest', function ($q) {
-                $q->where('name', 'Pre-Employment with ECG and Drug test');
+                $q->where('name', 'Pre-Employment with ECG and Drug test')
+                  ->orWhereIn('name', ['Package A', 'Package B', 'Package C', 'Package D', 'Package E']);
             })
             ->whereDoesntHave('preEmploymentExamination', function ($q) {
-                $q->whereIn('status', ['Approved', 'sent_to_company']);
+                $q->whereIn('status', ['completed', 'Approved', 'sent_to_company']);
             })
             ->latest()->take(5)->get();
+            
         $preEmploymentCount = PreEmploymentRecord::where('status', 'approved')
             ->whereHas('medicalTest', function ($q) {
-                $q->where('name', 'Pre-Employment with ECG and Drug test');
+                $q->where('name', 'Pre-Employment with ECG and Drug test')
+                  ->orWhereIn('name', ['Package A', 'Package B', 'Package C', 'Package D', 'Package E']);
             })
             ->count();
 
-        // Get patients for annual physical with ECG and Drug test only
+        // Get patients for annual physical with ECG and Drug test or packages A-E
         $patients = Patient::where('status', 'approved')
             ->whereHas('appointment', function ($q) {
                 $q->where('status', 'approved')
                   ->whereHas('medicalTest', function ($testQuery) {
-                      $testQuery->where('name', 'Annual Medical with ECG and Drug test');
+                      $testQuery->where('name', 'Annual Medical with ECG and Drug test')
+                               ->orWhereIn('name', ['Package A', 'Package B', 'Package C', 'Package D', 'Package E']);
                   });
             })
             ->whereDoesntHave('annualPhysicalExamination', function ($q) {
                 $q->whereIn('status', ['completed', 'sent_to_company']);
             })
             ->latest()->take(5)->get();
-        
+
         $patientCount = Patient::where('status', 'approved')
             ->whereHas('appointment', function ($q) {
                 $q->where('status', 'approved')
                   ->whereHas('medicalTest', function ($testQuery) {
-                      $testQuery->where('name', 'Annual Medical with ECG and Drug test');
+                      $testQuery->where('name', 'Annual Medical with ECG and Drug test')
+                               ->orWhereIn('name', ['Package A', 'Package B', 'Package C', 'Package D', 'Package E']);
                   });
             })
             ->count();
 
         // Get OPD walk-in patients (users with 'opd' role)
+
         $opdPatients = User::where('role', 'opd')->latest()->take(5)->get();
         $opdCount = User::where('role', 'opd')->count();
 
@@ -90,18 +96,21 @@ class EcgtechController extends Controller
     {
         $preEmployments = PreEmploymentRecord::where('status', 'approved')
             ->whereHas('medicalTest', function ($q) {
-                $q->where('name', 'Pre-Employment with ECG and Drug test');
+                $q->where('name', 'Pre-Employment with ECG and Drug test')
+                  ->orWhereIn('name', ['Package A', 'Package B', 'Package C', 'Package D', 'Package E']);
             })
             ->whereDoesntHave('preEmploymentExamination', function ($q) {
-                $q->whereIn('status', ['Approved', 'sent_to_company']);
+                $q->whereIn('status', ['completed', 'Approved', 'sent_to_company']);
             })
-            ->latest()->paginate(15);
+            ->latest()
+            ->with('medicalTest')
+            ->paginate(15);
         
         return view('ecgtech.pre-employment', compact('preEmployments'));
     }
 
     /**
-     * Show annual physical patients for ECG tech
+     * Show the annual physical patients list
      */
     public function annualPhysical()
     {
@@ -109,19 +118,24 @@ class EcgtechController extends Controller
             ->whereHas('appointment', function ($q) {
                 $q->where('status', 'approved')
                   ->whereHas('medicalTest', function ($testQuery) {
-                      $testQuery->where('name', 'Annual Medical with ECG and Drug test');
+                      $testQuery->where('name', 'Annual Medical with ECG and Drug test')
+                               ->orWhereIn('name', ['Package A', 'Package B', 'Package C', 'Package D', 'Package E']);
                   });
             })
             ->whereDoesntHave('annualPhysicalExamination', function ($q) {
                 $q->whereIn('status', ['completed', 'sent_to_company']);
             })
-            ->latest()->paginate(15);
+            ->with(['appointment.medicalTest'])
+            ->latest()
+            ->paginate(15);
         
         return view('ecgtech.annual-physical', compact('patients'));
     }
 
     /**
      * Show OPD walk-in patients for ECG tech
+     * 
+     * @return \Illuminate\View\View
      */
     public function opd()
     {
@@ -591,9 +605,12 @@ class EcgtechController extends Controller
                 'ecg_date' => now()->toDateString(),
                 'ecg_technician' => Auth::user()->fname . ' ' . Auth::user()->lname,
                 'physical_exam' => $physicalExam,
+                'status' => 'completed', // Update status to completed
+                'updated_by' => Auth::id(),
+                'updated_at' => now()
             ]);
 
-            return redirect()->route('ecgtech.pre-employment')->with('success', 'ECG examination results updated successfully.');
+            return redirect()->route('ecgtech.pre-employment')->with('success', 'ECG examination results updated successfully and sent to doctor for review.');
         } catch (\Exception $e) {
             \Log::error('Error in updatePreEmployment: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to update ECG examination results.')->withInput();
@@ -634,9 +651,12 @@ class EcgtechController extends Controller
                 'ecg_date' => now()->toDateString(),
                 'ecg_technician' => Auth::user()->fname . ' ' . Auth::user()->lname,
                 'physical_exam' => $physicalExam,
+                'status' => 'completed', // Update status to completed
+                'updated_by' => Auth::id(),
+                'updated_at' => now()
             ]);
 
-            return redirect()->route('ecgtech.annual-physical')->with('success', 'ECG examination results updated successfully.');
+            return redirect()->route('ecgtech.annual-physical')->with('success', 'ECG examination results updated successfully and sent to doctor for review.');
         } catch (\Exception $e) {
             \Log::error('Error in updateAnnualPhysical: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to update ECG examination results.')->withInput();

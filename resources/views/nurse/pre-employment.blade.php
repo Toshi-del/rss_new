@@ -217,35 +217,52 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @php
-                                            $preEmploymentExam = \App\Models\PreEmploymentExamination::where('pre_employment_record_id', $preEmployment->id)->first();
                                             $medicalChecklist = \App\Models\MedicalChecklist::where('pre_employment_record_id', $preEmployment->id)
                                                 ->where('examination_type', 'pre-employment')
                                                 ->first();
-                                            $canSendToDoctor = $preEmploymentExam && $medicalChecklist && !empty($medicalChecklist->physical_exam_done_by);
+                                            $canSendToDoctor = $preEmployment->preEmploymentExamination && $medicalChecklist && !empty($medicalChecklist->physical_exam_done_by);
+                                            $hasExamination = !is_null($preEmployment->preEmploymentExamination);
                                         @endphp
                                         
                                         <div class="flex items-center space-x-2">
-                                    
+                                            <!-- Examination Status Badge -->
+                                            @if($hasExamination)
+                                                <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full mr-2">
+                                                    <i class="fas fa-check-circle mr-1"></i>Exam Completed
+                                                </span>
+                                            @else
+                                                <span class="px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded-full mr-2">
+                                                    <i class="fas fa-clock mr-1"></i>Pending Exam
+                                                </span>
+                                            @endif
 
-                                            <!-- Examination -->
-                                            @if($preEmploymentExam)
-                                                <a href="{{ route('nurse.pre-employment.edit', $preEmploymentExam->id) }}" class="p-2 text-emerald-600 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg transition-colors" title="Edit Examination">
+                                            <!-- Examination Action Buttons -->
+                                            @if($hasExamination)
+                                                <a href="{{ route('nurse.pre-employment.edit', $preEmployment->preEmploymentExamination->id) }}" 
+                                                   class="p-2 text-emerald-600 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg transition-colors" 
+                                                   title="Edit Examination">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                             @else
                                                 @if($medicalChecklist && !empty($medicalChecklist->physical_exam_done_by))
-                                                    <a href="{{ route('nurse.pre-employment.create', ['record_id' => $preEmployment->id]) }}" class="p-2 text-emerald-600 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg transition-colors" title="Create Examination">
+                                                    <a href="{{ route('nurse.pre-employment.create', ['record_id' => $preEmployment->id]) }}" 
+                                                       class="p-2 text-emerald-600 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg transition-colors" 
+                                                       title="Create Examination">
                                                         <i class="fas fa-plus"></i>
                                                     </a>
                                                 @else
-                                                    <button class="p-2 text-gray-400 cursor-not-allowed rounded-lg" title="Complete medical checklist first" disabled>
+                                                    <button class="p-2 text-gray-400 cursor-not-allowed rounded-lg" 
+                                                            title="Complete medical checklist first" 
+                                                            disabled>
                                                         <i class="fas fa-plus"></i>
                                                     </button>
                                                 @endif
                                             @endif
 
                                             <!-- Medical Checklist -->
-                                            <a href="{{ route('nurse.medical-checklist.pre-employment', $preEmployment->id) }}" class="p-2 text-purple-600 hover:text-purple-900 hover:bg-purple-50 rounded-lg transition-colors" title="Medical Checklist">
+                                            <a href="{{ route('nurse.medical-checklist.pre-employment', $preEmployment->id) }}" 
+                                               class="p-2 text-purple-600 hover:text-purple-900 hover:bg-purple-50 rounded-lg transition-colors" 
+                                               title="Medical Checklist">
                                                 <i class="fas fa-clipboard-list"></i>
                                             </a>
 

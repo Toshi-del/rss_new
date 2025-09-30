@@ -53,18 +53,11 @@ class DoctorController extends Controller
     public function preEmployment()
     {
         // Show pre-employment examinations that are ready for doctor review
-        // Temporarily showing all examinations for debugging
         $preEmploymentExaminations = \App\Models\PreEmploymentExamination::with(['preEmploymentRecord.medicalTest', 'preEmploymentRecord.medicalTestCategory', 'user'])
+            ->where('status', 'completed') // Only show completed examinations
             ->latest()
-            ->get();
-        
-        // Debug: Also check all examinations to see what statuses exist
-        $allExaminations = \App\Models\PreEmploymentExamination::all();
-        \Log::info('All Pre-Employment Examinations:', [
-            'count' => $allExaminations->count(),
-            'statuses' => $allExaminations->pluck('status')->unique()->toArray()
-        ]);
-        
+            ->paginate(15);
+            
         return view('doctor.pre-employment', compact('preEmploymentExaminations'));
     }
 

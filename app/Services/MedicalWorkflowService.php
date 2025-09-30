@@ -138,6 +138,7 @@ class MedicalWorkflowService
             $baseFields[] = 'urinalysis_done_by';
         }
 
+        return $baseFields;
     }
 
     /**

@@ -1,24 +1,22 @@
-@extends('layouts.ecgtech')
+<?php $__env->startSection('title', 'Pre-Employment ECG Records'); ?>
 
-@section('title', 'Pre-Employment ECG Records')
+<?php $__env->startSection('page-title', 'Pre-Employment ECG Records'); ?>
+<?php $__env->startSection('page-description', 'Manage ECG examinations and cardiac assessments for employment screening'); ?>
 
-@section('page-title', 'Pre-Employment ECG Records')
-@section('page-description', 'Manage ECG examinations and cardiac assessments for employment screening')
-
-@section('content')
-@if(session('success'))
+<?php $__env->startSection('content'); ?>
+<?php if(session('success')): ?>
     <div class="mb-8 p-4 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 flex items-center space-x-3">
         <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
             <i class="fas fa-check text-white text-sm"></i>
         </div>
         <div>
-            <p class="text-green-800 font-semibold">{{ session('success') }}</p>
+            <p class="text-green-800 font-semibold"><?php echo e(session('success')); ?></p>
         </div>
         <button onclick="this.parentElement.remove()" class="ml-auto text-green-600 hover:text-green-800">
             <i class="fas fa-times"></i>
         </button>
     </div>
-@endif
+<?php endif; ?>
 
 <!-- Enhanced Search and Filter Section -->
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
@@ -91,7 +89,7 @@
                 </div>
             </div>
             <div class="text-right">
-                <div class="text-2xl font-bold text-blue-600" id="recordCount">{{ $preEmployments->count() }}</div>
+                <div class="text-2xl font-bold text-blue-600" id="recordCount"><?php echo e($preEmployments->count()); ?></div>
                 <div class="text-xs text-gray-500 uppercase tracking-wider">Total Records</div>
             </div>
         </div>
@@ -110,66 +108,68 @@
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-100">
-                @forelse($preEmployments as $preEmployment)
-                    @php
+                <?php $__empty_1 = true; $__currentLoopData = $preEmployments; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $preEmployment): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                    <?php
                         $packageName = $preEmployment->medicalTest ? strtolower($preEmployment->medicalTest->name) : '';
-                    @endphp
+                    ?>
                     <tr class="hover:bg-gray-50 transition-colors duration-200 record-row" 
-                        data-name="{{ strtolower($preEmployment->first_name . ' ' . $preEmployment->last_name) }}" 
-                        data-company="{{ strtolower($preEmployment->company_name) }}" 
-                        data-status="{{ strtolower($preEmployment->status) }}" 
-                        data-package="{{ $packageName }}">
+                        data-name="<?php echo e(strtolower($preEmployment->first_name . ' ' . $preEmployment->last_name)); ?>" 
+                        data-company="<?php echo e(strtolower($preEmployment->company_name)); ?>" 
+                        data-status="<?php echo e(strtolower($preEmployment->status)); ?>" 
+                        data-package="<?php echo e($packageName); ?>">
                         <td class="px-8 py-6 whitespace-nowrap">
                             <div class="flex items-center space-x-3">
                                 <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
                                     <span class="text-white font-semibold text-sm">
-                                        {{ strtoupper(substr($preEmployment->first_name, 0, 1) . substr($preEmployment->last_name, 0, 1)) }}
+                                        <?php echo e(strtoupper(substr($preEmployment->first_name, 0, 1) . substr($preEmployment->last_name, 0, 1))); ?>
+
                                     </span>
                                 </div>
                                 <div>
-                                    <p class="text-sm font-semibold text-gray-900">{{ $preEmployment->first_name }} {{ $preEmployment->last_name }}</p>
+                                    <p class="text-sm font-semibold text-gray-900"><?php echo e($preEmployment->first_name); ?> <?php echo e($preEmployment->last_name); ?></p>
                                     <p class="text-xs text-gray-500">Pre-Employment Candidate</p>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-600 font-medium">{{ $preEmployment->age }}</td>
-                        <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-600 font-medium">{{ $preEmployment->sex }}</td>
+                        <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-600 font-medium"><?php echo e($preEmployment->age); ?></td>
+                        <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-600 font-medium"><?php echo e($preEmployment->sex); ?></td>
                         <td class="px-6 py-6 whitespace-nowrap">
-                            <div class="text-sm font-medium text-gray-900">{{ $preEmployment->company_name }}</div>
-                            @if($preEmployment->medicalTest)
-                                <div class="text-xs text-blue-600 font-medium mt-1">{{ $preEmployment->medicalTest->name }}</div>
-                            @else
+                            <div class="text-sm font-medium text-gray-900"><?php echo e($preEmployment->company_name); ?></div>
+                            <?php if($preEmployment->medicalTest): ?>
+                                <div class="text-xs text-blue-600 font-medium mt-1"><?php echo e($preEmployment->medicalTest->name); ?></div>
+                            <?php else: ?>
                                 <div class="text-xs text-gray-500">No package assigned</div>
-                            @endif
+                            <?php endif; ?>
                         </td>
                         <td class="px-6 py-6 whitespace-nowrap">
-                            @php
+                            <?php
                                 $statusConfig = match($preEmployment->status) {
                                     'approved' => ['class' => 'bg-green-100 text-green-700 border-green-200', 'icon' => 'fas fa-check-circle'],
                                     'declined' => ['class' => 'bg-red-100 text-red-700 border-red-200', 'icon' => 'fas fa-times-circle'],
                                     'pending' => ['class' => 'bg-yellow-100 text-yellow-700 border-yellow-200', 'icon' => 'fas fa-clock'],
                                     default => ['class' => 'bg-gray-100 text-gray-700 border-gray-200', 'icon' => 'fas fa-question-circle']
                                 };
-                            @endphp
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border {{ $statusConfig['class'] }}">
-                                <i class="{{ $statusConfig['icon'] }} mr-1"></i>
-                                {{ ucfirst($preEmployment->status) }}
+                            ?>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border <?php echo e($statusConfig['class']); ?>">
+                                <i class="<?php echo e($statusConfig['icon']); ?> mr-1"></i>
+                                <?php echo e(ucfirst($preEmployment->status)); ?>
+
                             </span>
                         </td>
                         <td class="px-6 py-6 whitespace-nowrap text-sm">
                             <div class="flex items-center space-x-2">
-                                <a href="{{ route('ecgtech.medical-checklist-page.pre-employment', $preEmployment->id) }}" class="inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg transition-colors duration-200 group" title="ECG Checklist">
+                                <a href="<?php echo e(route('ecgtech.medical-checklist-page.pre-employment', $preEmployment->id)); ?>" class="inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg transition-colors duration-200 group" title="ECG Checklist">
                                     <i class="fas fa-heartbeat mr-1 group-hover:scale-110 transition-transform"></i>
                                     ECG
                                 </a>
-                                <a href="{{ route('ecgtech.pre-employment.edit', $preEmployment->id) }}" class="inline-flex items-center px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-lg transition-colors duration-200 group" title="Edit ECG Data">
+                                <a href="<?php echo e(route('ecgtech.pre-employment.edit', $preEmployment->id)); ?>" class="inline-flex items-center px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-lg transition-colors duration-200 group" title="Edit ECG Data">
                                     <i class="fas fa-edit mr-1 group-hover:rotate-12 transition-transform"></i>
                                     Edit
                                 </a>
                             </div>
                         </td>
                     </tr>
-                @empty
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <tr id="emptyState">
                         <td colspan="6" class="px-8 py-12 text-center">
                             <div class="flex flex-col items-center space-y-3">
@@ -181,24 +181,25 @@
                             </div>
                         </td>
                     </tr>
-                @endforelse
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
     
     <!-- Enhanced Pagination -->
-    @if($preEmployments->hasPages())
+    <?php if($preEmployments->hasPages()): ?>
         <div class="px-8 py-6 border-t border-gray-100 bg-gray-50">
             <div class="flex items-center justify-between">
                 <div class="text-sm text-gray-600">
-                    Showing {{ $preEmployments->firstItem() }} to {{ $preEmployments->lastItem() }} of {{ $preEmployments->total() }} results
+                    Showing <?php echo e($preEmployments->firstItem()); ?> to <?php echo e($preEmployments->lastItem()); ?> of <?php echo e($preEmployments->total()); ?> results
                 </div>
                 <div class="pagination-wrapper">
-                    {{ $preEmployments->links() }}
+                    <?php echo e($preEmployments->links()); ?>
+
                 </div>
             </div>
         </div>
-    @endif
+    <?php endif; ?>
 </div>
 
 <script>
@@ -399,4 +400,6 @@ style.textContent = `
 document.head.appendChild(style);
 </script>
 
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.ecgtech', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\rss_new-1\resources\views/ecgtech/pre-employment.blade.php ENDPATH**/ ?>

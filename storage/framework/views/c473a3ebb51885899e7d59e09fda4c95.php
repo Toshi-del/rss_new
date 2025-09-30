@@ -3,12 +3,12 @@
 <?php $__env->startSection('page-description', 'Update and manage employment medical screening results'); ?>
 
 <?php $__env->startSection('content'); ?>
-<div class="space-y-8" style="font-family: 'Poppins', sans-serif;">
+<div class="space-y-8">
     
     <!-- Success Message -->
     <?php if(session('success')): ?>
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-emerald-600">
-        <div class="px-8 py-6 bg-emerald-600">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-green-500">
+        <div class="px-8 py-6 bg-gradient-to-r from-green-500 to-green-600">
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
@@ -18,7 +18,7 @@
                         <p class="text-white font-medium"><?php echo e(session('success')); ?></p>
                     </div>
                 </div>
-                <button type="button" class="text-emerald-200 hover:text-white transition-colors duration-200" onclick="this.parentElement.parentElement.parentElement.style.display='none'">
+                <button type="button" class="text-green-200 hover:text-white transition-colors duration-200" onclick="this.parentElement.parentElement.parentElement.style.display='none'">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -27,19 +27,19 @@
     <?php endif; ?>
     
     <!-- Header Section -->
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-violet-600">
-        <div class="px-8 py-6 bg-violet-600">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-blue-600">
+        <div class="px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-700">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold text-white mb-2" style="font-family: 'Poppins', sans-serif;">
+                    <h1 class="text-2xl font-bold text-white mb-2">
                         <i class="fas fa-briefcase mr-3"></i>Pre-Employment Medical Examination
                     </h1>
-                    <p class="text-violet-100">Employment medical screening and health assessment certificate</p>
+                    <p class="text-blue-100">Employment medical screening and health assessment certificate</p>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <div class="bg-violet-700 rounded-lg px-4 py-2">
-                        <p class="text-violet-200 text-sm font-medium">Exam ID</p>
-                        <p class="text-white text-lg font-bold">#<?php echo e($examination->id); ?></p>
+                    <div class="bg-blue-800 bg-opacity-50 rounded-lg px-4 py-2 border border-blue-500">
+                        <p class="text-blue-200 text-sm font-medium">Exam ID</p>
+                        <p class="text-white text-lg font-bold">#<?php echo e($preEmployment->id); ?></p>
                     </div>
                 </div>
             </div>
@@ -49,35 +49,35 @@
     <!-- Main Form Container -->
     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
         <!-- Applicant Information Section -->
-        <?php if($examination->preEmploymentRecord): ?>
-        <div class="px-8 py-6 bg-violet-600 border-l-4 border-violet-700">
+        <?php if($preEmployment->preEmploymentRecord): ?>
+        <div class="px-8 py-6 bg-gradient-to-r from-green-600 to-green-700 border-l-4 border-green-800">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
+                    <h2 class="text-xl font-bold text-white">
                         <i class="fas fa-user-tie mr-3"></i>Applicant Information
                     </h2>
-                    <p class="text-violet-100 mt-1">Job applicant details and company information</p>
+                    <p class="text-green-100 mt-1">Job applicant details and company information</p>
                 </div>
             </div>
         </div>
         
-        <div class="p-8 bg-violet-50">
+        <div class="p-8 bg-green-50">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="bg-white rounded-lg p-4 border-l-4 border-violet-600 hover:shadow-md transition-shadow duration-200">
+                <div class="bg-white rounded-lg p-4 border-l-4 border-blue-500 hover:shadow-md transition-shadow duration-200">
                     <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Full Name</label>
-                    <div class="text-lg font-bold text-violet-900"><?php echo e($examination->preEmploymentRecord->full_name ?? ($examination->preEmploymentRecord->first_name . ' ' . $examination->preEmploymentRecord->last_name)); ?></div>
+                    <div class="text-lg font-bold text-blue-800"><?php echo e($preEmployment->preEmploymentRecord->full_name ?? ($preEmployment->preEmploymentRecord->first_name . ' ' . $preEmployment->preEmploymentRecord->last_name)); ?></div>
                 </div>
-                <div class="bg-white rounded-lg p-4 border-l-4 border-emerald-600 hover:shadow-md transition-shadow duration-200">
+                <div class="bg-white rounded-lg p-4 border-l-4 border-green-500 hover:shadow-md transition-shadow duration-200">
                     <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Age</label>
-                    <div class="text-lg font-bold text-emerald-900"><?php echo e($examination->preEmploymentRecord->age ?? 'N/A'); ?> years</div>
+                    <div class="text-lg font-bold text-green-800"><?php echo e($preEmployment->preEmploymentRecord->age); ?> years</div>
                 </div>
-                <div class="bg-white rounded-lg p-4 border-l-4 border-blue-600 hover:shadow-md transition-shadow duration-200">
+                <div class="bg-white rounded-lg p-4 border-l-4 border-indigo-500 hover:shadow-md transition-shadow duration-200">
                     <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Sex</label>
-                    <div class="text-lg font-bold text-blue-900"><?php echo e($examination->preEmploymentRecord->sex ? ucfirst($examination->preEmploymentRecord->sex) : 'N/A'); ?></div>
+                    <div class="text-lg font-bold text-indigo-800"><?php echo e($preEmployment->preEmploymentRecord->sex); ?></div>
                 </div>
-                <div class="bg-white rounded-lg p-4 border-l-4 border-orange-600 hover:shadow-md transition-shadow duration-200">
+                <div class="bg-white rounded-lg p-4 border-l-4 border-yellow-500 hover:shadow-md transition-shadow duration-200">
                     <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Company</label>
-                    <div class="text-sm font-semibold text-orange-900 truncate"><?php echo e($examination->preEmploymentRecord->company_name ?? 'N/A'); ?></div>
+                    <div class="text-sm font-semibold text-yellow-800 truncate"><?php echo e($preEmployment->preEmploymentRecord->company_name); ?></div>
                 </div>
             </div>
         </div>
@@ -85,24 +85,24 @@
         
         <!-- Form Section -->
         <div class="p-8">
-            <form action="<?php echo e(route('doctor.pre-employment.update', $examination->id)); ?>" method="POST" class="space-y-8">
+            <form action="<?php echo e(route('doctor.pre-employment.update', $preEmployment->id)); ?>" method="POST" class="space-y-8">
                 <?php echo csrf_field(); ?>
                 <?php echo method_field('PATCH'); ?>
                 
                 <!-- Medical History Section -->
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-emerald-600">
-                    <div class="px-6 py-4 bg-emerald-600">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-green-500">
+                    <div class="px-6 py-4 bg-gradient-to-r from-green-500 to-green-600">
                         <div class="flex items-center">
                             <i class="fas fa-notes-medical text-white text-xl mr-3"></i>
-                            <h3 class="text-lg font-bold text-white" style="font-family: 'Poppins', sans-serif;">Medical History Review</h3>
+                            <h3 class="text-lg font-bold text-white">Medical History Review</h3>
                         </div>
                     </div>
-                    <div class="p-6 bg-emerald-50">
+                    <div class="p-6 bg-green-50">
                     
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                         <div class="bg-white rounded-lg p-4 border border-gray-200">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-hospital mr-2 text-emerald-600"></i>Illness / Hospitalization
+                                <i class="fas fa-hospital mr-2 text-green-600"></i>Illness / Hospitalization
                             </label>
                             <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 min-h-[4rem] text-sm text-gray-700">
                                 <?php echo e($preEmployment->illness_history ?: 'No illness or hospitalization history recorded'); ?>
@@ -131,7 +131,7 @@
                     
                     <div class="bg-white rounded-lg p-4 border border-gray-200">
                         <label class="block text-sm font-semibold text-gray-700 mb-4">
-                            <i class="fas fa-users mr-2 text-violet-600"></i>Family Medical History
+                            <i class="fas fa-users mr-2 text-purple-600"></i>Family Medical History
                         </label>
                         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                             <?php
@@ -139,8 +139,8 @@
                                 $options = ['asthma','arthritis','migraine','diabetes','heart_disease','tuberculosis','allergies','anemia','cancer','insanity','hypertension','epilepsy'];
                             ?>
                             <?php $__currentLoopData = $options; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $opt): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <label class="inline-flex items-center p-3 rounded-lg border transition-colors duration-200 <?php echo e(in_array($opt, $family ?? []) ? 'bg-emerald-100 border-emerald-300 text-emerald-800' : 'bg-gray-50 border-gray-200 text-gray-600'); ?>">
-                                    <input type="checkbox" name="family_history[]" value="<?php echo e($opt); ?>" class="mr-3 text-emerald-600 focus:ring-emerald-500" <?php echo e(in_array($opt, $family ?? []) ? 'checked' : ''); ?> disabled>
+                                <label class="inline-flex items-center p-3 rounded-lg border transition-colors duration-200 <?php echo e(in_array($opt, $family ?? []) ? 'bg-green-100 border-green-300 text-green-800' : 'bg-gray-50 border-gray-200 text-gray-600'); ?>">
+                                    <input type="checkbox" name="family_history[]" value="<?php echo e($opt); ?>" class="mr-3 text-green-600 focus:ring-green-500" <?php echo e(in_array($opt, $family ?? []) ? 'checked' : ''); ?> disabled>
                                     <span class="text-sm font-medium"><?php echo e(str_replace('_', ' ', ucwords($opt))); ?></span>
                                 </label>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
@@ -149,11 +149,11 @@
                     </div>
                 </div>
                 <!-- Personal History Section -->
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-blue-600">
-                    <div class="px-6 py-4 bg-blue-600">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-blue-500">
+                    <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600">
                         <div class="flex items-center">
                             <i class="fas fa-user-check text-white text-xl mr-3"></i>
-                            <h3 class="text-lg font-bold text-white" style="font-family: 'Poppins', sans-serif;">Personal History & Habits</h3>
+                            <h3 class="text-lg font-bold text-white">Personal History & Habits</h3>
                         </div>
                     </div>
                     <div class="p-6 bg-blue-50">
@@ -180,14 +180,14 @@
                     </div>
                 </div>
                 <!-- Physical Examination Section -->
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-orange-600">
-                    <div class="px-6 py-4 bg-orange-600">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-yellow-500">
+                    <div class="px-6 py-4 bg-gradient-to-r from-yellow-500 to-yellow-600">
                         <div class="flex items-center">
                             <i class="fas fa-stethoscope text-white text-xl mr-3"></i>
-                            <h3 class="text-lg font-bold text-white" style="font-family: 'Poppins', sans-serif;">Physical Examination Results</h3>
+                            <h3 class="text-lg font-bold text-white">Physical Examination Results</h3>
                         </div>
                     </div>
-                    <div class="p-6 bg-orange-50">
+                    <div class="p-6 bg-yellow-50">
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <?php 
@@ -218,11 +218,11 @@
                     </div>
                 </div>
                 <!-- Skin Identification Marks Section -->
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-pink-600">
-                    <div class="px-6 py-4 bg-pink-600">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-pink-500">
+                    <div class="px-6 py-4 bg-gradient-to-r from-pink-500 to-pink-600">
                         <div class="flex items-center">
                             <i class="fas fa-search text-white text-xl mr-3"></i>
-                            <h3 class="text-lg font-bold text-white" style="font-family: 'Poppins', sans-serif;">Skin Identification Marks</h3>
+                            <h3 class="text-lg font-bold text-white">Skin Identification Marks</h3>
                         </div>
                     </div>
                     <div class="p-6 bg-pink-50">
@@ -236,11 +236,11 @@
                     </div>
                 </div>
                 <!-- Visual Assessment & Findings Section -->
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-indigo-600">
-                    <div class="px-6 py-4 bg-indigo-600">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-indigo-500">
+                    <div class="px-6 py-4 bg-gradient-to-r from-indigo-500 to-indigo-600">
                         <div class="flex items-center">
                             <i class="fas fa-eye text-white text-xl mr-3"></i>
-                            <h3 class="text-lg font-bold text-white" style="font-family: 'Poppins', sans-serif;">Visual Assessment & General Findings</h3>
+                            <h3 class="text-lg font-bold text-white">Visual Assessment & General Findings</h3>
                         </div>
                     </div>
                     <div class="p-6 bg-indigo-50">
@@ -277,10 +277,10 @@
                     </div>
                 </div>
                 <!-- Laboratory Examination Report Section -->
-                <div class="bg-teal-50 rounded-xl p-6 border-l-4 border-teal-600">
+                <div class="bg-gray-50 rounded-xl p-6 border-l-4 border-gray-500">
                     <div class="flex items-center mb-6">
-                        <i class="fas fa-flask text-teal-600 text-xl mr-3"></i>
-                        <h3 class="text-lg font-bold text-teal-900" style="font-family: 'Poppins', sans-serif;">Laboratory Examination Report</h3>
+                        <i class="fas fa-flask text-gray-600 text-xl mr-3"></i>
+                        <h3 class="text-lg font-bold text-gray-800">Laboratory Examination Report</h3>
                     </div>
                     
                     <?php
@@ -339,10 +339,10 @@
                 </div>
 
                 <!-- Physical Findings Section -->
-                <div class="bg-cyan-50 rounded-xl p-6 border-l-4 border-cyan-600">
+                <div class="bg-blue-50 rounded-xl p-6 border-l-4 border-blue-500">
                     <div class="flex items-center mb-6">
-                        <i class="fas fa-user-md text-cyan-600 text-xl mr-3"></i>
-                        <h3 class="text-lg font-bold text-cyan-900" style="font-family: 'Poppins', sans-serif;">Physical Examination Findings</h3>
+                        <i class="fas fa-user-md text-blue-600 text-xl mr-3"></i>
+                        <h3 class="text-lg font-bold text-blue-800">Physical Examination Findings</h3>
                     </div>
                     
                     <?php
@@ -369,11 +369,11 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Result</label>
-                                    <input type="text" name="physical_findings[<?php echo e($row); ?>][result]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm" value="<?php echo e(old('physical_findings.'.$row.'.result', data_get($preEmployment->physical_findings, $row.'.result', ''))); ?>" placeholder="Enter result">
+                                    <input type="text" name="physical_findings[<?php echo e($row); ?>][result]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" value="<?php echo e(old('physical_findings.'.$row.'.result', data_get($preEmployment->physical_findings, $row.'.result', ''))); ?>" placeholder="Enter result">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Findings</label>
-                                    <input type="text" name="physical_findings[<?php echo e($row); ?>][findings]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm" value="<?php echo e(old('physical_findings.'.$row.'.findings', data_get($preEmployment->physical_findings, $row.'.findings', ''))); ?>" placeholder="Enter findings">
+                                    <input type="text" name="physical_findings[<?php echo e($row); ?>][findings]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" value="<?php echo e(old('physical_findings.'.$row.'.findings', data_get($preEmployment->physical_findings, $row.'.findings', ''))); ?>" placeholder="Enter findings">
                                 </div>
                             </div>
                         </div>
@@ -381,10 +381,10 @@
                     </div>
                 </div>
                 <!-- Laboratory Test Results Section -->
-                <div class="bg-lime-50 rounded-xl p-6 border-l-4 border-lime-600">
+                <div class="bg-green-50 rounded-xl p-6 border-l-4 border-green-500">
                     <div class="flex items-center mb-6">
-                        <i class="fas fa-microscope text-lime-600 text-xl mr-3"></i>
-                        <h3 class="text-lg font-bold text-lime-900" style="font-family: 'Poppins', sans-serif;">Laboratory Test Results</h3>
+                        <i class="fas fa-microscope text-green-600 text-xl mr-3"></i>
+                        <h3 class="text-lg font-bold text-green-800">Laboratory Test Results</h3>
                     </div>
                     
                     <?php
@@ -415,14 +415,14 @@
                                         $testKey = str_replace('chest_x_ray', 'xray', $testKey);
                                         $testKey = str_replace('hepa_a_igg___igm', 'hepa_a_igg_igm', $testKey);
                                     ?>
-                                    <input type="text" name="lab_report[<?php echo e($testKey); ?>]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-sm" value="<?php echo e(old('lab_report.'.$testKey, data_get($preEmployment->lab_report, $testKey, ''))); ?>" placeholder="Enter test result">
+                                    <input type="text" name="lab_report[<?php echo e($testKey); ?>]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm" value="<?php echo e(old('lab_report.'.$testKey, data_get($preEmployment->lab_report, $testKey, ''))); ?>" placeholder="Enter test result">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Findings</label>
                                     <?php
                                         $findingsKey = $testKey . '_findings';
                                     ?>
-                                    <input type="text" name="lab_report[<?php echo e($findingsKey); ?>]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-sm" value="<?php echo e(old('lab_report.'.$findingsKey, data_get($preEmployment->lab_report, $findingsKey, ''))); ?>" placeholder="Enter findings">
+                                    <input type="text" name="lab_report[<?php echo e($findingsKey); ?>]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm" value="<?php echo e(old('lab_report.'.$findingsKey, data_get($preEmployment->lab_report, $findingsKey, ''))); ?>" placeholder="Enter findings">
                                 </div>
                             </div>
                         </div>
@@ -430,10 +430,10 @@
                     </div>
                 </div>
                 <!-- ECG Section -->
-                <div class="bg-red-50 rounded-xl p-6 border-l-4 border-red-600">
+                <div class="bg-red-50 rounded-xl p-6 border-l-4 border-red-500">
                     <div class="flex items-center mb-4">
                         <i class="fas fa-heartbeat text-red-600 text-xl mr-3"></i>
-                        <h3 class="text-lg font-bold text-red-900" style="font-family: 'Poppins', sans-serif;">Electrocardiogram (ECG)</h3>
+                        <h3 class="text-lg font-bold text-red-800">Electrocardiogram (ECG)</h3>
                     </div>
                     
                     <div class="bg-white rounded-lg p-4">
@@ -445,10 +445,10 @@
                 </div>
                 
                 <!-- Physician Signature & Submit Section -->
-                <div class="bg-gray-50 rounded-xl p-6 border-l-4 border-gray-600">
+                <div class="bg-gray-50 rounded-xl p-6 border-l-4 border-gray-500">
                     <div class="flex items-center justify-between mb-6">
                         <div>
-                            <h3 class="text-lg font-bold text-gray-900" style="font-family: 'Poppins', sans-serif;">
+                            <h3 class="text-lg font-bold text-gray-900">
                                 <i class="fas fa-user-md text-gray-600 mr-3"></i>Physician Authorization
                             </h3>
                             <p class="text-gray-600 text-sm mt-1">Complete employment medical screening and authorize certificate</p>
@@ -466,7 +466,7 @@
                         </div>
                         
                         <div class="flex justify-end">
-                            <button type="submit" class="inline-flex items-center px-8 py-3 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition-all duration-200 shadow-lg hover:shadow-xl">
+                            <button type="submit" class="inline-flex items-center px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 <i class="fas fa-save mr-3"></i>
                                 Save Medical Certificate
                             </button>

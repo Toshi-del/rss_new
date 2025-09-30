@@ -52,7 +52,7 @@
                     <div class="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center">
                         <i class="fas fa-hospital text-white text-lg"></i>
                     </div>
-                    <h1 class="text-2xl font-bold text-gray-900">RCC</h1>
+                    <h1 class="text-2xl font-bold text-gray-900">RSS</h1>
                 </div>
             </div>
             
@@ -72,6 +72,16 @@
                     <a href="<?php echo e(route('doctor.pre-employment')); ?>" class="nav-item flex items-center px-4 py-3 text-gray-700 <?php echo e(request()->routeIs('doctor.pre-employment*') ? 'nav-item-active text-white' : ''); ?>">
                         <i class="fas fa-briefcase mr-3 text-lg"></i>
                         <span class="font-medium">Pre-Employment</span>
+                    </a>
+                    
+                    <a href="<?php echo e(route('medical-test-categories.index')); ?>" class="nav-item flex items-center px-4 py-3 text-gray-700 <?php echo e(request()->routeIs('medical-test-categories*') ? 'nav-item-active text-white' : ''); ?>">
+                        <i class="fas fa-list-alt mr-3 text-lg"></i>
+                        <span class="font-medium">Test Categories</span>
+                    </a>
+                    
+                    <a href="<?php echo e(route('medical-tests.index')); ?>" class="nav-item flex items-center px-4 py-3 text-gray-700 <?php echo e(request()->routeIs('medical-tests*') ? 'nav-item-active text-white' : ''); ?>">
+                        <i class="fas fa-vials mr-3 text-lg"></i>
+                        <span class="font-medium">Medical Tests</span>
                     </a>
                     
                     <a href="<?php echo e(route('doctor.messages')); ?>" class="nav-item flex items-center px-4 py-3 text-gray-700 <?php echo e(request()->routeIs('doctor.messages*') ? 'nav-item-active text-white' : ''); ?>">

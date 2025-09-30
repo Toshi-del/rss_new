@@ -20,32 +20,46 @@ class NurseController extends Controller
      */
     public function dashboard()
     {
-        // Get patients that don't have annual physical examinations yet
+        // Get all approved patients with their examination status
         $patients = Patient::where('status', 'approved')
-            ->whereDoesntHave('annualPhysicalExamination')
-            ->latest()->take(5)->get();
-        $patientCount = Patient::where('status', 'approved')
-            ->whereDoesntHave('annualPhysicalExamination')
-            ->count();
+            ->with(['annualPhysicalExamination'])
+            ->latest()
+            ->take(5)
+            ->get();
+            
+        $patientCount = Patient::where('status', 'approved')->count();
 
         // Get appointments with linked medical tests
-        $appointments = Appointment::with(['patients', 'medicalTestCategory', 'medicalTest'])->latest()->take(5)->get();
+        $appointments = Appointment::with(['patients', 'medicalTestCategory', 'medicalTest'])
+            ->latest()
+            ->take(5)
+            ->get();
+            
         $appointmentCount = Appointment::count();
 
-        // Get pre-employment records that don't have examinations yet
-        $preEmployments = PreEmploymentRecord::with(['medicalTestCategory','medicalTest'])
+        // Get all pre-employment records with their examination status
+        $preEmployments = PreEmploymentRecord::with([
+                'medicalTestCategory',
+                'medicalTest',
+                'preEmploymentExamination'
+            ])
             ->where('status', 'approved')
-            ->whereDoesntHave('preEmploymentExamination')
-            ->latest()->take(5)->get();
-        $preEmploymentCount = PreEmploymentRecord::where('status', 'approved')
-            ->whereDoesntHave('preEmploymentExamination')
-            ->count();
+            ->latest()
+            ->take(5)
+            ->get();
+            
+        $preEmploymentCount = PreEmploymentRecord::where('status', 'approved')->count();
 
         // Get OPD walk-in patients (users with 'opd' role)
-        $opdPatients = User::where('role', 'opd')->latest()->take(5)->get();
+        $opdPatients = User::where('role', 'opd')
+            ->with(['opdExamination'])
+            ->latest()
+            ->take(5)
+            ->get();
+            
         $opdCount = User::where('role', 'opd')->count();
 
-        // Get annual physical count
+        // Count patients without completed examinations
         $annualPhysicalCount = Patient::where('status', 'approved')
             ->whereDoesntHave('annualPhysicalExamination', function ($q) {
                 $q->whereIn('status', ['completed', 'sent_to_company']);
@@ -73,10 +87,15 @@ class NurseController extends Controller
      */
     public function preEmployment()
     {
-        $preEmployments = PreEmploymentRecord::with(['medicalTestCategory', 'medicalTest'])
+        $preEmployments = PreEmploymentRecord::with([
+                'medicalTestCategory', 
+                'medicalTest',
+                'preEmploymentExamination'
+            ])
             ->where('status', 'approved')
             ->whereDoesntHave('preEmploymentExamination')
-            ->latest()->paginate(15);
+            ->latest()
+            ->paginate(15);
         
         return view('nurse.pre-employment', compact('preEmployments'));
     }
@@ -86,9 +105,11 @@ class NurseController extends Controller
      */
     public function annualPhysical()
     {
-        $patients = Patient::where('status', 'approved')
+        $patients = Patient::with(['annualPhysicalExamination'])
+            ->where('status', 'approved')
             ->whereDoesntHave('annualPhysicalExamination')
-            ->latest()->paginate(15);
+            ->latest()
+            ->paginate(15);
         
         return view('nurse.annual-physical', compact('patients'));
     }
@@ -572,11 +593,11 @@ class NurseController extends Controller
      */
     public function opd()
     {
-        $opdPatients = User::where('role', 'opd')
-            ->whereDoesntHave('opdExamination', function ($q) {
-                $q->whereIn('status', ['completed', 'sent_to_company']);
-            })
-            ->latest()->get();
+        $opdPatients = User::with(['opdExamination'])
+            ->where('role', 'opd')
+            ->whereDoesntHave('opdExamination')
+            ->latest()
+            ->get();
         
         return view('nurse.opd', compact('opdPatients'));
     }
