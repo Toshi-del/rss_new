@@ -1,27 +1,25 @@
-@extends('layouts.admin')
+<?php $__env->startSection('title', 'View Medical Test Category'); ?>
+<?php $__env->startSection('page-title', 'View Medical Test Category'); ?>
 
-@section('title', 'View Medical Test Category')
-@section('page-title', 'View Medical Test Category')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
     <div class="max-w-7xl mx-auto space-y-6">
         
         <!-- Header Section -->
         <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
-                <a href="{{ route('admin.medical-test-categories.index') }}" 
+                <a href="<?php echo e(route('admin.medical-test-categories.index')); ?>" 
                    class="inline-flex items-center px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg border border-gray-200 transition-all duration-150 shadow-sm">
                     <i class="fas fa-arrow-left mr-2 text-sm"></i>
                     Back to Categories
                 </a>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">{{ $category->name }}</h1>
+                    <h1 class="text-2xl font-bold text-gray-900"><?php echo e($category->name); ?></h1>
                     <p class="text-sm text-gray-600 mt-1">Category details and associated medical tests</p>
                 </div>
             </div>
             <div class="flex items-center space-x-3">
-                <a href="{{ route('admin.medical-test-categories.edit', $category) }}" 
+                <a href="<?php echo e(route('admin.medical-test-categories.edit', $category)); ?>" 
                    class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all duration-150 shadow-sm">
                     <i class="fas fa-edit mr-2"></i>
                     Edit Category
@@ -54,7 +52,7 @@
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-gray-500">Category Name</p>
-                                <p class="text-lg font-bold text-gray-900">{{ $category->name }}</p>
+                                <p class="text-lg font-bold text-gray-900"><?php echo e($category->name); ?></p>
                             </div>
                         </div>
                     </div>
@@ -62,14 +60,15 @@
                     <!-- Status -->
                     <div class="bg-gray-50 rounded-xl p-6">
                         <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-{{ $category->is_active ? 'green' : 'red' }}-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-{{ $category->is_active ? 'check-circle' : 'times-circle' }} text-{{ $category->is_active ? 'green' : 'red' }}-600"></i>
+                            <div class="w-10 h-10 bg-<?php echo e($category->is_active ? 'green' : 'red'); ?>-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-<?php echo e($category->is_active ? 'check-circle' : 'times-circle'); ?> text-<?php echo e($category->is_active ? 'green' : 'red'); ?>-600"></i>
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-gray-500">Status</p>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold {{ $category->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold <?php echo e($category->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'); ?>">
                                     <i class="fas fa-circle mr-1.5 text-xs"></i>
-                                    {{ $category->is_active ? 'Active' : 'Inactive' }}
+                                    <?php echo e($category->is_active ? 'Active' : 'Inactive'); ?>
+
                                 </span>
                             </div>
                         </div>
@@ -83,7 +82,7 @@
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-gray-500">Total Tests</p>
-                                <p class="text-lg font-bold text-gray-900">{{ $category->medical_tests_count ?? 0 }}</p>
+                                <p class="text-lg font-bold text-gray-900"><?php echo e($category->medical_tests_count ?? 0); ?></p>
                             </div>
                         </div>
                     </div>
@@ -96,7 +95,7 @@
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-gray-500">Sort Order</p>
-                                <p class="text-lg font-bold text-gray-900">{{ $category->sort_order }}</p>
+                                <p class="text-lg font-bold text-gray-900"><?php echo e($category->sort_order); ?></p>
                             </div>
                         </div>
                     </div>
@@ -109,8 +108,8 @@
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-gray-500">Created Date</p>
-                                <p class="text-lg font-bold text-gray-900">{{ $category->created_at->format('M d, Y') }}</p>
-                                <p class="text-xs text-gray-500">{{ $category->created_at->format('g:i A') }}</p>
+                                <p class="text-lg font-bold text-gray-900"><?php echo e($category->created_at->format('M d, Y')); ?></p>
+                                <p class="text-xs text-gray-500"><?php echo e($category->created_at->format('g:i A')); ?></p>
                             </div>
                         </div>
                     </div>
@@ -123,15 +122,15 @@
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-gray-500">Last Updated</p>
-                                <p class="text-lg font-bold text-gray-900">{{ $category->updated_at->format('M d, Y') }}</p>
-                                <p class="text-xs text-gray-500">{{ $category->updated_at->format('g:i A') }}</p>
+                                <p class="text-lg font-bold text-gray-900"><?php echo e($category->updated_at->format('M d, Y')); ?></p>
+                                <p class="text-xs text-gray-500"><?php echo e($category->updated_at->format('g:i A')); ?></p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Description Section -->
-                @if($category->description)
+                <?php if($category->description): ?>
                 <div class="mt-8 p-6 bg-blue-50 rounded-xl border border-blue-100">
                     <div class="flex items-start space-x-3">
                         <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -139,11 +138,11 @@
                         </div>
                         <div>
                             <h3 class="text-sm font-semibold text-gray-900 mb-2">Description</h3>
-                            <p class="text-gray-700 leading-relaxed">{{ $category->description }}</p>
+                            <p class="text-gray-700 leading-relaxed"><?php echo e($category->description); ?></p>
                         </div>
                     </div>
                 </div>
-                @endif
+                <?php endif; ?>
             </div>
         </div>
 
@@ -157,10 +156,10 @@
                         </div>
                         <div>
                             <h2 class="text-xl font-bold text-white">Medical Tests</h2>
-                            <p class="text-blue-100 text-sm mt-1">{{ $category->medical_tests_count ?? 0 }} tests in this category</p>
+                            <p class="text-blue-100 text-sm mt-1"><?php echo e($category->medical_tests_count ?? 0); ?> tests in this category</p>
                         </div>
                     </div>
-                    <a href="{{ route('medical-tests.create', ['category_id' => $category->id]) }}" 
+                    <a href="<?php echo e(route('medical-tests.create', ['category_id' => $category->id])); ?>" 
                        class="inline-flex items-center px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg font-medium transition-all duration-150 border border-white/20">
                         <i class="fas fa-plus mr-2"></i>
                         Add Test
@@ -168,7 +167,7 @@
                 </div>
             </div>
             
-            @if($category->medicalTests && $category->medicalTests->count() > 0)
+            <?php if($category->medicalTests && $category->medicalTests->count() > 0): ?>
                 <div class="overflow-x-auto">
                     <table class="min-w-full">
                         <thead>
@@ -218,7 +217,7 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
-                            @foreach($category->medicalTests as $test)
+                            <?php $__currentLoopData = $category->medicalTests; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $test): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <tr class="hover:bg-blue-50/30 transition-colors duration-150">
                                     <td class="px-8 py-6">
                                         <div class="flex items-center space-x-3">
@@ -226,33 +225,34 @@
                                                 <i class="fas fa-vial text-blue-600"></i>
                                             </div>
                                             <div>
-                                                <div class="text-sm font-semibold text-gray-900">{{ $test->name }}</div>
-                                                <div class="text-xs text-gray-500">ID: {{ $test->id }}</div>
+                                                <div class="text-sm font-semibold text-gray-900"><?php echo e($test->name); ?></div>
+                                                <div class="text-xs text-gray-500">ID: <?php echo e($test->id); ?></div>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-8 py-6">
                                         <div class="text-sm text-gray-700 leading-relaxed max-w-xs">
-                                            {{ Str::limit($test->description, 80) }}
+                                            <?php echo e(Str::limit($test->description, 80)); ?>
+
                                         </div>
                                     </td>
                                     <td class="px-8 py-6">
-                                        @if($test->is_active)
+                                        <?php if($test->is_active): ?>
                                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
                                                 <i class="fas fa-check-circle mr-1.5 text-xs"></i>
                                                 Active
                                             </span>
-                                        @else
+                                        <?php else: ?>
                                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800">
                                                 <i class="fas fa-times-circle mr-1.5 text-xs"></i>
                                                 Inactive
                                             </span>
-                                        @endif
+                                        <?php endif; ?>
                                     </td>
                                     <td class="px-8 py-6">
                                         <div class="flex items-center space-x-2">
                                             <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                                                <span class="text-sm font-semibold text-gray-700">{{ $test->sort_order }}</span>
+                                                <span class="text-sm font-semibold text-gray-700"><?php echo e($test->sort_order); ?></span>
                                             </div>
                                         </div>
                                     </td>
@@ -262,29 +262,30 @@
                                                 <i class="fas fa-peso-sign text-green-600 text-xs"></i>
                                             </div>
                                             <div class="text-sm font-semibold text-gray-900">
-                                                @if($test->price)
-                                                    ₱{{ number_format($test->price, 2) }}
-                                                @else
+                                                <?php if($test->price): ?>
+                                                    ₱<?php echo e(number_format($test->price, 2)); ?>
+
+                                                <?php else: ?>
                                                     <span class="text-gray-400 italic">Not set</span>
-                                                @endif
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-8 py-6">
                                         <div class="text-sm text-gray-600">
-                                            <div class="font-medium">{{ $test->created_at->format('M d, Y') }}</div>
-                                            <div class="text-xs text-gray-500">{{ $test->created_at->format('g:i A') }}</div>
+                                            <div class="font-medium"><?php echo e($test->created_at->format('M d, Y')); ?></div>
+                                            <div class="text-xs text-gray-500"><?php echo e($test->created_at->format('g:i A')); ?></div>
                                         </div>
                                     </td>
                                     <td class="px-8 py-6">
                                         <div class="flex items-center justify-center space-x-3">
-                                            <a href="{{ route('medical-tests.edit', $test->id) }}" 
+                                            <a href="<?php echo e(route('medical-tests.edit', $test->id)); ?>" 
                                                class="w-8 h-8 bg-indigo-100 hover:bg-indigo-200 text-indigo-600 rounded-lg flex items-center justify-center transition-colors duration-150"
                                                title="Edit Test">
                                                 <i class="fas fa-edit text-sm"></i>
                                             </a>
                                             <button type="button" 
-                                                    onclick="openDeleteModal({{ $test->id }}, '{{ $test->name }}')"
+                                                    onclick="openDeleteModal(<?php echo e($test->id); ?>, '<?php echo e($test->name); ?>')"
                                                     class="w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg flex items-center justify-center transition-colors duration-150"
                                                     title="Delete Test">
                                                 <i class="fas fa-trash text-sm"></i>
@@ -292,24 +293,24 @@
                                         </div>
                                     </td>
                                 </tr>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </tbody>
                     </table>
                 </div>
-            @else
+            <?php else: ?>
                 <div class="px-8 py-16 text-center">
                     <div class="w-20 h-20 mx-auto bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
                         <i class="fas fa-vial text-3xl text-blue-600"></i>
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-3">No Medical Tests Found</h3>
                     <p class="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">This category doesn't have any medical tests yet. Create your first test to get started with organizing medical examinations.</p>
-                    <a href="{{ route('medical-tests.create', ['category_id' => $category->id]) }}" 
+                    <a href="<?php echo e(route('medical-tests.create', ['category_id' => $category->id])); ?>" 
                        class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors duration-150 shadow-lg hover:shadow-xl">
                         <i class="fas fa-plus mr-2"></i>
                         Create First Medical Test
                     </a>
                 </div>
-            @endif
+            <?php endif; ?>
         </div>
     </div>
 </div>
@@ -334,8 +335,8 @@
                     Cancel
                 </button>
                 <form id="deleteForm" method="POST" class="inline">
-                    @csrf
-                    @method('DELETE')
+                    <?php echo csrf_field(); ?>
+                    <?php echo method_field('DELETE'); ?>
                     <button type="submit" 
                             class="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
                         Delete
@@ -371,4 +372,5 @@ document.addEventListener('keydown', function(e) {
     }
 });
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.admin', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\rss_new-1\resources\views/admin/medical-test-categories/show.blade.php ENDPATH**/ ?>

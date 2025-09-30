@@ -10,7 +10,7 @@
         <!-- Header Section -->
         <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
-                <a href="{{ route('medical-test-categories.index') }}" 
+                <a href="{{ route('admin.medical-test-categories.index') }}" 
                    class="inline-flex items-center px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg border border-gray-200 transition-all duration-150 shadow-sm">
                     <i class="fas fa-arrow-left mr-2 text-sm"></i>
                     Back to Categories
@@ -36,7 +36,7 @@
                 </div>
             </div>
 
-            <form action="{{ route('medical-test-categories.store') }}" method="POST" class="p-8 space-y-8">
+            <form action="{{ route('admin.medical-test-categories.store') }}" method="POST" class="p-8 space-y-8">
                 @csrf
 
                 <!-- Category Name -->
@@ -128,7 +128,7 @@
 
                 <!-- Form Actions -->
                 <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
-                    <a href="{{ route('medical-test-categories.index') }}" 
+                    <a href="{{ route('admin.medical-test-categories.index') }}" 
                        class="inline-flex items-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-all duration-150 border border-gray-200">
                         <i class="fas fa-times mr-2"></i>
                         Cancel

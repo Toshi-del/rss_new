@@ -109,8 +109,16 @@ Route::post('admin/pre-employment/{id}/send-email', [App\Http\Controllers\AdminC
     Route::put('/admin/medical-staff/{id}', [AdminController::class, 'updateMedicalStaff'])->name('admin.medical-staff.update');
     Route::delete('/admin/medical-staff/{id}', [AdminController::class, 'destroyMedicalStaff'])->name('admin.medical-staff.destroy');
     
-    // Medical Test Management Routes
-    Route::resource('admin/medical-test-categories', App\Http\Controllers\Admin\MedicalTestCategoryController::class);
+    // Medical Test Categories Routes
+    Route::prefix('admin/medical-test-categories')->name('admin.medical-test-categories.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\MedicalTestCategoryController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\MedicalTestCategoryController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\MedicalTestCategoryController::class, 'store'])->name('store');
+        Route::get('/{medical_test_category}', [\App\Http\Controllers\Admin\MedicalTestCategoryController::class, 'show'])->name('show');
+        Route::get('/{medical_test_category}/edit', [\App\Http\Controllers\Admin\MedicalTestCategoryController::class, 'edit'])->name('edit');
+        Route::put('/{medical_test_category}', [\App\Http\Controllers\Admin\MedicalTestCategoryController::class, 'update'])->name('update');
+        Route::delete('/{medical_test_category}', [\App\Http\Controllers\Admin\MedicalTestCategoryController::class, 'destroy'])->name('destroy');
+    });
     Route::resource('admin/medical-tests', App\Http\Controllers\Admin\MedicalTestController::class)->except(['index']);
     
     // Inventory Management Routes

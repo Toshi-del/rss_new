@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Models\DrugTestResult;
 
 class PreEmploymentRecord extends Model
 {
@@ -89,6 +90,14 @@ class PreEmploymentRecord extends Model
         return $this->belongsToMany(MedicalTestCategory::class, 'pre_employment_medical_tests')
                     ->withPivot('medical_test_id')
                     ->withTimestamps();
+    }
+
+    /**
+     * Get the drug test result associated with this pre-employment record
+     */
+    public function drugTest(): HasOne
+    {
+        return $this->hasOne(DrugTestResult::class, 'pre_employment_record_id');
     }
 
     // Helper method to parse other_exams JSON data
@@ -182,6 +191,18 @@ class PreEmploymentRecord extends Model
                         'package_price' => $test['price'],
                     ]);
                 }
+                
+                // Add blood chemistry tests for packages that include them
+                if (str_contains(strtolower($test['test_name']), 'drug test')) {
+                    $pathologistTests->push([
+                        'test_name' => 'Blood Chemistry Panel',
+                        'category_name' => 'Blood Chemistry',
+                        'price' => 0,
+                        'is_package_component' => true,
+                        'package_name' => $test['test_name'],
+                        'package_price' => $test['price'],
+                    ]);
+                }
             } else {
                 // For non-package tests, check if it's a pathologist test
                 if ($this->isPathologistTest($test['test_name'], $test['category_name'])) {
@@ -241,7 +262,7 @@ class PreEmploymentRecord extends Model
             'Blood Chemistry',
             'Clinical Microscopy',
             'Serology',
-            'Special Hematology',
+            'Special hematology',
             'Histology',
             'Immunology',
             'Tumor Markers',

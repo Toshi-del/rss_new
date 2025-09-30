@@ -422,6 +422,68 @@
             @endif
 
 
+            <!-- Drug Test Results -->
+            @if($requiresDrugTest && $examination->preEmploymentRecord->drugTest)
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-red-500 mb-8">
+                <div class="px-6 py-4 bg-gradient-to-r from-red-500 to-red-600">
+                    <div class="flex items-center">
+                        <i class="fas fa-flask text-white text-xl mr-3"></i>
+                        <h3 class="text-lg font-bold text-white">Drug Test Results</h3>
+                    </div>
+                </div>
+                <div class="p-6 bg-red-50">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-4 rounded-lg border border-gray-200">
+                            <h4 class="text-md font-semibold text-gray-800 mb-3">Test Information</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <p class="text-sm text-gray-600">Test Date:</p>
+                                    <p class="font-medium">{{ \Carbon\Carbon::parse($examination->preEmploymentRecord->drugTest->test_date)->format('F j, Y') }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Test Method:</p>
+                                    <p class="font-medium">{{ $examination->preEmploymentRecord->drugTest->test_method ?? 'Urine Test Kit' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border border-gray-200">
+                            <h4 class="text-md font-semibold text-gray-800 mb-3">Test Results</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <p class="text-sm text-gray-600">Methamphetamine (Shabu):</p>
+                                    <p class="font-medium">
+                                        <span class="px-2 py-1 rounded-full text-xs font-semibold {{ $examination->preEmploymentRecord->drugTest->methamphetamine_result === 'Negative' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                            {{ $examination->preEmploymentRecord->drugTest->methamphetamine_result }}
+                                        </span>
+                                        @if($examination->preEmploymentRecord->drugTest->methamphetamine_remarks)
+                                            <p class="text-sm text-gray-600 mt-1">Remarks: {{ $examination->preEmploymentRecord->drugTest->methamphetamine_remarks }}</p>
+                                        @endif
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Marijuana (THC):</p>
+                                    <p class="font-medium">
+                                        <span class="px-2 py-1 rounded-full text-xs font-semibold {{ $examination->preEmploymentRecord->drugTest->marijuana_result === 'Negative' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                            {{ $examination->preEmploymentRecord->drugTest->marijuana_result }}
+                                        </span>
+                                        @if($examination->preEmploymentRecord->drugTest->marijuana_remarks)
+                                            <p class="text-sm text-gray-600 mt-1">Remarks: {{ $examination->preEmploymentRecord->drugTest->marijuana_remarks }}</p>
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @if($examination->preEmploymentRecord->drugTest->notes)
+                    <div class="mt-4 bg-white p-4 rounded-lg border border-gray-200">
+                        <h4 class="text-md font-semibold text-gray-800 mb-2">Additional Notes</h4>
+                        <p class="text-gray-700">{{ $examination->preEmploymentRecord->drugTest->notes }}</p>
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endif
+
             <!-- Findings and Recommendations -->
             @if($examination->findings || $examination->physical_findings || $examination->lab_findings)
             <div class="bg-white rounded-xl shadow-lg overflow-hidden border-l-4 border-red-500 mb-8">

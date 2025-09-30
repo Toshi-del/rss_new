@@ -54,9 +54,18 @@ class DoctorController extends Controller
     {
         // Show pre-employment examinations that are ready for doctor review
         $preEmploymentExaminations = \App\Models\PreEmploymentExamination::with(['preEmploymentRecord.medicalTest', 'preEmploymentRecord.medicalTestCategory', 'user'])
-            ->where('status', 'completed') // Only show completed examinations
+            ->whereIn('status', ['pending', 'completed', 'Approved']) // Show pending, completed, and Approved examinations
             ->latest()
             ->paginate(15);
+            
+        // Log the count and statuses for debugging
+        \Log::info('Pre-employment examinations count: ' . $preEmploymentExaminations->count());
+        \Log::info('Pre-employment examinations statuses: ' . 
+            \App\Models\PreEmploymentExamination::select('status', \DB::raw('count(*) as count'))
+                ->groupBy('status')
+                ->pluck('count', 'status')
+                ->toJson(JSON_PRETTY_PRINT)
+        );
             
         return view('doctor.pre-employment', compact('preEmploymentExaminations'));
     }
@@ -250,10 +259,16 @@ class DoctorController extends Controller
     {
         $examination = PreEmploymentExamination::with([
             'preEmploymentRecord.preEmploymentMedicalTests.medicalTest.referenceRanges',
-            'preEmploymentRecord.preEmploymentMedicalTests.medicalTestCategory'
+            'preEmploymentRecord.preEmploymentMedicalTests.medicalTestCategory',
+            'preEmploymentRecord.drugTest'
         ])->findOrFail($id);
         
-        return view('doctor.pre-employment-examination', compact('examination'));
+        // Check if this examination requires a drug test
+        $requiresDrugTest = $examination->preEmploymentRecord && 
+                           $examination->preEmploymentRecord->medicalTest && 
+                           stripos($examination->preEmploymentRecord->medicalTest->name, 'drug test') !== false;
+        
+        return view('doctor.pre-employment-examination', compact('examination', 'requiresDrugTest'));
     }
 
     /**

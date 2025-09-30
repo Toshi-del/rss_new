@@ -204,11 +204,13 @@ class RadiologistController extends Controller
         $lab['chest_xray'] = [
             'result' => $request->input('cxr_result'),
             'finding' => $request->input('cxr_finding'),
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now()->toDateTimeString(),
         ];
         $exam->lab_findings = $lab;
         $exam->save();
         
-        return redirect()->route('radiologist.pre-employment-xray')->with('success', 'Chest X-Ray findings updated successfully. Record removed from your list.');
+        return redirect()->route('radiologist.pre-employment-xray')->with('success', 'Chest X-Ray findings updated successfully. The record will remain visible to other radiologists.');
     }
 
     public function updateAnnualPhysical(\Illuminate\Http\Request $request, $id)
@@ -238,11 +240,13 @@ class RadiologistController extends Controller
         $lab['chest_xray'] = [
             'result' => $request->input('cxr_result'),
             'finding' => $request->input('cxr_finding'),
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now()->toDateTimeString(),
         ];
         $exam->lab_findings = $lab;
         $exam->save();
         
-        return redirect()->route('radiologist.annual-physical-xray')->with('success', 'Chest X-Ray findings updated successfully. Record removed from your list.');
+        return redirect()->route('radiologist.annual-physical-xray')->with('success', 'Chest X-Ray findings updated successfully. The record will remain visible to other radiologists.');
     }
 
     /**
@@ -258,7 +262,8 @@ class RadiologistController extends Controller
             })
             ->whereDoesntHave('preEmploymentExamination', function ($q) {
                 $q->whereNotNull('lab_findings->chest_xray->result')
-                  ->whereNotNull('lab_findings->chest_xray->finding');
+                  ->whereNotNull('lab_findings->chest_xray->finding')
+                  ->where('lab_findings->chest_xray->reviewed_by', auth()->id());
             })
             ->latest()
             ->get();
@@ -278,7 +283,8 @@ class RadiologistController extends Controller
             })
             ->whereDoesntHave('annualPhysicalExamination', function ($q) {
                 $q->whereNotNull('lab_findings->chest_xray->result')
-                  ->whereNotNull('lab_findings->chest_xray->finding');
+                  ->whereNotNull('lab_findings->chest_xray->finding')
+                  ->where('lab_findings->chest_xray->reviewed_by', auth()->id());
             })
             ->with('medicalChecklist')
             ->latest()

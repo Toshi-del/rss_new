@@ -171,7 +171,7 @@
                     <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>
                 </a>
                 
-                <a href="{{ route('medical-test-categories.index') }}" class="nav-item flex items-center px-4 py-4 rounded-2xl font-medium {{ request()->routeIs('medical-test-categories*') ? 'active' : '' }}">
+                <a href="{{ route('admin.medical-test-categories.index') }}" class="nav-item flex items-center px-4 py-4 rounded-2xl font-medium {{ request()->routeIs('admin.medical-test-categories.*') ? 'active' : '' }}">
                     <i class="fas fa-list-alt text-lg mr-4"></i>
                     <span>Test Categories</span>
                     <i class="fas fa-chevron-right ml-auto text-xs opacity-60"></i>

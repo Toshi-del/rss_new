@@ -9,7 +9,9 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Models\Appointment;
+use App\Models\MedicalChecklist;
 
 class User extends Authenticatable
 {
@@ -101,6 +103,14 @@ class User extends Authenticatable
     public function isDoctor()
     {
         return $this->hasRole('doctor');
+    }
+
+    /**
+     * Get the medical checklist for OPD patients
+     */
+    public function medicalChecklist(): HasOne
+    {
+        return $this->hasOne(MedicalChecklist::class, 'user_id');
     }
 
     /**

@@ -1,8 +1,6 @@
-@extends('layouts.admin')
+<?php $__env->startSection('title', 'Medical Test Categories'); ?>
 
-@section('title', 'Medical Test Categories')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50" style="font-family: 'Inter', sans-serif;">
     <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         
@@ -14,7 +12,7 @@
                     <p class="text-sm text-gray-600">Organize and manage your medical test categories efficiently</p>
                 </div>
                 <div class="mt-4 sm:mt-0">
-                    <a href="{{ route('admin.medical-test-categories.create') }}" 
+                    <a href="<?php echo e(route('admin.medical-test-categories.create')); ?>" 
                        class="inline-flex items-center px-6 py-3 bg-blue-600 border border-transparent rounded-xl text-sm font-semibold text-white shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200">
                         <i class="fas fa-plus mr-2"></i>
                         Add New Category
@@ -24,14 +22,14 @@
         </div>
 
         <!-- Success Message -->
-        @if(session('success'))
+        <?php if(session('success')): ?>
             <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl">
                 <div class="flex items-center">
                     <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                    <p class="text-green-800 font-medium">{{ session('success') }}</p>
+                    <p class="text-green-800 font-medium"><?php echo e(session('success')); ?></p>
                 </div>
             </div>
-        @endif
+        <?php endif; ?>
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -42,7 +40,7 @@
                     </div>
                     <div>
                         <p class="text-sm font-medium text-gray-500">Total Categories</p>
-                        <p class="text-2xl font-bold text-gray-900" style="font-family: 'Poppins', sans-serif;">{{ $categories->count() }}</p>
+                        <p class="text-2xl font-bold text-gray-900" style="font-family: 'Poppins', sans-serif;"><?php echo e($categories->count()); ?></p>
                     </div>
                 </div>
             </div>
@@ -54,7 +52,7 @@
                     </div>
                     <div>
                         <p class="text-sm font-medium text-gray-500">Active Categories</p>
-                        <p class="text-2xl font-bold text-gray-900" style="font-family: 'Poppins', sans-serif;">{{ $categories->where('is_active', true)->count() }}</p>
+                        <p class="text-2xl font-bold text-gray-900" style="font-family: 'Poppins', sans-serif;"><?php echo e($categories->where('is_active', true)->count()); ?></p>
                     </div>
                 </div>
             </div>
@@ -66,7 +64,7 @@
                     </div>
                     <div>
                         <p class="text-sm font-medium text-gray-500">Total Tests</p>
-                        <p class="text-2xl font-bold text-gray-900" style="font-family: 'Poppins', sans-serif;">{{ $categories->sum('medical_tests_count') }}</p>
+                        <p class="text-2xl font-bold text-gray-900" style="font-family: 'Poppins', sans-serif;"><?php echo e($categories->sum('medical_tests_count')); ?></p>
                     </div>
                 </div>
             </div>
@@ -78,16 +76,16 @@
                     </div>
                     <div>
                         <p class="text-sm font-medium text-gray-500">Avg per Category</p>
-                        <p class="text-2xl font-bold text-gray-900" style="font-family: 'Poppins', sans-serif;">{{ $categories->count() > 0 ? round($categories->sum('medical_tests_count') / $categories->count(), 1) : 0 }}</p>
+                        <p class="text-2xl font-bold text-gray-900" style="font-family: 'Poppins', sans-serif;"><?php echo e($categories->count() > 0 ? round($categories->sum('medical_tests_count') / $categories->count(), 1) : 0); ?></p>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Categories Grid -->
-        @if($categories->count() > 0)
+        <?php if($categories->count() > 0): ?>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                @foreach($categories as $index => $category)
+                <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     
                     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                         <!-- Card Header -->
@@ -95,15 +93,16 @@
                             <div class="flex items-start justify-between">
                                 <div class="flex items-center">
                                     <div class="min-w-0 flex-1">
-                                        <div class="category-name text-gray-900 truncate" style="font-family: 'Poppins', sans-serif;">{{ $category->name }}</div>
-                                        @if($category->description)
-                                            <p class="text-xs text-gray-500 mt-1 line-clamp-2">{{ $category->description }}</p>
-                                        @endif
+                                        <div class="category-name text-gray-900 truncate" style="font-family: 'Poppins', sans-serif;"><?php echo e($category->name); ?></div>
+                                        <?php if($category->description): ?>
+                                            <p class="text-xs text-gray-500 mt-1 line-clamp-2"><?php echo e($category->description); ?></p>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $category->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium <?php echo e($category->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'); ?>">
                                     <i class="fas fa-circle mr-1 text-xs"></i>
-                                    {{ $category->is_active ? 'Active' : 'Inactive' }}
+                                    <?php echo e($category->is_active ? 'Active' : 'Inactive'); ?>
+
                                 </span>
                             </div>
                         </div>
@@ -114,13 +113,13 @@
                             <div class="flex items-center justify-between mb-4">
                                 <div class="flex items-center">
                                     <div>
-                                        <p class="text-2xl font-bold text-gray-900" style="font-family: 'Poppins', sans-serif;">{{ $category->medical_tests_count }}</p>
-                                        <p class="text-xs text-gray-500">{{ Str::plural('test', $category->medical_tests_count) }}</p>
+                                        <p class="text-2xl font-bold text-gray-900" style="font-family: 'Poppins', sans-serif;"><?php echo e($category->medical_tests_count); ?></p>
+                                        <p class="text-xs text-gray-500"><?php echo e(Str::plural('test', $category->medical_tests_count)); ?></p>
                                     </div>
                                 </div>
                                 <div class="text-right">
                                     <p class="text-xs text-gray-500 mb-1">Sort Order</p>
-                                    <p class="text-sm font-semibold text-gray-900">{{ $category->sort_order }}</p>
+                                    <p class="text-sm font-semibold text-gray-900"><?php echo e($category->sort_order); ?></p>
                                 </div>
                             </div>
 
@@ -128,27 +127,27 @@
                             <div class="mb-6">
                                 <div class="flex justify-between text-xs text-gray-500 mb-2">
                                     <span>Test Coverage</span>
-                                    <span>{{ $category->medical_tests_count }} tests</span>
+                                    <span><?php echo e($category->medical_tests_count); ?> tests</span>
                                 </div>
                                 <div class="w-full bg-gray-200 rounded-full h-2">
                                     <div class="bg-blue-600 h-2 rounded-full transition-all duration-1000" 
-                                         style="width: {{ min(($category->medical_tests_count / 10) * 100, 100) }}%"></div>
+                                         style="width: <?php echo e(min(($category->medical_tests_count / 10) * 100, 100)); ?>%"></div>
                                 </div>
                             </div>
 
                             <!-- Action Buttons -->
                             <div class="flex space-x-2">
-                                <a href="{{ route('admin.medical-test-categories.show', $category) }}" 
+                                <a href="<?php echo e(route('admin.medical-test-categories.show', $category)); ?>" 
                                    class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                                     <i class="fas fa-eye mr-2"></i>
                                     View
                                 </a>
-                                <a href="{{ route('admin.medical-test-categories.edit', $category) }}" 
+                                <a href="<?php echo e(route('admin.medical-test-categories.edit', $category)); ?>" 
                                    class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                                     <i class="fas fa-edit mr-2"></i>
                                     Edit
                                 </a>
-                                <button onclick="openDeleteModal({{ $category->id }}, '{{ $category->name }}')" 
+                                <button onclick="openDeleteModal(<?php echo e($category->id); ?>, '<?php echo e($category->name); ?>')" 
                                         class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
                                     <i class="fas fa-trash mr-2"></i>
                                     Delete
@@ -161,18 +160,18 @@
                             <div class="flex items-center justify-between text-xs text-gray-500">
                                 <div class="flex items-center">
                                     <i class="fas fa-clock mr-1"></i>
-                                    <span>Created {{ $category->created_at->diffForHumans() }}</span>
+                                    <span>Created <?php echo e($category->created_at->diffForHumans()); ?></span>
                                 </div>
                                 <div class="flex items-center">
                                     <i class="fas fa-sync-alt mr-1"></i>
-                                    <span>Updated {{ $category->updated_at->diffForHumans() }}</span>
+                                    <span>Updated <?php echo e($category->updated_at->diffForHumans()); ?></span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </div>
-        @else
+        <?php else: ?>
             <!-- Empty State -->
             <div class="text-center py-16">
                 <div class="max-w-md mx-auto">
@@ -181,14 +180,14 @@
                     </div>
                     <h3 class="text-xl font-semibold text-gray-900 mb-3" style="font-family: 'Poppins', sans-serif;">No Categories Found</h3>
                     <p class="text-gray-500 mb-8">Get started by creating your first medical test category to organize your examinations.</p>
-                    <a href="{{ route('admin.medical-test-categories.create') }}" 
+                    <a href="<?php echo e(route('admin.medical-test-categories.create')); ?>" 
                        class="inline-flex items-center px-6 py-3 bg-blue-600 border border-transparent rounded-xl text-sm font-semibold text-white shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200">
                         <i class="fas fa-plus mr-2"></i>
                         Create Your First Category
                     </a>
                 </div>
             </div>
-        @endif
+        <?php endif; ?>
     </div>
 </div>
 
@@ -243,8 +242,8 @@
 
 <!-- Hidden form for deletion -->
 <form id="deleteForm" method="POST" style="display: none;">
-    @csrf
-    @method('DELETE')
+    <?php echo csrf_field(); ?>
+    <?php echo method_field('DELETE'); ?>
 </form>
 
 <script>
@@ -346,4 +345,6 @@ document.addEventListener('keydown', function(event) {
     background: #94a3b8;
 }
 </style>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.admin', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\rss_new-1\resources\views/admin/medical-test-categories/index.blade.php ENDPATH**/ ?>

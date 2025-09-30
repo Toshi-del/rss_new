@@ -21,14 +21,86 @@ class PleboController extends Controller
      */
     public function dashboard()
     {
-        $preEmployments = PreEmploymentRecord::where('status', 'approved')->latest()->take(5)->get();
-        $preEmploymentCount = PreEmploymentRecord::where('status', 'approved')->count();
+        // Get pre-employment records that don't have a medical checklist or have an incomplete one
+        $preEmployments = PreEmploymentRecord::where('status', 'approved')
+            ->where(function($query) {
+                $query->whereDoesntHave('medicalChecklist')
+                      ->orWhereHas('medicalChecklist', function($q) {
+                          $q->whereNull('blood_extraction_done_by');
+                      });
+            })
+            ->whereDoesntHave('preEmploymentExamination', function($q) {
+                $q->whereIn('status', ['Approved', 'sent_to_company']);
+            })
+            ->latest()
+            ->take(5)
+            ->get();
+            
+        $preEmploymentCount = PreEmploymentRecord::where('status', 'approved')
+            ->where(function($query) {
+                $query->whereDoesntHave('medicalChecklist')
+                      ->orWhereHas('medicalChecklist', function($q) {
+                          $q->whereNull('blood_extraction_done_by');
+                      });
+            })
+            ->whereDoesntHave('preEmploymentExamination', function($q) {
+                $q->whereIn('status', ['Approved', 'sent_to_company']);
+            })
+            ->count();
 
-        $patients = Patient::where('status', 'approved')->latest()->take(5)->get();
-        $patientCount = Patient::where('status', 'approved')->count();
+        // Get annual physical patients that don't have a medical checklist or have an incomplete one
+        $patients = Patient::where('status', 'approved')
+            ->where(function($query) {
+                $query->whereDoesntHave('medicalChecklist')
+                      ->orWhereHas('medicalChecklist', function($q) {
+                          $q->whereNull('blood_extraction_done_by');
+                      });
+            })
+            ->whereDoesntHave('annualPhysicalExamination', function($q) {
+                $q->whereIn('status', ['completed', 'sent_to_company']);
+            })
+            ->latest()
+            ->take(5)
+            ->get();
+            
+        $patientCount = Patient::where('status', 'approved')
+            ->where(function($query) {
+                $query->whereDoesntHave('medicalChecklist')
+                      ->orWhereHas('medicalChecklist', function($q) {
+                          $q->whereNull('blood_extraction_done_by');
+                      });
+            })
+            ->whereDoesntHave('annualPhysicalExamination', function($q) {
+                $q->whereIn('status', ['completed', 'sent_to_company']);
+            })
+            ->count();
 
-        $opdPatients = User::where('role', 'opd')->latest()->take(5)->get();
-        $opdCount = User::where('role', 'opd')->count();
+        // Get OPD patients that don't have a medical checklist or have an incomplete one
+        $opdPatients = User::where('role', 'opd')
+            ->where(function($query) {
+                $query->whereDoesntHave('medicalChecklist')
+                      ->orWhereHas('medicalChecklist', function($q) {
+                          $q->whereNull('blood_extraction_done_by');
+                      });
+            })
+            ->whereDoesntHave('opdExamination', function($q) {
+                $q->whereIn('status', ['completed', 'sent_to_doctor']);
+            })
+            ->latest()
+            ->take(5)
+            ->get();
+            
+        $opdCount = User::where('role', 'opd')
+            ->where(function($query) {
+                $query->whereDoesntHave('medicalChecklist')
+                      ->orWhereHas('medicalChecklist', function($q) {
+                          $q->whereNull('blood_extraction_done_by');
+                      });
+            })
+            ->whereDoesntHave('opdExamination', function($q) {
+                $q->whereIn('status', ['completed', 'sent_to_doctor']);
+            })
+            ->count();
 
         $appointments = Appointment::with('patients')->latest()->take(5)->get();
         $appointmentCount = Appointment::count();
@@ -100,10 +172,18 @@ class PleboController extends Controller
     public function preEmployment()
     {
         $preEmployments = PreEmploymentRecord::where('status', 'approved')
-            ->whereDoesntHave('preEmploymentExamination', function ($q) {
+            ->where(function($query) {
+                $query->whereDoesntHave('medicalChecklist')
+                      ->orWhereHas('medicalChecklist', function($q) {
+                          $q->whereNull('blood_extraction_done_by');
+                      });
+            })
+            ->whereDoesntHave('preEmploymentExamination', function($q) {
                 $q->whereIn('status', ['Approved', 'sent_to_company']);
             })
-            ->latest()->paginate(15);
+            ->latest()
+            ->paginate(15);
+            
         return view('plebo.pre-employment', compact('preEmployments'));
     }
 
@@ -113,10 +193,18 @@ class PleboController extends Controller
     public function annualPhysical()
     {
         $patients = Patient::where('status', 'approved')
-            ->whereDoesntHave('annualPhysicalExamination', function ($q) {
+            ->where(function($query) {
+                $query->whereDoesntHave('medicalChecklist')
+                      ->orWhereHas('medicalChecklist', function($q) {
+                          $q->whereNull('blood_extraction_done_by');
+                      });
+            })
+            ->whereDoesntHave('annualPhysicalExamination', function($q) {
                 $q->whereIn('status', ['completed', 'sent_to_company']);
             })
-            ->latest()->paginate(15);
+            ->latest()
+            ->paginate(15);
+            
         return view('plebo.annual-physical', compact('patients'));
     }
 
@@ -126,10 +214,18 @@ class PleboController extends Controller
     public function opd()
     {
         $opdPatients = User::where('role', 'opd')
-            ->whereDoesntHave('opdExamination', function ($q) {
+            ->where(function($query) {
+                $query->whereDoesntHave('medicalChecklist')
+                      ->orWhereHas('medicalChecklist', function($q) {
+                          $q->whereNull('blood_extraction_done_by');
+                      });
+            })
+            ->whereDoesntHave('opdExamination', function($q) {
                 $q->whereIn('status', ['completed', 'sent_to_doctor']);
             })
-            ->latest()->paginate(15);
+            ->latest()
+            ->paginate(15);
+            
         return view('plebo.opd', compact('opdPatients'));
     }
 
@@ -163,7 +259,15 @@ class PleboController extends Controller
             'phlebotomist_signature' => 'nullable|string',
         ]);
 
-        $data['user_id'] = Auth::id();
+        // Set the user_id to the current user for OPD patients
+        if ($data['examination_type'] === 'opd') {
+            $data['user_id'] = $data['opd_examination_id'];
+        } else {
+            $data['user_id'] = Auth::id();
+        }
+        
+        // Set the blood extraction done by the current user
+        $data['blood_extraction_done_by'] = Auth::user()->full_name;
         
         // Debug logging
         \Log::info('Medical Checklist Data:', $data);
@@ -176,7 +280,9 @@ class PleboController extends Controller
         } elseif ($data['examination_type'] === 'annual_physical' && $data['patient_id']) {
             $medicalChecklist = MedicalChecklist::where('patient_id', $data['patient_id'])->first();
         } elseif ($data['examination_type'] === 'opd' && $data['opd_examination_id']) {
-            $medicalChecklist = MedicalChecklist::where('opd_examination_id', $data['opd_examination_id'])->first();
+            $medicalChecklist = MedicalChecklist::where('opd_examination_id', $data['opd_examination_id'])
+                ->orWhere('user_id', $data['opd_examination_id'])
+                ->first();
         }
 
         try {

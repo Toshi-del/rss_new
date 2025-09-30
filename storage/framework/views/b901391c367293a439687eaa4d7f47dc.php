@@ -163,7 +163,17 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                             <div>
                                 <p class="text-gray-600">Examination Date:</p>
-                                <p class="font-semibold"><?php echo e($examination->date ? \Carbon\Carbon::parse($examination->date)->format('M d, Y') : 'Not set'); ?></p>
+                                <?php
+                                    $examDate = null;
+                                    if (!empty($examination->date)) {
+                                        try {
+                                            $examDate = \Carbon\Carbon::parse($examination->date);
+                                        } catch (\Exception $e) {
+                                            $examDate = null;
+                                        }
+                                    }
+                                ?>
+                                <p class="font-semibold"><?php echo e($examDate ? $examDate->format('M d, Y') : 'Not set'); ?></p>
                             </div>
                             <div>
                                 <p class="text-gray-600">Status:</p>
@@ -219,12 +229,12 @@
                             </form>
                         <?php endif; ?>
                         
-                        <!-- View Full Examination -->
-                        <a href="<?php echo e(route('doctor.pre-employment.examination.show', $examination->id)); ?>" 
+                        <!-- Edit Examination -->
+                        <a href="<?php echo e(route('doctor.pre-employment.edit', ['id' => $examination->id])); ?>" 
                            class="flex-1 min-w-0 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 text-sm font-medium flex items-center justify-center" 
-                           title="View Examination">
-                            <i class="fas fa-eye mr-2"></i>
-                            View Details
+                           title="Edit Examination">
+                            <i class="fas fa-edit mr-2"></i>
+                            Edit Examination
                         </a>
                         
                         <?php if($preEmployment): ?>
