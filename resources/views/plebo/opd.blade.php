@@ -33,6 +33,132 @@
 </div>
 @endif
 
+<!-- Blood Collection Status Tabs -->
+<div class="content-card rounded-xl overflow-hidden shadow-lg border border-gray-200 mb-8">
+    @php
+        $currentTab = request('blood_status', 'needs_attention');
+    @endphp
+    
+    <!-- Tab Navigation -->
+    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+            <div class="flex space-x-1">
+                <a href="{{ request()->fullUrlWithQuery(['blood_status' => 'needs_attention']) }}" 
+                   class="px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 {{ $currentTab === 'needs_attention' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50' }}">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    Needs Attention
+                    @php
+                        $needsAttentionCount = \App\Models\User::where('status', 'approved')
+                            ->whereHas('medicalChecklists', function($q) {
+                                $q->where('examination_type', 'opd')
+                                  ->whereNotNull('stool_exam_done_by')
+                                  ->where('stool_exam_done_by', '!=', '')
+                                  ->whereNotNull('urinalysis_done_by')
+                                  ->where('urinalysis_done_by', '!=', '');
+                            })
+                            ->whereDoesntHave('opdExamination', function($q) {
+                                $q->whereNotNull('lab_report')
+                                  ->where('lab_report', '!=', '');
+                            })
+                            ->count();
+                    @endphp
+                    <span class="ml-2 px-2 py-1 text-xs rounded-full {{ $currentTab === 'needs_attention' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600' }}">
+                        {{ $needsAttentionCount }}
+                    </span>
+                </a>
+                
+                <a href="{{ request()->fullUrlWithQuery(['blood_status' => 'collection_completed']) }}" 
+                   class="px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 {{ $currentTab === 'collection_completed' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50' }}">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    Collection Completed
+                    @php
+                        $completedCount = \App\Models\User::where('status', 'approved')
+                            ->whereHas('medicalChecklists', function($q) {
+                                $q->where('examination_type', 'opd')
+                                  ->whereNotNull('stool_exam_done_by')
+                                  ->where('stool_exam_done_by', '!=', '')
+                                  ->whereNotNull('urinalysis_done_by')
+                                  ->where('urinalysis_done_by', '!=', '');
+                            })
+                            ->whereHas('opdExamination', function($q) {
+                                $q->whereNotNull('lab_report')
+                                  ->where('lab_report', '!=', '');
+                            })
+                            ->count();
+                    @endphp
+                    <span class="ml-2 px-2 py-1 text-xs rounded-full {{ $currentTab === 'collection_completed' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600' }}">
+                        {{ $completedCount }}
+                    </span>
+                </a>
+            </div>
+            
+            <a href="{{ route('plebo.opd') }}" class="text-sm text-gray-500 hover:text-gray-700 font-medium">
+                <i class="fas fa-times mr-1"></i>Clear All Filters
+            </a>
+        </div>
+    </div>
+
+    <!-- Additional Filters -->
+    <div class="p-6">
+        <form method="GET" action="{{ route('plebo.opd') }}" class="space-y-6">
+            <!-- Preserve current tab -->
+            <input type="hidden" name="blood_status" value="{{ $currentTab }}">
+            
+            <!-- Preserve search query -->
+            @if(request('search'))
+                <input type="hidden" name="search" value="{{ request('search') }}">
+            @endif
+            
+            <!-- Filter Row: Gender only -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Gender Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                    <select name="gender" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                        <option value="">All Genders</option>
+                        <option value="male" {{ request('gender') === 'male' ? 'selected' : '' }}>Male</option>
+                        <option value="female" {{ request('gender') === 'female' ? 'selected' : '' }}>Female</option>
+                    </select>
+                </div>
+
+                <!-- Placeholder -->
+                <div></div>
+            </div>
+
+            <!-- Filter Actions -->
+            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                <div class="flex items-center space-x-4">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                        <i class="fas fa-search mr-2"></i>Apply Filters
+                    </button>
+                    <a href="{{ request()->fullUrlWithQuery(['gender' => null, 'search' => null]) }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                        <i class="fas fa-undo mr-2"></i>Reset Filters
+                    </a>
+                </div>
+                
+                <!-- Active Filters Display -->
+                @if(request()->hasAny(['gender', 'search']))
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-600">Active filters:</span>
+                        @if(request('search'))
+                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                                Search: "{{ request('search') }}"
+                                <a href="{{ request()->fullUrlWithQuery(['search' => null]) }}" class="ml-1 text-blue-600 hover:text-blue-800">×</a>
+                            </span>
+                        @endif
+                        @if(request('gender'))
+                            <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
+                                Gender: {{ ucfirst(request('gender')) }}
+                                <a href="{{ request()->fullUrlWithQuery(['gender' => null]) }}" class="ml-1 text-purple-600 hover:text-purple-800">×</a>
+                            </span>
+                        @endif
+                    </div>
+                @endif
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Stats Overview -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
     <!-- Total Patients -->

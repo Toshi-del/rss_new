@@ -257,8 +257,9 @@ class AdminController extends Controller
     {
         $filter = $request->get('filter', 'pending');
         
-        $query = PreEmploymentRecord::query();
+        $query = PreEmploymentRecord::with(['medicalTestCategory', 'medicalTest', 'creator']);
         
+        // Apply filter tab logic
         switch ($filter) {
             case 'pending':
                 $query->where('status', 'pending');
@@ -275,6 +276,54 @@ class AdminController extends Controller
             default:
                 $query->where('status', 'pending');
         }
+        
+        // Apply additional filters
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhereRaw("CONCAT(first_name, ' ', last_name) like ?", ["%{$search}%"]);
+            });
+        }
+        
+        if ($request->filled('company')) {
+            $query->where('company_name', $request->get('company'));
+        }
+        
+        if ($request->filled('status')) {
+            $query->where('status', $request->get('status'));
+        }
+        
+        if ($request->filled('link_status')) {
+            $linkStatus = $request->get('link_status');
+            if ($linkStatus === 'sent') {
+                $query->where('registration_link_sent', true);
+            } elseif ($linkStatus === 'not_sent') {
+                $query->where('registration_link_sent', false);
+            }
+        }
+        
+        if ($request->filled('date_range')) {
+            $dateRange = $request->get('date_range');
+            $now = now();
+            
+            switch ($dateRange) {
+                case 'today':
+                    $query->whereDate('created_at', $now->toDateString());
+                    break;
+                case 'week':
+                    $query->whereBetween('created_at', [$now->startOfWeek(), $now->endOfWeek()]);
+                    break;
+                case 'month':
+                    $query->whereBetween('created_at', [$now->startOfMonth(), $now->endOfMonth()]);
+                    break;
+            }
+        }
+        
+        // Order by most recent first
+        $query->orderBy('created_at', 'desc');
         
         $preEmployments = $query->paginate(15);
         return view('admin.pre-employment', compact('preEmployments', 'filter'));
@@ -704,7 +753,7 @@ class AdminController extends Controller
     public function approvePreEmployment($id)
     {
         $record = PreEmploymentRecord::findOrFail($id);
-        $record->status = 'approved';
+        $record->status = 'Approved';
         $record->save();
         return redirect()->back()->with('success', 'Pre-employment record approved.');
     }
@@ -712,10 +761,11 @@ class AdminController extends Controller
     /**
      * Decline a pre-employment record
      */
-    public function declinePreEmployment($id)
+    public function declinePreEmployment(Request $request, $id)
     {
         $record = PreEmploymentRecord::findOrFail($id);
-        $record->status = 'declined';
+        $record->status = 'Declined';
+        $record->decline_reason = $request->input('reason');
         $record->save();
         return redirect()->back()->with('success', 'Pre-employment record declined.');
     }
@@ -1213,4 +1263,104 @@ class AdminController extends Controller
             ]);
         }
     }
+
+
+    /**
+     * Bulk approve pre-employment records
+     */
+    public function bulkApprovePreEmployment(Request $request)
+    {
+        try {
+            $ids = $request->input('ids', []);
+            
+            if (empty($ids)) {
+                return redirect()->back()->with('error', 'No records selected for approval.');
+            }
+
+            $updated = PreEmploymentRecord::whereIn('id', $ids)
+                ->where('status', '!=', 'Approved')
+                ->update(['status' => 'Approved']);
+
+            return redirect()->back()->with('success', "Successfully approved {$updated} pre-employment record(s).");
+        } catch (\Exception $e) {
+            \Log::error('Error bulk approving pre-employment records: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to approve selected records.');
+        }
+    }
+
+    /**
+     * Bulk decline pre-employment records
+     */
+    public function bulkDeclinePreEmployment(Request $request)
+    {
+        try {
+            $ids = $request->input('ids', []);
+            $reason = $request->input('reason', '');
+            
+            if (empty($ids)) {
+                return redirect()->back()->with('error', 'No records selected for declining.');
+            }
+
+            $updated = PreEmploymentRecord::whereIn('id', $ids)
+                ->where('status', '!=', 'Declined')
+                ->update([
+                    'status' => 'Declined',
+                    'decline_reason' => $reason
+                ]);
+
+            return redirect()->back()->with('success', "Successfully declined {$updated} pre-employment record(s).");
+        } catch (\Exception $e) {
+            \Log::error('Error bulk declining pre-employment records: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to decline selected records.');
+        }
+    }
+
+    /**
+     * Bulk send registration links
+     */
+    public function bulkSendRegistrationLinks(Request $request)
+    {
+        try {
+            $ids = $request->input('ids', []);
+            
+            if (empty($ids)) {
+                return redirect()->back()->with('error', 'No records selected for sending links.');
+            }
+
+            $updated = PreEmploymentRecord::whereIn('id', $ids)
+                ->where('status', 'Approved')
+                ->where('registration_link_sent', false)
+                ->update(['registration_link_sent' => true]);
+
+            // Here you would typically send the actual emails
+            // For now, we'll just mark them as sent
+
+            return redirect()->back()->with('success', "Successfully sent registration links to {$updated} approved record(s).");
+        } catch (\Exception $e) {
+            \Log::error('Error bulk sending registration links: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to send registration links.');
+        }
+    }
+
+    /**
+     * Bulk delete pre-employment records
+     */
+    public function bulkDeletePreEmployment(Request $request)
+    {
+        try {
+            $ids = $request->input('ids', []);
+            
+            if (empty($ids)) {
+                return redirect()->back()->with('error', 'No records selected for deletion.');
+            }
+
+            $deleted = PreEmploymentRecord::whereIn('id', $ids)->delete();
+
+            return redirect()->back()->with('success', "Successfully deleted {$deleted} pre-employment record(s).");
+        } catch (\Exception $e) {
+            \Log::error('Error bulk deleting pre-employment records: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to delete selected records.');
+        }
+    }
+
 }

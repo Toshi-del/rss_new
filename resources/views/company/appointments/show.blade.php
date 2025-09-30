@@ -104,12 +104,121 @@
                     </h2>
                 </div>
                 <div class="p-8">
-                    @php $test = $appointment->medicalTest; @endphp
+                    @php 
+                        $test = $appointment->medicalTest;
+                        
+                        // Check if this is a package test and expand it
+                        $isPackageTest = str_contains(strtolower($test->name), 'package');
+                        $expandedTests = null;
+                        
+                        if ($isPackageTest) {
+                            $testName = strtolower(trim($test->name));
+                            
+                            // Define the complete test lists for each package
+                            $packageTests = [
+                                'package a' => [
+                                    'ELECTROCARDIOGRAM',
+                                    'FASTING BLOOD SUGAR', 
+                                    'TOTAL CHOLESTEROL',
+                                    'BLOOD UREA NITROGEN',
+                                    'BLOOD URIC ACID',
+                                    'SGPT',
+                                    'CBC',
+                                    'URINALYSIS',
+                                    'FECALYSIS'
+                                ],
+                                'package b' => [
+                                    'ELECTROCARDIOGRAM',
+                                    'FASTING BLOOD SUGAR', 
+                                    'TOTAL CHOLESTEROL',
+                                    'BLOOD UREA NITROGEN',
+                                    'BLOOD URIC ACID',
+                                    'SGPT',
+                                    'CBC',
+                                    'URINALYSIS',
+                                    'FECALYSIS',
+                                    'TRIGLYCERIDE',
+                                    'HDL & LDL (GOOD AND BAD CHOLESTEROL)'
+                                ],
+                                'package c' => [
+                                    'ELECTROCARDIOGRAM',
+                                    'FASTING BLOOD SUGAR', 
+                                    'TOTAL CHOLESTEROL',
+                                    'BLOOD UREA NITROGEN',
+                                    'BLOOD URIC ACID',
+                                    'SGPT',
+                                    'CBC',
+                                    'URINALYSIS',
+                                    'FECALYSIS',
+                                    'TRIGLYCERIDE',
+                                    'HDL & LDL (GOOD AND BAD CHOLESTEROL)',
+                                    'CREATININE',
+                                    'BLOOD TYPING'
+                                ],
+                                'package d' => [
+                                    'ELECTROCARDIOGRAM',
+                                    'FASTING BLOOD SUGAR', 
+                                    'TOTAL CHOLESTEROL',
+                                    'BLOOD UREA NITROGEN',
+                                    'BLOOD URIC ACID',
+                                    'SGPT',
+                                    'CBC',
+                                    'URINALYSIS',
+                                    'FECALYSIS',
+                                    'TRIGLYCERIDE',
+                                    'HDL & LDL (GOOD AND BAD CHOLESTEROL)',
+                                    'CREATININE',
+                                    'BLOOD TYPING',
+                                    'SODIUM',
+                                    'POTASSIUM',
+                                    'CALCIUM',
+                                    'CHLORIDE'
+                                ],
+                                'package e' => [
+                                    'ELECTROCARDIOGRAM',
+                                    'FASTING BLOOD SUGAR', 
+                                    'TOTAL CHOLESTEROL',
+                                    'BLOOD UREA NITROGEN',
+                                    'BLOOD URIC ACID',
+                                    'SGPT',
+                                    'CBC',
+                                    'URINALYSIS',
+                                    'FECALYSIS',
+                                    'TRIGLYCERIDE',
+                                    'HDL & LDL (GOOD AND BAD CHOLESTEROL)',
+                                    'CREATININE',
+                                    'BLOOD TYPING',
+                                    'SODIUM',
+                                    'POTASSIUM',
+                                    'CALCIUM',
+                                    'CHLORIDE',
+                                    'TPAG (LIVER FUNCTION TEST)',
+                                    'SGOT',
+                                    'BILIRUBIN',
+                                    'AMYLASE'
+                                ]
+                            ];
+                            
+                            if (isset($packageTests[$testName])) {
+                                $expandedTests = $packageTests[$testName];
+                            }
+                        }
+                    @endphp
                     <div class="bg-emerald-50 rounded-xl p-6 border-l-4 border-emerald-600">
-                        <div class="flex items-center justify-between">
+                        <div class="flex items-start justify-between">
                             <div class="flex-1">
                                 <h3 class="text-xl font-bold text-emerald-900 mb-2">{{ $test->name }}</h3>
-                                @if($test->description)
+                                
+                                @if($isPackageTest && $expandedTests)
+                                    <div class="mb-4">
+                                        <p class="text-sm font-medium text-emerald-800 mb-2">Package includes:</p>
+                                        <ul class="list-disc list-inside space-y-1 ml-2 text-sm text-emerald-700">
+                                            @foreach($expandedTests as $item)
+                                                <li>{{ $item }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @elseif($test->description)
                                     <p class="text-emerald-700 mb-3">{{ $test->description }}</p>
                                 @endif
                                 @if($test->category)
@@ -162,21 +271,56 @@
                 <div class="p-8">
                     <div class="space-y-4 max-h-96 overflow-y-auto">
                         @foreach($appointment->patients as $patient)
-                        <div class="bg-indigo-50 rounded-xl p-4 border-l-4 border-indigo-600">
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <h3 class="text-lg font-bold text-indigo-900">{{ $patient->full_name }}</h3>
-                                    <p class="text-indigo-700 mt-1">{{ $patient->age_sex }}</p>
+                        <div class="bg-indigo-50 rounded-xl p-6 border-l-4 border-indigo-600">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                <!-- Left Column - Basic Info -->
+                                <div class="space-y-3">
+                                    <div>
+                                        <h3 class="text-lg font-bold text-indigo-900">{{ $patient->full_name }}</h3>
+                                        <p class="text-indigo-700 mt-1 flex items-center">
+                                            <i class="fas fa-user-circle mr-2"></i>{{ $patient->age_sex }}
+                                        </p>
+                                    </div>
+                                    
                                     @if($patient->email)
-                                        <p class="text-indigo-600 mt-2 flex items-center">
-                                            <i class="fas fa-envelope mr-2"></i>{{ $patient->email }}
+                                        <p class="text-indigo-600 flex items-center">
+                                            <i class="fas fa-envelope mr-2 w-4"></i>{{ $patient->email }}
                                         </p>
                                     @endif
+                                    
                                     @if($patient->phone)
-                                        <p class="text-indigo-600 mt-1 flex items-center">
-                                            <i class="fas fa-phone mr-2"></i>{{ $patient->phone }}
+                                        <p class="text-indigo-600 flex items-center">
+                                            <i class="fas fa-phone mr-2 w-4"></i>{{ $patient->phone }}
                                         </p>
                                     @endif
+                                </div>
+                                
+                                <!-- Right Column - Additional Details -->
+                                <div class="space-y-3">
+                                    @if($patient->address)
+                                        <div>
+                                            <p class="text-indigo-600 flex items-start">
+                                                <i class="fas fa-map-marker-alt mr-2 w-4 mt-0.5"></i>
+                                                <span>{{ $patient->address }}</span>
+                                            </p>
+                                        </div>
+                                    @endif
+                                    
+                                    @if($patient->company_name)
+                                        <div>
+                                            <p class="text-indigo-600 flex items-center">
+                                                <i class="fas fa-building mr-2 w-4"></i>{{ $patient->company_name }}
+                                            </p>
+                                        </div>
+                                    @endif
+                                    
+                                    <!-- Patient Status Badge -->
+                                    <div class="flex items-center">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-600 text-white">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Registered
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -238,8 +382,8 @@
                                     <span class="font-semibold">{{ $appointment->patient_count }}</span>
                                 </div>
                                 <hr class="border-green-300">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-green-700 font-medium">Total Amount:</span>
+                                <div class="flex items-start justify-between">
+                                    <span class="text-green-700 font-medium">Estimated Total Amount:</span>
                                     <span class="text-3xl font-bold text-green-900">{{ $appointment->formatted_total_price }}</span>
                                 </div>
                                 @if($appointment->patient_count > 0)

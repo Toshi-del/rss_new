@@ -18,6 +18,7 @@ class PreEmploymentRecord extends Model
         'sex',
         'email',
         'phone_number',
+        'address',
         'medical_test_categories_id',
         'medical_test_id',
         'total_price',

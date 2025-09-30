@@ -86,13 +86,49 @@ class CompanyAppointmentController extends Controller
         $request->validate([
             'appointment_date' => 'nullable|date|after_or_equal:' . $minDate,
             'time_slot' => 'required|string',
-            'medical_test_categories_id' => 'required|exists:medical_test_categories,id',
-            'medical_test_id' => 'required|exists:medical_tests,id',
+            'medical_test_categories_id' => 'required|string',
+            'medical_test_id' => 'required|string',
             'notes' => 'nullable|string',
             'excel_file' => 'nullable|file|mimes:xlsx,xls',
         ], [
             'appointment_date.after_or_equal' => 'Appointments must be scheduled at least 4 days in advance.',
         ]);
+
+        // Decode JSON arrays from frontend
+        $categoryIds = json_decode($request->medical_test_categories_id, true) ?: [];
+        $testIds = json_decode($request->medical_test_id, true) ?: [];
+
+        // Validate that we have at least one selection
+        if (empty($categoryIds) || empty($testIds)) {
+            return back()->withInput()->withErrors([
+                'medical_test_categories_id' => 'Please select at least one medical test.',
+                'medical_test_id' => 'Please select at least one medical test.'
+            ]);
+        }
+
+        // Validate that arrays have same length (one test per category)
+        if (count($categoryIds) !== count($testIds)) {
+            return back()->withInput()->withErrors([
+                'medical_test_categories_id' => 'Invalid test selection. Please refresh and try again.',
+                'medical_test_id' => 'Invalid test selection. Please refresh and try again.'
+            ]);
+        }
+
+        // Validate that all category IDs exist
+        $validCategoryIds = MedicalTestCategory::whereIn('id', $categoryIds)->pluck('id')->toArray();
+        if (count($validCategoryIds) !== count($categoryIds)) {
+            return back()->withInput()->withErrors([
+                'medical_test_categories_id' => 'One or more selected categories are invalid.'
+            ]);
+        }
+
+        // Validate that all test IDs exist
+        $validTestIds = MedicalTest::whereIn('id', $testIds)->pluck('id')->toArray();
+        if (count($validTestIds) !== count($testIds)) {
+            return back()->withInput()->withErrors([
+                'medical_test_id' => 'One or more selected tests are invalid.'
+            ]);
+        }
 
         try {
             $appointmentDate = $request->appointment_date ?? $request->query('date');
@@ -117,18 +153,25 @@ class CompanyAppointmentController extends Controller
                 return back()->withInput()->with('error', 'This date is not available. Another company has already booked an appointment on this date. Please choose a different date.');
             }
 
-            // Validate the selected test belongs to the selected category
-            $selectedTest = MedicalTest::find($request->medical_test_id);
-            if (!$selectedTest || (int) $selectedTest->medical_test_category_id !== (int) $request->medical_test_categories_id) {
-                return back()->withInput()->withErrors(['medical_test_id' => 'Selected medical test does not belong to the chosen category.']);
+            // Validate that each test belongs to its corresponding category and calculate total price
+            $totalPrice = 0;
+            for ($i = 0; $i < count($testIds); $i++) {
+                $selectedTest = MedicalTest::find($testIds[$i]);
+                if (!$selectedTest || (int) $selectedTest->medical_test_category_id !== (int) $categoryIds[$i]) {
+                    return back()->withInput()->withErrors(['medical_test_id' => 'One or more selected tests do not belong to their chosen categories.']);
+                }
+                $totalPrice += $selectedTest->price ?? 0;
             }
-            $totalPrice = $selectedTest->price ?? 0;
+
+            // For backward compatibility, store the first category and test IDs
+            $firstCategoryId = $categoryIds[0];
+            $firstTestId = $testIds[0];
 
             $appointment = Appointment::create([
                 'appointment_date' => $appointmentDate,
                 'time_slot' => $request->time_slot,
-                'medical_test_categories_id' => $request->medical_test_categories_id,
-                'medical_test_id' => $request->medical_test_id,
+                'medical_test_categories_id' => $firstCategoryId,
+                'medical_test_id' => $firstTestId,
                 'total_price' => $totalPrice,
                 'notes' => $request->notes,
                 'patients_data' => [], // Will be populated when Excel is processed
@@ -178,6 +221,10 @@ class CompanyAppointmentController extends Controller
                 'file_name' => $file->getClientOriginalName(),
                 'file_size' => $file->getSize()
             ]);
+
+            // Get the company name from the appointment creator
+            $companyUser = \App\Models\User::find($appointment->created_by);
+            $companyName = $companyUser ? $companyUser->company : null;
             
             $spreadsheet = IOFactory::load($file->getPathname());
             $worksheet = $spreadsheet->getActiveSheet();
@@ -218,6 +265,7 @@ class CompanyAppointmentController extends Controller
                 $firstName = trim($row[0]);
                 $lastName = trim($row[1]);
                 $email = !empty($row[4]) ? trim($row[4]) : null;
+                $address = !empty($row[6]) ? trim($row[6]) : null;
                 
                 // Check for duplicate patients (same first name, last name, and email) for this specific appointment
                 $existingPatientForAppointment = Patient::where('first_name', $firstName)
@@ -254,7 +302,9 @@ class CompanyAppointmentController extends Controller
                             'sex' => trim($row[3]),
                             'email' => $email,
                             'phone' => !empty($row[5]) ? trim($row[5]) : null,
+                            'address' => $address,
                             'appointment_id' => $appointment->id,
+                            'company_name' => $companyName,
                         ]);
                         $processedCount++;
                     } else {
@@ -266,7 +316,9 @@ class CompanyAppointmentController extends Controller
                             'sex' => trim($row[3]),
                             'email' => $email,
                             'phone' => !empty($row[5]) ? trim($row[5]) : null,
+                            'address' => $address,
                             'appointment_id' => $appointment->id,
+                            'company_name' => $companyName,
                         ]);
                         $processedCount++;
                     }
@@ -346,10 +398,46 @@ class CompanyAppointmentController extends Controller
         $request->validate([
             'appointment_date' => 'required|date',
             'time_slot' => 'required|string',
-            'medical_test_categories_id' => 'required|exists:medical_test_categories,id',
-            'medical_test_id' => 'required|exists:medical_tests,id',
+            'medical_test_categories_id' => 'required|string',
+            'medical_test_id' => 'required|string',
             'notes' => 'nullable|string',
         ]);
+
+        // Decode JSON arrays from frontend
+        $categoryIds = json_decode($request->medical_test_categories_id, true) ?: [];
+        $testIds = json_decode($request->medical_test_id, true) ?: [];
+
+        // Validate that we have at least one selection
+        if (empty($categoryIds) || empty($testIds)) {
+            return back()->withInput()->withErrors([
+                'medical_test_categories_id' => 'Please select at least one medical test.',
+                'medical_test_id' => 'Please select at least one medical test.'
+            ]);
+        }
+
+        // Validate that arrays have same length (one test per category)
+        if (count($categoryIds) !== count($testIds)) {
+            return back()->withInput()->withErrors([
+                'medical_test_categories_id' => 'Invalid test selection. Please refresh and try again.',
+                'medical_test_id' => 'Invalid test selection. Please refresh and try again.'
+            ]);
+        }
+
+        // Validate that all category IDs exist
+        $validCategoryIds = MedicalTestCategory::whereIn('id', $categoryIds)->pluck('id')->toArray();
+        if (count($validCategoryIds) !== count($categoryIds)) {
+            return back()->withInput()->withErrors([
+                'medical_test_categories_id' => 'One or more selected categories are invalid.'
+            ]);
+        }
+
+        // Validate that all test IDs exist
+        $validTestIds = MedicalTest::whereIn('id', $testIds)->pluck('id')->toArray();
+        if (count($validTestIds) !== count($testIds)) {
+            return back()->withInput()->withErrors([
+                'medical_test_id' => 'One or more selected tests are invalid.'
+            ]);
+        }
 
         // For existing appointments, we don't enforce the 4-day advance rule
         // since they were already created with proper advance notice
@@ -374,18 +462,25 @@ class CompanyAppointmentController extends Controller
             return back()->withInput()->with('error', 'This date is not available. Another company has already booked an appointment on this date. Please choose a different date.');
         }
 
-        // Validate category/test pairing and get price
-        $selectedTest = MedicalTest::find($request->medical_test_id);
-        if (!$selectedTest || (int) $selectedTest->medical_test_category_id !== (int) $request->medical_test_categories_id) {
-            return back()->withInput()->withErrors(['medical_test_id' => 'Selected medical test does not belong to the chosen category.']);
+        // Validate that each test belongs to its corresponding category and calculate total price
+        $totalPrice = 0;
+        for ($i = 0; $i < count($testIds); $i++) {
+            $selectedTest = MedicalTest::find($testIds[$i]);
+            if (!$selectedTest || (int) $selectedTest->medical_test_category_id !== (int) $categoryIds[$i]) {
+                return back()->withInput()->withErrors(['medical_test_id' => 'One or more selected tests do not belong to their chosen categories.']);
+            }
+            $totalPrice += $selectedTest->price ?? 0;
         }
-        $totalPrice = $selectedTest->price ?? 0;
+
+        // For backward compatibility, store the first category and test IDs
+        $firstCategoryId = $categoryIds[0];
+        $firstTestId = $testIds[0];
 
         $appointment->update([
             'appointment_date' => $request->appointment_date,
             'time_slot' => $request->time_slot,
-            'medical_test_categories_id' => $request->medical_test_categories_id,
-            'medical_test_id' => $request->medical_test_id,
+            'medical_test_categories_id' => $firstCategoryId,
+            'medical_test_id' => $firstTestId,
             'total_price' => $totalPrice,
             'notes' => $request->notes,
         ]);

@@ -233,6 +233,7 @@ class CompanyPreEmploymentController extends Controller
                             'sex' => $sex,
                             'email' => $email,
                             'phone_number' => trim($row[5]),
+                            'address' => !empty($row[6]) ? trim($row[6]) : null,
                             'medical_test_categories_id' => $firstCategoryId,
                             'medical_test_id' => $firstTest->id,
                             'total_price' => $totalPrice,

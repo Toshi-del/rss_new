@@ -539,33 +539,6 @@
             </div>
         </div>
         @endif
-        
-        <!-- Medical Findings Card -->
-        <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">
-            <div class="flex items-center space-x-3 mb-6">
-                <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-clipboard-check text-indigo-600"></i>
-                </div>
-                <div>
-                    <h3 class="text-xl font-bold text-gray-900">Medical Findings</h3>
-                    <p class="text-gray-600 text-sm">Overall examination findings and recommendations</p>
-                </div>
-            </div>
-
-            <div class="space-y-2">
-                <label class="block text-sm font-semibold text-gray-700">
-                    Examination Findings <span class="text-red-500">*</span>
-                </label>
-                <textarea name="findings" rows="5" 
-                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('findings') border-red-500 ring-2 ring-red-200 @enderror" 
-                          placeholder="Record overall medical findings, any abnormalities, recommendations, or fitness for employment assessment..." required>{{ old('findings') }}</textarea>
-                @error('findings')
-                    <p class="mt-1 text-sm text-red-600 flex items-center">
-                        <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
-                    </p>
-                @enderror
-            </div>
-        </div>
 
         <!-- Signature Section -->
         <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">

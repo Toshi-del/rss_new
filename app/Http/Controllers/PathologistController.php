@@ -56,7 +56,7 @@ class PathologistController extends Controller
      */
     public function preEmployment(Request $request)
     {
-        $query = PreEmploymentRecord::with(['medicalTestCategory', 'medicalTest', 'preEmploymentExamination'])
+        $query = PreEmploymentRecord::with(['medicalTestCategory', 'medicalTest', 'preEmploymentExamination', 'medicalChecklist'])
             ->whereIn('status', ['Approved', 'approved']);
 
         // Apply filters
@@ -66,7 +66,8 @@ class PathologistController extends Controller
                 $q->where('first_name', 'like', "%{$search}%")
                   ->orWhere('last_name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('company_name', 'like', "%{$search}%");
+                  ->orWhere('company_name', 'like', "%{$search}%")
+                  ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"]);
             });
         }
 
@@ -78,10 +79,33 @@ class PathologistController extends Controller
             $query->where('company_name', 'like', "%{$request->company}%");
         }
 
-        // Filter records that don't have completed examinations
-        $query->whereDoesntHave('preEmploymentExamination', function ($q) {
-            $q->whereIn('status', ['Approved', 'sent_to_company']);
-        });
+        // Lab status filtering - simplified to two tabs
+        // Set default lab_status to 'needs_attention' if not specified
+        $labStatus = $request->filled('lab_status') ? $request->lab_status : 'needs_attention';
+        
+        switch ($labStatus) {
+            case 'needs_attention':
+                // Default: Records that need pathologist attention (no lab data submitted yet)
+                $query->whereDoesntHave('preEmploymentExamination', function($q) {
+                    $q->where(function($subQuery) {
+                        $subQuery->whereNotNull('lab_report')
+                                 ->where('lab_report', '!=', '[]')
+                                 ->where('lab_report', '!=', '{}');
+                    });
+                });
+                break;
+                
+            case 'lab_completed':
+                // Records that have lab data submitted
+                $query->whereHas('preEmploymentExamination', function($q) {
+                    $q->where(function($subQuery) {
+                        $subQuery->whereNotNull('lab_report')
+                                 ->where('lab_report', '!=', '[]')
+                                 ->where('lab_report', '!=', '{}');
+                    });
+                });
+                break;
+        }
 
         $preEmployments = $query->latest()->paginate(15);
         
@@ -107,7 +131,7 @@ class PathologistController extends Controller
      */
     public function annualPhysical(Request $request)
     {
-        $query = Patient::with(['appointment.medicalTestCategory', 'appointment.medicalTest', 'annualPhysicalExamination'])
+        $query = Patient::with(['appointment.medicalTestCategory', 'appointment.medicalTest', 'annualPhysicalExamination', 'medicalChecklists'])
             ->where('status', 'approved');
 
         // Apply filters
@@ -116,7 +140,8 @@ class PathologistController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
                   ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"]);
             });
         }
 
@@ -124,10 +149,130 @@ class PathologistController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Filter patients that don't have completed examinations
-        $query->whereDoesntHave('annualPhysicalExamination', function ($q) {
-            $q->whereIn('status', ['completed', 'sent_to_company']);
-        });
+        // Gender filtering
+        if ($request->filled('gender')) {
+            $query->where('sex', $request->gender);
+        }
+
+        // Date range filtering
+        if ($request->filled('date_range')) {
+            switch ($request->date_range) {
+                case 'today':
+                    $query->whereDate('created_at', today());
+                    break;
+                case 'week':
+                    $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                    break;
+                case 'month':
+                    $query->whereMonth('created_at', now()->month)
+                          ->whereYear('created_at', now()->year);
+                    break;
+            }
+        }
+
+        // Lab status filtering
+        // Set default lab_status to 'pending_and_blocked' if not specified
+        $labStatusAnnual = $request->filled('lab_status') ? $request->lab_status : 'pending_and_blocked';
+        
+        if ($labStatusAnnual && $labStatusAnnual !== 'all') {
+            switch ($labStatusAnnual) {
+                case 'pending_and_blocked':
+                    // Default: Patients that need lab work (both pending and blocked)
+                    $query->where(function($mainQuery) {
+                        // Pending: Patients that have medical checklist completed but no lab data submitted
+                        $mainQuery->where(function($pendingQuery) {
+                            $pendingQuery->whereHas('medicalChecklists', function($q) {
+                                $q->where('examination_type', 'annual_physical')
+                                  ->where(function($subQuery) {
+                                      $subQuery->whereNotNull('stool_exam_done_by')
+                                               ->where('stool_exam_done_by', '!=', '')
+                                               ->orWhere(function($innerQuery) {
+                                                   $innerQuery->whereNotNull('urinalysis_done_by')
+                                                             ->where('urinalysis_done_by', '!=', '');
+                                               });
+                                  });
+                            })
+                            ->whereDoesntHave('annualPhysicalExamination', function($q) {
+                                $q->where(function($subQuery) {
+                                    $subQuery->whereNotNull('lab_report')
+                                             ->where('lab_report', '!=', '[]')
+                                             ->where('lab_report', '!=', '{}');
+                                });
+                            });
+                        })
+                        // OR Blocked: Patients that don't have medical checklist completed
+                        ->orWhere(function($blockedQuery) {
+                            $blockedQuery->whereDoesntHave('medicalChecklists', function($q) {
+                                $q->where('examination_type', 'annual_physical')
+                                  ->where(function($subQuery) {
+                                      $subQuery->whereNotNull('stool_exam_done_by')
+                                               ->where('stool_exam_done_by', '!=', '')
+                                               ->orWhere(function($innerQuery) {
+                                                   $innerQuery->whereNotNull('urinalysis_done_by')
+                                                             ->where('urinalysis_done_by', '!=', '');
+                                               });
+                                  });
+                            });
+                        });
+                    });
+                    break;
+                    
+                case 'pending':
+                    // Patients that have medical checklist completed but no lab data submitted
+                    $query->whereHas('medicalChecklists', function($q) {
+                        $q->where('examination_type', 'annual_physical')
+                          ->where(function($subQuery) {
+                              $subQuery->whereNotNull('stool_exam_done_by')
+                                       ->where('stool_exam_done_by', '!=', '')
+                                       ->orWhere(function($innerQuery) {
+                                           $innerQuery->whereNotNull('urinalysis_done_by')
+                                                     ->where('urinalysis_done_by', '!=', '');
+                                       });
+                          });
+                    })
+                    ->whereDoesntHave('annualPhysicalExamination', function($q) {
+                        $q->where(function($subQuery) {
+                            $subQuery->whereNotNull('lab_report')
+                                     ->where('lab_report', '!=', '[]')
+                                     ->where('lab_report', '!=', '{}');
+                        });
+                    });
+                    break;
+                    
+                case 'completed':
+                    // Patients that have lab data submitted
+                    $query->whereHas('annualPhysicalExamination', function($q) {
+                        $q->where(function($subQuery) {
+                            $subQuery->whereNotNull('lab_report')
+                                     ->where('lab_report', '!=', '[]')
+                                     ->where('lab_report', '!=', '{}');
+                        });
+                    });
+                    break;
+                    
+                case 'blocked':
+                    // Patients that don't have medical checklist completed
+                    $query->whereDoesntHave('medicalChecklists', function($q) {
+                        $q->where('examination_type', 'annual_physical')
+                          ->where(function($subQuery) {
+                              $subQuery->whereNotNull('stool_exam_done_by')
+                                       ->where('stool_exam_done_by', '!=', '')
+                                       ->orWhere(function($innerQuery) {
+                                           $innerQuery->whereNotNull('urinalysis_done_by')
+                                                     ->where('urinalysis_done_by', '!=', '');
+                                       });
+                          });
+                    });
+                    break;
+            }
+        }
+
+        // Filter patients that don't have completed examinations (unless specifically filtering for completed lab status)
+        if ($labStatusAnnual !== 'completed') {
+            $query->whereDoesntHave('annualPhysicalExamination', function ($q) {
+                $q->whereIn('status', ['completed', 'sent_to_company']);
+            });
+        }
 
         $patients = $query->latest()->paginate(15);
         
@@ -928,11 +1073,11 @@ class PathologistController extends Controller
     }
 
     /**
-     * Show OPD walk-in patients for pathologist
+     * Show OPD walk-in patients for pathologist with enhanced filtering
      */
     public function opd(Request $request)
     {
-        $query = User::with(['opdExamination'])
+        $query = User::with(['opdExamination', 'medicalChecklists'])
             ->where('role', 'opd');
 
         // Apply filters
@@ -941,14 +1086,119 @@ class PathologistController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('fname', 'like', "%{$search}%")
                   ->orWhere('lname', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhereRaw("CONCAT(fname, ' ', lname) LIKE ?", ["%{$search}%"]);
             });
         }
 
-        // Filter patients that don't have completed examinations
-        $query->whereDoesntHave('opdExamination', function ($q) {
-            $q->whereIn('status', ['completed', 'sent_to_company']);
-        });
+        // Gender filtering
+        if ($request->filled('gender')) {
+            $query->where('gender', $request->gender);
+        }
+
+        // Lab status filtering - simplified to two tabs
+        // Set default lab_status to 'needs_attention' if not specified
+        $labStatusOpd = $request->filled('lab_status') ? $request->lab_status : 'needs_attention';
+        
+        if ($labStatusOpd && $labStatusOpd !== 'all') {
+            switch ($labStatusOpd) {
+                case 'pending_and_blocked':
+                    // Default: Patients that need lab work (both pending and blocked)
+                    $query->where(function($mainQuery) {
+                        // Pending: Patients that have medical checklist completed but no lab data submitted
+                        $mainQuery->where(function($pendingQuery) {
+                            $pendingQuery->whereHas('medicalChecklists', function($q) {
+                                $q->where('examination_type', 'opd')
+                                  ->where(function($subQuery) {
+                                      $subQuery->whereNotNull('stool_exam_done_by')
+                                               ->where('stool_exam_done_by', '!=', '')
+                                               ->orWhere(function($innerQuery) {
+                                                   $innerQuery->whereNotNull('urinalysis_done_by')
+                                                             ->where('urinalysis_done_by', '!=', '');
+                                               });
+                                  });
+                            })
+                            ->whereDoesntHave('opdExamination', function($q) {
+                                $q->where(function($subQuery) {
+                                    $subQuery->whereNotNull('lab_report')
+                                             ->where('lab_report', '!=', '[]')
+                                             ->where('lab_report', '!=', '{}');
+                                });
+                            });
+                        })
+                        // OR Blocked: Patients that don't have medical checklist completed
+                        ->orWhere(function($blockedQuery) {
+                            $blockedQuery->whereDoesntHave('medicalChecklists', function($q) {
+                                $q->where('examination_type', 'opd')
+                                  ->where(function($subQuery) {
+                                      $subQuery->whereNotNull('stool_exam_done_by')
+                                               ->where('stool_exam_done_by', '!=', '')
+                                               ->orWhere(function($innerQuery) {
+                                                   $innerQuery->whereNotNull('urinalysis_done_by')
+                                                             ->where('urinalysis_done_by', '!=', '');
+                                               });
+                                  });
+                            });
+                        });
+                    });
+                    break;
+                    
+                case 'pending':
+                    // Patients that have medical checklist completed but no lab data submitted
+                    $query->whereHas('medicalChecklists', function($q) {
+                        $q->where('examination_type', 'opd')
+                          ->where(function($subQuery) {
+                              $subQuery->whereNotNull('stool_exam_done_by')
+                                       ->where('stool_exam_done_by', '!=', '')
+                                       ->orWhere(function($innerQuery) {
+                                           $innerQuery->whereNotNull('urinalysis_done_by')
+                                                     ->where('urinalysis_done_by', '!=', '');
+                                       });
+                          });
+                    })
+                    ->whereDoesntHave('opdExamination', function($q) {
+                        $q->where(function($subQuery) {
+                            $subQuery->whereNotNull('lab_report')
+                                     ->where('lab_report', '!=', '[]')
+                                     ->where('lab_report', '!=', '{}');
+                        });
+                    });
+                    break;
+                    
+                case 'completed':
+                    // Patients that have lab data submitted
+                    $query->whereHas('opdExamination', function($q) {
+                        $q->where(function($subQuery) {
+                            $subQuery->whereNotNull('lab_report')
+                                     ->where('lab_report', '!=', '[]')
+                                     ->where('lab_report', '!=', '{}');
+                        });
+                    });
+                    break;
+                    
+                case 'blocked':
+                    // Patients that don't have medical checklist completed
+                    $query->whereDoesntHave('medicalChecklists', function($q) {
+                        $q->where('examination_type', 'opd')
+                          ->where(function($subQuery) {
+                              $subQuery->whereNotNull('stool_exam_done_by')
+                                       ->where('stool_exam_done_by', '!=', '')
+                                       ->orWhere(function($innerQuery) {
+                                           $innerQuery->whereNotNull('urinalysis_done_by')
+                                                     ->where('urinalysis_done_by', '!=', '');
+                                       });
+                          });
+                    });
+                    break;
+            }
+        }
+
+        // Filter patients that don't have completed examinations (unless specifically filtering for completed lab status)
+        if ($labStatusOpd !== 'completed') {
+            $query->whereDoesntHave('opdExamination', function ($q) {
+                $q->whereIn('status', ['completed', 'sent_to_company']);
+            });
+        }
 
         $opdPatients = $query->latest()->paginate(15);
         

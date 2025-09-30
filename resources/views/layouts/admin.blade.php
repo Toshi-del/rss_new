@@ -111,6 +111,16 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: var(--secondary-color);
         }
+        
+        /* Line clamp utility */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        
     </style>
     @stack('styles')
 </head>
@@ -280,15 +290,12 @@
                                 </div>
                                 <input type="text" 
                                        class="bg-gray-50 border border-gray-200 pl-12 pr-4 py-3 rounded-2xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 w-80" 
-                                       placeholder="Search patients, appointments...">
+                                       placeholder="Search patients, appointments..."
+                                       autocomplete="off"
+                                       id="header-search">
                             </div>
                         </div>
                         
-                        <!-- Notifications -->
-                        <button class="relative bg-gray-50 hover:bg-gray-100 border border-gray-200 p-3 rounded-2xl text-gray-600 hover:text-gray-900 transition-all duration-300">
-                            <i class="fas fa-bell text-lg"></i>
-                            <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white font-bold">5</span>
-                        </button>
                         
                         <!-- Settings -->
                         <button class="bg-gray-50 hover:bg-gray-100 border border-gray-200 p-3 rounded-2xl text-gray-600 hover:text-gray-900 transition-all duration-300">
@@ -353,7 +360,11 @@
             });
             
             // Navigation items are now ready without stagger animation
+            
+            
         });
+        
+        
     </script>
     @stack('scripts')
 </body>

@@ -83,22 +83,83 @@ class NurseController extends Controller
 
 
     /**
-     * Show pre-employment records
+     * Show pre-employment records with enhanced filtering
      */
-    public function preEmployment()
+    public function preEmployment(Request $request)
     {
-        $preEmployments = PreEmploymentRecord::with([
+        $query = PreEmploymentRecord::with([
                 'medicalTestCategory', 
                 'medicalTest',
-                'preEmploymentExamination'
+                'preEmploymentExamination',
+                'medicalChecklist'
             ])
-            ->where('status', 'approved')
-            ->whereDoesntHave('preEmploymentExamination')
-            ->latest()
-            ->paginate(15);
+            ->where('status', 'approved');
+
+        // Apply filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('company_name', 'like', "%{$search}%")
+                  ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"]);
+            });
+        }
+
+        if ($request->filled('company')) {
+            $query->where('company_name', 'like', "%{$request->company}%");
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Gender filtering
+        if ($request->filled('gender')) {
+            $query->where('sex', $request->gender);
+        }
+
+        // Date range filtering
+        if ($request->filled('date_range')) {
+            switch ($request->date_range) {
+                case 'today':
+                    $query->whereDate('created_at', today());
+                    break;
+                case 'week':
+                    $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                    break;
+                case 'month':
+                    $query->whereMonth('created_at', now()->month)
+                          ->whereYear('created_at', now()->year);
+                    break;
+            }
+        }
+
+        // Examination status filtering - simplified to two tabs
+        // Set default exam_status to 'needs_attention' if not specified
+        $examStatus = $request->filled('exam_status') ? $request->exam_status : 'needs_attention';
         
-        return view('nurse.pre-employment', compact('preEmployments'));
+        switch ($examStatus) {
+            case 'needs_attention':
+                // Default: Records that need nurse attention (no examination created yet)
+                $query->whereDoesntHave('preEmploymentExamination');
+                break;
+                
+            case 'exam_completed':
+                // Records that have physical examinations completed
+                $query->whereHas('preEmploymentExamination');
+                break;
+        }
+
+        $preEmployments = $query->latest()->paginate(15);
+        
+        // Get companies for filter dropdown
+        $companies = PreEmploymentRecord::distinct()->pluck('company_name')->filter()->sort()->values();
+        
+        return view('nurse.pre-employment', compact('preEmployments', 'companies'));
     }
+
 
     /**
      * Show annual physical patients
