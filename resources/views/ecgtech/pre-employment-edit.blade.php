@@ -72,9 +72,16 @@
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Applicant Name</label>
                         <div class="text-lg font-semibold text-gray-900">{{ $preEmployment->preEmploymentRecord->full_name ?? ($preEmployment->preEmploymentRecord->first_name . ' ' . $preEmployment->preEmploymentRecord->last_name) }}</div>
                     </div>
-                    <div class="bg-white rounded-lg p-4 border border-gray-200">
+                    <div class="bg-white rounded-lg p-4 border border-gray-200 {{ $preEmployment->preEmploymentRecord->age < 35 ? 'ring-2 ring-red-300' : '' }}">
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Age</label>
-                        <div class="text-lg font-semibold text-gray-900">{{ $preEmployment->preEmploymentRecord->age }} years</div>
+                        <div class="text-lg font-semibold {{ $preEmployment->preEmploymentRecord->age < 35 ? 'text-red-600' : 'text-gray-900' }}">
+                            {{ $preEmployment->preEmploymentRecord->age }} years
+                            @if($preEmployment->preEmploymentRecord->age < 35)
+                                <span class="block text-xs text-red-500 font-normal mt-1">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>Below minimum age
+                                </span>
+                            @endif
+                        </div>
                     </div>
                     <div class="bg-white rounded-lg p-4 border border-gray-200">
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Gender</label>
@@ -86,39 +93,85 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Age Restriction Warning -->
+            @if($preEmployment->preEmploymentRecord->age < 35)
+            <div class="bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
+                <div class="flex items-start space-x-4">
+                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-ban text-red-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-red-800 mb-2">ECG Examination Not Eligible</h3>
+                        <p class="text-red-700 mb-4">
+                            This applicant is <strong>{{ $preEmployment->preEmploymentRecord->age }} years old</strong>, which is below the minimum age requirement of <strong>35 years</strong> for ECG examinations in pre-employment screening.
+                        </p>
+                        <div class="bg-red-100 rounded-lg p-4 border border-red-200">
+                            <h4 class="font-semibold text-red-800 mb-2">Medical Guidelines:</h4>
+                            <ul class="text-sm text-red-700 space-y-1">
+                                <li>• ECG screening is recommended for individuals 35 years and older</li>
+                                <li>• Younger applicants typically do not require routine ECG examination</li>
+                                <li>• Contact medical supervisor if ECG is specifically requested by employer</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
             @endif
 
-            <form action="{{ route('ecgtech.pre-employment.update', $preEmployment->preEmploymentRecord->id) }}" method="POST" class="space-y-8">
+            @php
+                $isEligible = $preEmployment->preEmploymentRecord->age >= 35;
+            @endphp
+
+            <form action="{{ route('ecgtech.pre-employment.update', $preEmployment->preEmploymentRecord->id) }}" method="POST" class="space-y-8 {{ !$isEligible ? 'opacity-50 pointer-events-none' : '' }}">
                 @csrf
                 @method('PATCH')
                 
                 <!-- Enhanced ECG Examination Section -->
-                <div class="bg-white rounded-xl p-6 border border-gray-200">
+                <div class="bg-white rounded-xl p-6 border border-gray-200 {{ !$isEligible ? 'bg-gray-50' : '' }}">
                     <div class="flex items-center space-x-3 mb-6">
-                        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <div class="w-8 h-8 {{ $isEligible ? 'bg-blue-600' : 'bg-gray-400' }} rounded-lg flex items-center justify-center">
                             <i class="fas fa-heartbeat text-white text-sm"></i>
                         </div>
                         <h3 class="text-lg font-bold text-gray-900">ECG Examination Results</h3>
+                        @if(!$isEligible)
+                            <span class="ml-auto px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+                                <i class="fas fa-ban mr-1"></i>Not Eligible
+                            </span>
+                        @endif
                     </div>
                     
-                    <div class="bg-blue-50 rounded-lg p-6 border border-blue-200">
+                    <div class="bg-blue-50 rounded-lg p-6 border border-blue-200 {{ !$isEligible ? 'bg-gray-100 border-gray-300' : '' }}">
                         <label class="block text-sm font-semibold text-gray-700 mb-3">
                             ECG Results <span class="text-red-500">*</span>
-                            <span class="text-xs text-gray-500 font-normal ml-2">Enter detailed ECG examination findings for employment screening</span>
+                            <span class="text-xs text-gray-500 font-normal ml-2">
+                                @if($isEligible)
+                                    Enter detailed ECG examination findings for employment screening
+                                @else
+                                    ECG examination not required for applicants under 35 years
+                                @endif
+                            </span>
                         </label>
                         <textarea name="ecg" 
                                   rows="6" 
-                                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-none" 
-                                  placeholder="Enter comprehensive ECG examination results for pre-employment screening, including rhythm, rate, intervals, and any abnormalities..." 
-                                  required>{{ old('ecg', $preEmployment->ecg ?? '') }}</textarea>
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-none {{ !$isEligible ? 'bg-gray-200 cursor-not-allowed' : '' }}" 
+                                  placeholder="{{ $isEligible ? 'Enter comprehensive ECG examination results for pre-employment screening, including rhythm, rate, intervals, and any abnormalities...' : 'ECG examination is not required for applicants under 35 years of age.' }}" 
+                                  {{ !$isEligible ? 'disabled readonly' : 'required' }}>{{ old('ecg', $preEmployment->ecg ?? ($isEligible ? '' : 'N/A - Applicant under 35 years, ECG not required per medical guidelines')) }}</textarea>
                         @error('ecg')
                             <div class="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
                                 <p class="text-red-600 text-sm font-medium">{{ $message }}</p>
                             </div>
                         @enderror
-                        <div class="mt-3 flex items-center space-x-2 text-xs text-gray-500">
-                            <i class="fas fa-info-circle"></i>
-                            <span>Include rhythm analysis, rate measurements, and fitness for employment assessment</span>
+                        <div class="mt-3 flex items-center space-x-2 text-xs {{ $isEligible ? 'text-gray-500' : 'text-red-500' }}">
+                            <i class="fas {{ $isEligible ? 'fa-info-circle' : 'fa-exclamation-triangle' }}"></i>
+                            <span>
+                                @if($isEligible)
+                                    Include rhythm analysis, rate measurements, and fitness for employment assessment
+                                @else
+                                    ECG screening not required - applicant is below minimum age of 35 years
+                                @endif
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -127,9 +180,15 @@
 
                 <!-- Enhanced Action Buttons -->
                 <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200">
-                    <div class="flex items-center space-x-2 text-sm text-gray-600">
-                        <i class="fas fa-shield-alt text-blue-600"></i>
-                        <span>Your ECG updates are securely saved and encrypted</span>
+                    <div class="flex items-center space-x-2 text-sm {{ $isEligible ? 'text-gray-600' : 'text-red-600' }}">
+                        <i class="fas {{ $isEligible ? 'fa-shield-alt text-blue-600' : 'fa-exclamation-triangle text-red-600' }}"></i>
+                        <span>
+                            @if($isEligible)
+                                Your ECG updates are securely saved and encrypted
+                            @else
+                                ECG examination not available for applicants under 35 years
+                            @endif
+                        </span>
                     </div>
                     
                     <div class="flex space-x-4">
@@ -138,11 +197,20 @@
                             <i class="fas fa-arrow-left mr-2"></i>
                             Back to Pre-Employment
                         </a>
-                        <button type="submit" 
-                                class="inline-flex items-center px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 font-semibold">
-                            <i class="fas fa-save mr-2"></i>
-                            Update ECG Results
-                        </button>
+                        @if($isEligible)
+                            <button type="submit" 
+                                    class="inline-flex items-center px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 font-semibold">
+                                <i class="fas fa-save mr-2"></i>
+                                Update ECG Results
+                            </button>
+                        @else
+                            <button type="button" 
+                                    disabled
+                                    class="inline-flex items-center px-8 py-3 bg-gray-400 text-gray-200 rounded-xl cursor-not-allowed font-semibold">
+                                <i class="fas fa-ban mr-2"></i>
+                                ECG Not Required
+                            </button>
+                        @endif
                     </div>
                 </div>
             </form>
@@ -159,53 +227,73 @@ document.addEventListener('DOMContentLoaded', function() {
     const ecgTextarea = document.querySelector('textarea[name="ecg"]');
     const heartRateInput = document.querySelector('input[name="heart_rate"]');
     
-    // Enhanced form submission with loading state
-    form.addEventListener('submit', function(e) {
-        // Validate ECG field
-        if (!ecgTextarea.value.trim()) {
-            e.preventDefault();
-            showNotification('Please enter ECG examination results for employment screening', 'error');
-            ecgTextarea.focus();
-            return;
-        }
-        
-        // Show loading state
-        submitButton.disabled = true;
-        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Updating ECG Results...';
-        submitButton.classList.add('opacity-75', 'cursor-not-allowed');
-        
-        // Add visual feedback
-        form.style.opacity = '0.8';
-        form.style.pointerEvents = 'none';
-    });
+    // Check if patient is eligible (age >= 35)
+    const isEligible = {{ $isEligible ? 'true' : 'false' }};
+    const patientAge = {{ $preEmployment->preEmploymentRecord->age }};
     
-    // Enhanced textarea validation and feedback
-    ecgTextarea.addEventListener('input', function() {
-        const value = this.value.trim();
-        const parent = this.closest('.bg-blue-50');
-        const wordCount = value.split(/\s+/).filter(word => word.length > 0).length;
-        
-        // Update visual feedback
-        if (value && wordCount >= 5) {
-            parent.classList.remove('border-blue-200');
-            parent.classList.add('border-blue-300', 'bg-blue-100');
-            this.classList.remove('border-gray-300');
-            this.classList.add('border-blue-400');
-        } else if (value) {
-            parent.classList.remove('border-blue-300', 'bg-blue-100');
-            parent.classList.add('border-yellow-200', 'bg-yellow-50');
-            this.classList.remove('border-gray-300', 'border-blue-400');
-            this.classList.add('border-yellow-300');
-        } else {
-            parent.classList.remove('border-blue-300', 'bg-blue-100', 'border-yellow-200', 'bg-yellow-50');
-            parent.classList.add('border-blue-200');
-            this.classList.remove('border-blue-400', 'border-yellow-300');
-            this.classList.add('border-gray-300');
-        }
-        
-        // Update character count
-        updateCharacterCount();
-    });
+    // Show age restriction notification if not eligible
+    if (!isEligible) {
+        showNotification(`Patient is ${patientAge} years old - ECG examination not required for applicants under 35 years`, 'error', 10000);
+    }
+    
+    // Enhanced form submission with loading state
+    if (form && submitButton) {
+        form.addEventListener('submit', function(e) {
+            // Check age eligibility first
+            if (!isEligible) {
+                e.preventDefault();
+                showNotification('ECG examination is not available for applicants under 35 years of age', 'error');
+                return;
+            }
+            
+            // Validate ECG field for eligible patients
+            if (!ecgTextarea.value.trim()) {
+                e.preventDefault();
+                showNotification('Please enter ECG examination results for employment screening', 'error');
+                ecgTextarea.focus();
+                return;
+            }
+            
+            // Show loading state
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Updating ECG Results...';
+            submitButton.classList.add('opacity-75', 'cursor-not-allowed');
+            
+            // Add visual feedback
+            form.style.opacity = '0.8';
+            form.style.pointerEvents = 'none';
+        });
+    }
+    
+    // Enhanced textarea validation and feedback (only for eligible patients)
+    if (ecgTextarea && isEligible) {
+        ecgTextarea.addEventListener('input', function() {
+            const value = this.value.trim();
+            const parent = this.closest('.bg-blue-50');
+            const wordCount = value.split(/\s+/).filter(word => word.length > 0).length;
+            
+            // Update visual feedback
+            if (value && wordCount >= 5) {
+                parent.classList.remove('border-blue-200');
+                parent.classList.add('border-blue-300', 'bg-blue-100');
+                this.classList.remove('border-gray-300');
+                this.classList.add('border-blue-400');
+            } else if (value) {
+                parent.classList.remove('border-blue-300', 'bg-blue-100');
+                parent.classList.add('border-yellow-200', 'bg-yellow-50');
+                this.classList.remove('border-gray-300', 'border-blue-400');
+                this.classList.add('border-yellow-300');
+            } else {
+                parent.classList.remove('border-blue-300', 'bg-blue-100', 'border-yellow-200', 'bg-yellow-50');
+                parent.classList.add('border-blue-200');
+                this.classList.remove('border-blue-400', 'border-yellow-300');
+                this.classList.add('border-gray-300');
+            }
+            
+            // Update character count
+            updateCharacterCount();
+        });
+    }
     
     // Heart rate validation
     heartRateInput.addEventListener('input', function() {
@@ -238,8 +326,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Character count functionality
+    // Character count functionality (only for eligible patients)
     function updateCharacterCount() {
+        if (!isEligible) return;
+        
         const existing = document.querySelector('.character-count');
         if (existing) existing.remove();
         

@@ -40,7 +40,7 @@ class CompanyAppointmentController extends Controller
             session()->flash('info', "Automatically cancelled {$cancelledCount} expired appointment(s) that had passed today's date.");
         }
         
-        $appointments = Appointment::with(['patients','medicalTestCategory','medicalTest'])->where('created_by', Auth::id())
+        $appointments = Appointment::with(['patients'])->where('created_by', Auth::id())
             ->orderBy('appointment_date', 'asc')
             ->orderBy('time_slot', 'asc')
             ->get();
@@ -97,8 +97,8 @@ class CompanyAppointmentController extends Controller
         ]);
 
         // Decode JSON arrays from frontend
-        $categoryIds = json_decode($request->medical_test_categories_id, true) ?: [];
-        $testIds = json_decode($request->medical_test_id, true) ?: [];
+        $categoryIds = array_map('intval', json_decode($request->medical_test_categories_id, true) ?: []);
+        $testIds = array_map('intval', json_decode($request->medical_test_id, true) ?: []);
 
         // Validate that we have at least one selection
         if (empty($categoryIds) || empty($testIds)) {
@@ -116,16 +116,29 @@ class CompanyAppointmentController extends Controller
             ]);
         }
 
-        // Validate that all category IDs exist
-        $validCategoryIds = MedicalTestCategory::whereIn('id', $categoryIds)->pluck('id')->toArray();
-        if (count($validCategoryIds) !== count($categoryIds)) {
+        // DEBUG: Log the category validation
+        \Log::info("Category validation debug", [
+            "submitted_categories" => $categoryIds,
+            "category_count" => count($categoryIds)
+        ]);
+        
+        // Validate that all category IDs exist (check unique categories only)
+        $uniqueCategoryIds = array_unique($categoryIds);
+        $validCategoryIds = array_map('intval', MedicalTestCategory::whereIn('id', $uniqueCategoryIds)->pluck('id')->toArray());
+        \Log::info("Category validation results", [
+            "valid_categories" => $validCategoryIds,
+            "valid_count" => count($validCategoryIds),
+            "unique_submitted_count" => count($uniqueCategoryIds),
+            "counts_match" => count($validCategoryIds) === count($uniqueCategoryIds)
+        ]);
+        if (count($validCategoryIds) !== count($uniqueCategoryIds)) {
             return back()->withInput()->withErrors([
                 'medical_test_categories_id' => 'One or more selected categories are invalid.'
             ]);
         }
 
         // Validate that all test IDs exist
-        $validTestIds = MedicalTest::whereIn('id', $testIds)->pluck('id')->toArray();
+        $validTestIds = array_map('intval', MedicalTest::whereIn('id', $testIds)->pluck('id')->toArray());
         if (count($validTestIds) !== count($testIds)) {
             return back()->withInput()->withErrors([
                 'medical_test_id' => 'One or more selected tests are invalid.'
@@ -165,15 +178,12 @@ class CompanyAppointmentController extends Controller
                 $totalPrice += $selectedTest->price ?? 0;
             }
 
-            // For backward compatibility, store the first category and test IDs
-            $firstCategoryId = $categoryIds[0];
-            $firstTestId = $testIds[0];
-
+            // Store all selected category and test IDs as arrays
             $appointment = Appointment::create([
                 'appointment_date' => $appointmentDate,
                 'time_slot' => $request->time_slot,
-                'medical_test_categories_id' => $firstCategoryId,
-                'medical_test_id' => $firstTestId,
+                'medical_test_categories_id' => $categoryIds,
+                'medical_test_id' => $testIds,
                 'total_price' => $totalPrice,
                 'notes' => $request->notes,
                 'patients_data' => [], // Will be populated when Excel is processed
@@ -386,7 +396,7 @@ class CompanyAppointmentController extends Controller
 
     public function show($id)
     {
-        $appointment = Appointment::with(['patients', 'medicalTest', 'medicalTestCategory'])->where('created_by', Auth::id())
+        $appointment = Appointment::with(['patients'])->where('created_by', Auth::id())
             ->findOrFail($id);
         
         return view('company.appointments.show', compact('appointment'));
@@ -436,8 +446,8 @@ class CompanyAppointmentController extends Controller
         ]);
 
         // Decode JSON arrays from frontend
-        $categoryIds = json_decode($request->medical_test_categories_id, true) ?: [];
-        $testIds = json_decode($request->medical_test_id, true) ?: [];
+        $categoryIds = array_map('intval', json_decode($request->medical_test_categories_id, true) ?: []);
+        $testIds = array_map('intval', json_decode($request->medical_test_id, true) ?: []);
 
         // Validate that we have at least one selection
         if (empty($categoryIds) || empty($testIds)) {
@@ -455,16 +465,29 @@ class CompanyAppointmentController extends Controller
             ]);
         }
 
-        // Validate that all category IDs exist
-        $validCategoryIds = MedicalTestCategory::whereIn('id', $categoryIds)->pluck('id')->toArray();
-        if (count($validCategoryIds) !== count($categoryIds)) {
+        // DEBUG: Log the category validation
+        \Log::info("Category validation debug", [
+            "submitted_categories" => $categoryIds,
+            "category_count" => count($categoryIds)
+        ]);
+        
+        // Validate that all category IDs exist (check unique categories only)
+        $uniqueCategoryIds = array_unique($categoryIds);
+        $validCategoryIds = array_map('intval', MedicalTestCategory::whereIn('id', $uniqueCategoryIds)->pluck('id')->toArray());
+        \Log::info("Category validation results", [
+            "valid_categories" => $validCategoryIds,
+            "valid_count" => count($validCategoryIds),
+            "unique_submitted_count" => count($uniqueCategoryIds),
+            "counts_match" => count($validCategoryIds) === count($uniqueCategoryIds)
+        ]);
+        if (count($validCategoryIds) !== count($uniqueCategoryIds)) {
             return back()->withInput()->withErrors([
                 'medical_test_categories_id' => 'One or more selected categories are invalid.'
             ]);
         }
 
         // Validate that all test IDs exist
-        $validTestIds = MedicalTest::whereIn('id', $testIds)->pluck('id')->toArray();
+        $validTestIds = array_map('intval', MedicalTest::whereIn('id', $testIds)->pluck('id')->toArray());
         if (count($validTestIds) !== count($testIds)) {
             return back()->withInput()->withErrors([
                 'medical_test_id' => 'One or more selected tests are invalid.'
@@ -504,15 +527,12 @@ class CompanyAppointmentController extends Controller
             $totalPrice += $selectedTest->price ?? 0;
         }
 
-        // For backward compatibility, store the first category and test IDs
-        $firstCategoryId = $categoryIds[0];
-        $firstTestId = $testIds[0];
-
+        // Store all selected category and test IDs as arrays
         $appointment->update([
             'appointment_date' => $request->appointment_date,
             'time_slot' => $request->time_slot,
-            'medical_test_categories_id' => $firstCategoryId,
-            'medical_test_id' => $firstTestId,
+            'medical_test_categories_id' => $categoryIds,
+            'medical_test_id' => $testIds,
             'total_price' => $totalPrice,
             'notes' => $request->notes,
         ]);

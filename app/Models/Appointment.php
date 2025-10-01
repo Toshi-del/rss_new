@@ -26,18 +26,63 @@ class Appointment extends Model
     protected $casts = [
         'appointment_date' => 'date',
         'patients_data' => 'array',
+        'medical_test_categories_id' => 'array',
+        'medical_test_id' => 'array',
         'total_price' => 'decimal:2',
         'cancelled_at' => 'datetime',
     ];
 
-    public function medicalTestCategory(): BelongsTo
+    // Note: These relationships are disabled because medical_test_categories_id and medical_test_id are now JSON arrays
+    // public function medicalTestCategory(): BelongsTo
+    // {
+    //     return $this->belongsTo(MedicalTestCategory::class, 'medical_test_categories_id');
+    // }
+
+    // public function medicalTest(): BelongsTo
+    // {
+    //     return $this->belongsTo(MedicalTest::class, 'medical_test_id');
+    // }
+
+    /**
+     * Get all selected medical test categories
+     */
+    public function getSelectedCategoriesAttribute()
     {
-        return $this->belongsTo(MedicalTestCategory::class, 'medical_test_categories_id');
+        $categoryIds = $this->medical_test_categories_id ?: [];
+        if (empty($categoryIds)) {
+            return collect([]);
+        }
+        return MedicalTestCategory::whereIn('id', $categoryIds)->get();
     }
 
-    public function medicalTest(): BelongsTo
+    /**
+     * Get all selected medical tests
+     */
+    public function getSelectedTestsAttribute()
     {
-        return $this->belongsTo(MedicalTest::class, 'medical_test_id');
+        $testIds = $this->medical_test_id ?: [];
+        if (empty($testIds)) {
+            return collect([]);
+        }
+        return MedicalTest::whereIn('id', $testIds)->get();
+    }
+
+    /**
+     * Get the first selected category (for backward compatibility)
+     */
+    public function getFirstCategoryAttribute()
+    {
+        $categories = $this->selected_categories;
+        return $categories->first();
+    }
+
+    /**
+     * Get the first selected test (for backward compatibility)
+     */
+    public function getFirstTestAttribute()
+    {
+        $tests = $this->selected_tests;
+        return $tests->first();
     }
 
     public function creator(): BelongsTo

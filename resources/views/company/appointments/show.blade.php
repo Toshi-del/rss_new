@@ -75,11 +75,16 @@
                         </div>
                         <div class="space-y-6">
                             <div class="p-4 bg-indigo-50 rounded-lg border-l-4 border-indigo-600">
-                                <label class="block text-sm font-medium text-indigo-700 mb-2">Medical Exam</label>
+                                <label class="block text-sm font-medium text-indigo-700 mb-2">Medical Tests</label>
+                                @php
+                                    // Get test IDs (now handled as array by model casting)
+                                    $testIds = $appointment->medical_test_id ?: [];
+                                    $testCount = is_array($testIds) ? count($testIds) : 0;
+                                @endphp
                                 <p class="text-lg font-semibold text-indigo-900">
-                                    {{ optional($appointment->medicalTestCategory)->name }}
-                                    @if($appointment->medicalTest)
-                                        <br><span class="text-sm text-indigo-700">{{ $appointment->medicalTest->name }}</span>
+                                    {{ $testCount }} test{{ $testCount !== 1 ? 's' : '' }} selected
+                                    @if($testCount > 0)
+                                        <br><span class="text-sm text-indigo-700">View details below</span>
                                     @endif
                                 </p>
                             </div>
@@ -95,150 +100,179 @@
                 </div>
             </div>
 
-            <!-- Medical Test Card -->
-            @if($appointment->medicalTest)
+            <!-- Medical Tests Card -->
+            @php
+                // Get all selected tests (now handled as arrays by model casting)
+                $categoryIds = $appointment->medical_test_categories_id ?: [];
+                $testIds = $appointment->medical_test_id ?: [];
+                
+                // Get the actual test objects
+                $selectedTests = collect([]);
+                if (!empty($testIds) && is_array($testIds)) {
+                    $selectedTests = \App\Models\MedicalTest::whereIn('id', $testIds)->with('category')->get();
+                }
+                
+                $totalPrice = 0;
+            @endphp
+            
+            @if($selectedTests->count() > 0)
             <div class="bg-white rounded-xl shadow-lg overflow-hidden">
                 <div class="px-8 py-6 bg-gradient-to-r from-emerald-600 to-emerald-700 border-l-4 border-emerald-800">
                     <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
-                        <i class="fas fa-vial mr-3"></i>Selected Medical Test
+                        <i class="fas fa-vials mr-3"></i>Selected Medical Tests
                     </h2>
+                    <p class="text-emerald-100 mt-1">{{ $selectedTests->count() }} test(s) selected</p>
                 </div>
                 <div class="p-8">
-                    @php 
-                        $test = $appointment->medicalTest;
-                        
-                        // Check if this is a package test and expand it
-                        $isPackageTest = str_contains(strtolower($test->name), 'package');
-                        $expandedTests = null;
-                        
-                        if ($isPackageTest) {
-                            $testName = strtolower(trim($test->name));
-                            
-                            // Define the complete test lists for each package
-                            $packageTests = [
-                                'package a' => [
-                                    'ELECTROCARDIOGRAM',
-                                    'FASTING BLOOD SUGAR', 
-                                    'TOTAL CHOLESTEROL',
-                                    'BLOOD UREA NITROGEN',
-                                    'BLOOD URIC ACID',
-                                    'SGPT',
-                                    'CBC',
-                                    'URINALYSIS',
-                                    'FECALYSIS'
-                                ],
-                                'package b' => [
-                                    'ELECTROCARDIOGRAM',
-                                    'FASTING BLOOD SUGAR', 
-                                    'TOTAL CHOLESTEROL',
-                                    'BLOOD UREA NITROGEN',
-                                    'BLOOD URIC ACID',
-                                    'SGPT',
-                                    'CBC',
-                                    'URINALYSIS',
-                                    'FECALYSIS',
-                                    'TRIGLYCERIDE',
-                                    'HDL & LDL (GOOD AND BAD CHOLESTEROL)'
-                                ],
-                                'package c' => [
-                                    'ELECTROCARDIOGRAM',
-                                    'FASTING BLOOD SUGAR', 
-                                    'TOTAL CHOLESTEROL',
-                                    'BLOOD UREA NITROGEN',
-                                    'BLOOD URIC ACID',
-                                    'SGPT',
-                                    'CBC',
-                                    'URINALYSIS',
-                                    'FECALYSIS',
-                                    'TRIGLYCERIDE',
-                                    'HDL & LDL (GOOD AND BAD CHOLESTEROL)',
-                                    'CREATININE',
-                                    'BLOOD TYPING'
-                                ],
-                                'package d' => [
-                                    'ELECTROCARDIOGRAM',
-                                    'FASTING BLOOD SUGAR', 
-                                    'TOTAL CHOLESTEROL',
-                                    'BLOOD UREA NITROGEN',
-                                    'BLOOD URIC ACID',
-                                    'SGPT',
-                                    'CBC',
-                                    'URINALYSIS',
-                                    'FECALYSIS',
-                                    'TRIGLYCERIDE',
-                                    'HDL & LDL (GOOD AND BAD CHOLESTEROL)',
-                                    'CREATININE',
-                                    'BLOOD TYPING',
-                                    'SODIUM',
-                                    'POTASSIUM',
-                                    'CALCIUM',
-                                    'CHLORIDE'
-                                ],
-                                'package e' => [
-                                    'ELECTROCARDIOGRAM',
-                                    'FASTING BLOOD SUGAR', 
-                                    'TOTAL CHOLESTEROL',
-                                    'BLOOD UREA NITROGEN',
-                                    'BLOOD URIC ACID',
-                                    'SGPT',
-                                    'CBC',
-                                    'URINALYSIS',
-                                    'FECALYSIS',
-                                    'TRIGLYCERIDE',
-                                    'HDL & LDL (GOOD AND BAD CHOLESTEROL)',
-                                    'CREATININE',
-                                    'BLOOD TYPING',
-                                    'SODIUM',
-                                    'POTASSIUM',
-                                    'CALCIUM',
-                                    'CHLORIDE',
-                                    'TPAG (LIVER FUNCTION TEST)',
-                                    'SGOT',
-                                    'BILIRUBIN',
-                                    'AMYLASE'
-                                ]
-                            ];
-                            
-                            if (isset($packageTests[$testName])) {
-                                $expandedTests = $packageTests[$testName];
-                            }
-                        }
-                    @endphp
-                    <div class="bg-emerald-50 rounded-xl p-6 border-l-4 border-emerald-600">
-                        <div class="flex items-start justify-between">
-                            <div class="flex-1">
-                                <h3 class="text-xl font-bold text-emerald-900 mb-2">{{ $test->name }}</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        @foreach($selectedTests as $test)
+                            @php
+                                $totalPrice += $test->price;
                                 
-                                @if($isPackageTest && $expandedTests)
-                                    <div class="mb-4">
-                                        <p class="text-sm font-medium text-emerald-800 mb-2">Package includes:</p>
-                                        <ul class="list-disc list-inside space-y-1 ml-2 text-sm text-emerald-700">
-                                            @foreach($expandedTests as $item)
-                                                <li>{{ $item }}</li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                @elseif($test->description)
-                                    <p class="text-emerald-700 mb-3">{{ $test->description }}</p>
-                                @endif
-                                @if($test->category)
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-600 text-white">
-                                        <i class="fas fa-tag mr-1"></i>
-                                        {{ $test->category->name }}
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-500 text-white">
-                                        <i class="fas fa-exclamation-triangle mr-1"></i>
-                                        No category
-                                    </span>
-                                @endif
+                                // Check if this is a package test and expand it
+                                $isPackageTest = str_contains(strtolower($test->name), 'package');
+                                $expandedTests = null;
+                                
+                                if ($isPackageTest) {
+                                    $testName = strtolower(trim($test->name));
+                                    
+                                    // Define the complete test lists for each package
+                                    $packageTests = [
+                                        'package a' => [
+                                            'ELECTROCARDIOGRAM',
+                                            'FASTING BLOOD SUGAR', 
+                                            'TOTAL CHOLESTEROL',
+                                            'BLOOD UREA NITROGEN',
+                                            'BLOOD URIC ACID',
+                                            'SGPT',
+                                            'CBC',
+                                            'URINALYSIS',
+                                            'FECALYSIS'
+                                        ],
+                                        'package b' => [
+                                            'ELECTROCARDIOGRAM',
+                                            'FASTING BLOOD SUGAR', 
+                                            'TOTAL CHOLESTEROL',
+                                            'BLOOD UREA NITROGEN',
+                                            'BLOOD URIC ACID',
+                                            'SGPT',
+                                            'CBC',
+                                            'URINALYSIS',
+                                            'FECALYSIS',
+                                            'TRIGLYCERIDE',
+                                            'HDL & LDL (GOOD AND BAD CHOLESTEROL)'
+                                        ],
+                                        'package c' => [
+                                            'ELECTROCARDIOGRAM',
+                                            'FASTING BLOOD SUGAR', 
+                                            'TOTAL CHOLESTEROL',
+                                            'BLOOD UREA NITROGEN',
+                                            'BLOOD URIC ACID',
+                                            'SGPT',
+                                            'CBC',
+                                            'URINALYSIS',
+                                            'FECALYSIS',
+                                            'TRIGLYCERIDE',
+                                            'HDL & LDL (GOOD AND BAD CHOLESTEROL)',
+                                            'CREATININE',
+                                            'BLOOD TYPING'
+                                        ],
+                                        'package d' => [
+                                            'ELECTROCARDIOGRAM',
+                                            'FASTING BLOOD SUGAR', 
+                                            'TOTAL CHOLESTEROL',
+                                            'BLOOD UREA NITROGEN',
+                                            'BLOOD URIC ACID',
+                                            'SGPT',
+                                            'CBC',
+                                            'URINALYSIS',
+                                            'FECALYSIS',
+                                            'TRIGLYCERIDE',
+                                            'HDL & LDL (GOOD AND BAD CHOLESTEROL)',
+                                            'CREATININE',
+                                            'BLOOD TYPING',
+                                            'SODIUM',
+                                            'POTASSIUM',
+                                            'CALCIUM',
+                                            'CHLORIDE'
+                                        ],
+                                        'package e' => [
+                                            'ELECTROCARDIOGRAM',
+                                            'FASTING BLOOD SUGAR', 
+                                            'TOTAL CHOLESTEROL',
+                                            'BLOOD UREA NITROGEN',
+                                            'BLOOD URIC ACID',
+                                            'SGPT',
+                                            'CBC',
+                                            'URINALYSIS',
+                                            'FECALYSIS',
+                                            'TRIGLYCERIDE',
+                                            'HDL & LDL (GOOD AND BAD CHOLESTEROL)',
+                                            'CREATININE',
+                                            'BLOOD TYPING',
+                                            'SODIUM',
+                                            'POTASSIUM',
+                                            'CALCIUM',
+                                            'CHLORIDE',
+                                            'TPAG (LIVER FUNCTION TEST)',
+                                            'SGOT',
+                                            'BILIRUBIN',
+                                            'AMYLASE'
+                                        ]
+                                    ];
+                                    
+                                    if (isset($packageTests[$testName])) {
+                                        $expandedTests = $packageTests[$testName];
+                                    }
+                                }
+                            @endphp
+                            
+                            <div class="bg-emerald-50 rounded-xl p-6 border-l-4 border-emerald-600 h-full flex flex-col">
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-bold text-emerald-900 mb-2">{{ $test->name }}</h3>
+                                    
+                                    @if($isPackageTest && $expandedTests)
+                                        <div class="mb-4">
+                                            <p class="text-sm font-medium text-emerald-800 mb-2">Package includes:</p>
+                                            <ul class="list-disc list-inside space-y-1 ml-2 text-sm text-emerald-700">
+                                                @foreach($expandedTests as $item)
+                                                    <li>{{ $item }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @elseif($test->description)
+                                        <p class="text-emerald-700 mb-3 text-sm">{{ $test->description }}</p>
+                                    @endif
+                                    
+                                    @if($test->category)
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-600 text-white mb-3">
+                                            <i class="fas fa-tag mr-1"></i>
+                                            {{ $test->category->name }}
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-500 text-white mb-3">
+                                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                                            No category
+                                        </span>
+                                    @endif
+                                </div>
+                                
+                                <div class="text-center mt-auto pt-3 border-t border-emerald-200">
+                                    <p class="text-xl font-bold text-emerald-600">₱{{ number_format($test->price, 2) }}</p>
+                                    <p class="text-xs text-emerald-700">Test Price</p>
+                                </div>
                             </div>
-                            <div class="text-right ml-6">
-                                <p class="text-3xl font-bold text-emerald-600">₱{{ number_format($test->price, 2) }}</p>
-                                <p class="text-sm text-emerald-700">Test Price</p>
-                            </div>
+                        @endforeach
+                    </div>
+                    
+                    @if($selectedTests->count() > 1)
+                    <div class="mt-6 bg-emerald-100 rounded-xl p-4 border-l-4 border-emerald-600">
+                        <div class="flex items-center justify-between">
+                            <span class="text-emerald-800 font-medium">Total Tests Price:</span>
+                            <span class="text-2xl font-bold text-emerald-600">₱{{ number_format($totalPrice, 2) }}</span>
                         </div>
                     </div>
+                    @endif
                 </div>
             </div>
             @endif
@@ -367,28 +401,45 @@
                         </div>
                         <div class="bg-emerald-50 rounded-lg p-4 border-l-4 border-emerald-600">
                             <p class="text-emerald-700 text-sm font-medium">Medical Tests</p>
-                            <p class="text-2xl font-bold text-emerald-900">{{ $appointment->medical_test_id ? 1 : 0 }}</p>
+                            @php
+                                // Get test IDs (now handled as array by model casting)
+                                $testIds = $appointment->medical_test_id ?: [];
+                                $testCount = is_array($testIds) ? count($testIds) : 0;
+                            @endphp
+                            <p class="text-2xl font-bold text-emerald-900">{{ $testCount }}</p>
                         </div>
-                        @if($appointment->medicalTest)
+                        @php
+                            // Calculate total price from all selected tests (now handled as array by model casting)
+                            $testIds = $appointment->medical_test_id ?: [];
+                            
+                            $selectedTestsForPrice = collect([]);
+                            if (!empty($testIds) && is_array($testIds)) {
+                                $selectedTestsForPrice = \App\Models\MedicalTest::whereIn('id', $testIds)->get();
+                            }
+                            $totalTestPrice = $selectedTestsForPrice->sum('price');
+                            $patientCount = $appointment->patients->count();
+                            $grandTotal = $totalTestPrice * $patientCount;
+                        @endphp
+                        @if($selectedTestsForPrice->count() > 0)
                         <div class="bg-green-50 rounded-lg p-4 border-l-4 border-green-600 col-span-2">
                             <p class="text-green-700 text-sm font-medium">Total Price Calculation</p>
                             <div class="space-y-2">
                                 <div class="flex items-center justify-between text-sm text-green-700">
-                                    <span>Test Price per Patient:</span>
-                                    <span class="font-semibold">₱{{ number_format($appointment->medicalTest->price, 2) }}</span>
+                                    <span>Tests Price per Patient:</span>
+                                    <span class="font-semibold">₱{{ number_format($totalTestPrice, 2) }}</span>
                                 </div>
                                 <div class="flex items-center justify-between text-sm text-green-700">
                                     <span>Number of Patients:</span>
-                                    <span class="font-semibold">{{ $appointment->patient_count }}</span>
+                                    <span class="font-semibold">{{ $patientCount }}</span>
                                 </div>
                                 <hr class="border-green-300">
                                 <div class="flex items-start justify-between">
                                     <span class="text-green-700 font-medium">Estimated Total Amount:</span>
-                                    <span class="text-3xl font-bold text-green-900">{{ $appointment->formatted_total_price }}</span>
+                                    <span class="text-3xl font-bold text-green-900">₱{{ number_format($grandTotal, 2) }}</span>
                                 </div>
-                                @if($appointment->patient_count > 0)
+                                @if($patientCount > 0)
                                 <p class="text-xs text-green-600 mt-1">
-                                    (₱{{ number_format($appointment->medicalTest->price, 2) }} × {{ $appointment->patient_count }} patients)
+                                    (₱{{ number_format($totalTestPrice, 2) }} × {{ $patientCount }} patients)
                                 </p>
                                 @endif
                             </div>

@@ -410,19 +410,6 @@
                             @enderror
                         </div>
 
-                        <div class="space-y-2">
-                            <label class="block text-sm font-semibold text-gray-700">
-                                Date of Admission to the Program
-                            </label>
-                            <input type="date" name="drug_test[admission_date]" 
-                                   value="{{ old('drug_test.admission_date') }}" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors @error('drug_test.admission_date') border-red-500 ring-2 ring-red-200 @enderror" />
-                            @error('drug_test.admission_date')
-                                <p class="mt-1 text-sm text-red-600 flex items-center">
-                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
-                                </p>
-                            @enderror
-                        </div>
 
                         <div class="space-y-2">
                             <label class="block text-sm font-semibold text-gray-700">

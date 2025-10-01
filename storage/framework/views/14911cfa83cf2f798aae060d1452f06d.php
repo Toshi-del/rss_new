@@ -1,3 +1,5 @@
+
+
 <?php $__env->startSection('title', 'Create New Appointment - RSS Citi Health Services'); ?>
 <?php $__env->startSection('page-title', 'Create New Appointment'); ?>
 <?php $__env->startSection('page-description', 'Schedule a new medical examination appointment for your employees'); ?>
@@ -249,7 +251,7 @@ unset($__errorArgs, $__bag); ?>
                         $categoryName = strtolower(trim($category->name)); 
                         $uniqueTests = $category->medicalTests->unique(function($t){ return strtolower($t->name ?? ''); });
                     ?>
-                    <?php if($categoryName === 'appointment' || $categoryName === 'blood chemistry' || $categoryName === 'package'): ?>
+                    <?php if($categoryName === 'appointment' || $categoryName === 'blood chemistry'): ?>
                         <div class="mb-6 last:mb-0">
                             <!-- Collapsible Category Header -->
                             <div class="bg-white rounded-lg border-l-4 border-indigo-600 overflow-hidden">
@@ -872,14 +874,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function handleTestChange(e) {
         const current = e.target;
+        const currentCategoryId = current.getAttribute('data-category-id');
 
         if (current.checked) {
-            // Enforce one selection PER CATEGORY: uncheck other tests in the same category only
-            const categoryId = current.getAttribute('data-category-id');
-            const sameCategory = document.querySelectorAll(`input[name=\"appointment_selected_test\"][data-category-id=\"${categoryId}\"]`);
-            Array.from(sameCategory).forEach(cb => {
-                if (cb !== current) cb.checked = false;
+            // Get category name to check if it's Blood Chemistry
+            const categories = {};
+            document.querySelectorAll('[id^="category-"]').forEach(categoryDiv => {
+                const categoryId = categoryDiv.id.replace('category-', '');
+                const categoryHeader = categoryDiv.previousElementSibling.querySelector('h4');
+                if (categoryHeader) {
+                    const categoryName = categoryHeader.textContent.trim().toLowerCase();
+                    categories[categoryId] = categoryName;
+                }
             });
+
+            const currentCategoryName = categories[currentCategoryId];
+
+            // Allow multiple selections for Blood Chemistry, single selection for others
+            if (currentCategoryName !== 'blood chemistry') {
+                // Enforce one selection PER CATEGORY: uncheck other tests in the same category only
+                const sameCategory = document.querySelectorAll(`input[name="appointment_selected_test"][data-category-id="${currentCategoryId}"]`);
+                Array.from(sameCategory).forEach(cb => {
+                    if (cb !== current) cb.checked = false;
+                });
+            }
+            // For Blood Chemistry, allow multiple selections (no unchecking)
         }
 
         // Handle package/blood chemistry blocking for both checking and unchecking

@@ -508,34 +508,6 @@ endif;
 unset($__errorArgs, $__bag); ?>
                         </div>
 
-                        <div class="space-y-2">
-                            <label class="block text-sm font-semibold text-gray-700">
-                                Date of Admission to the Program
-                            </label>
-                            <input type="date" name="drug_test[admission_date]" 
-                                   value="<?php echo e(old('drug_test.admission_date')); ?>" 
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors <?php $__errorArgs = ['drug_test.admission_date'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> border-red-500 ring-2 ring-red-200 <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>" />
-                            <?php $__errorArgs = ['drug_test.admission_date'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                                <p class="mt-1 text-sm text-red-600 flex items-center">
-                                    <i class="fas fa-exclamation-circle mr-1"></i><?php echo e($message); ?>
-
-                                </p>
-                            <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>
-                        </div>
 
                         <div class="space-y-2">
                             <label class="block text-sm font-semibold text-gray-700">

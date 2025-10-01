@@ -18,7 +18,6 @@ class DrugTestResult extends Model
         'age',
         'gender',
         'examination_datetime',
-        'admission_date',
         'last_intake_date',
         'test_method',
         'methamphetamine_result',
@@ -33,7 +32,6 @@ class DrugTestResult extends Model
 
     protected $casts = [
         'examination_datetime' => 'datetime',
-        'admission_date' => 'date',
         'last_intake_date' => 'date',
         'completed_at' => 'datetime',
     ];

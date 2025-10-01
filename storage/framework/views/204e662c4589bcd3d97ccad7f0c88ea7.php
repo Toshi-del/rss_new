@@ -233,11 +233,19 @@
                     </div>
                     <div class="flex-1">
                         <h4 class="font-semibold text-gray-900 text-lg">
-                            <?php echo e(optional($appointment->medicalTestCategory)->name ?? 'Medical Examination'); ?>
+                            <?php
+                                $firstCategory = $appointment->first_category;
+                                $firstTest = $appointment->first_test;
+                                $testCount = count($appointment->medical_test_id ?: []);
+                            ?>
+                            <?php echo e($firstCategory->name ?? 'Medical Examination'); ?>
 
-                            <?php if($appointment->medicalTest): ?>
-                                - <?php echo e($appointment->medicalTest->name); ?>
+                            <?php if($firstTest): ?>
+                                - <?php echo e($firstTest->name); ?>
 
+                                <?php if($testCount > 1): ?>
+                                    <span class="text-sm text-gray-500">(+<?php echo e($testCount - 1); ?> more)</span>
+                                <?php endif; ?>
                             <?php endif; ?>
                         </h4>
                         <div class="flex items-center space-x-6 text-sm text-gray-600 mt-2">

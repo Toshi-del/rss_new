@@ -180,8 +180,8 @@ unset($__errorArgs, $__bag); ?>
 
                     <?php
                         $uniqueCategories = $medicalTestCategories->unique(function($c){ return strtolower($c->name ?? ''); });
-                        // Filter to only show pre-employment, blood chem, and package categories
-                        $allowedCategories = ['pre-employment', 'blood chemistry', 'package'];
+                        // Filter to only show pre-employment and blood chemistry categories
+                        $allowedCategories = ['pre-employment', 'blood chemistry'];
                         $filteredCategories = $uniqueCategories->filter(function($category) use ($allowedCategories) {
                             return in_array(strtolower(trim($category->name)), $allowedCategories);
                         });
@@ -729,12 +729,29 @@ unset($__errorArgs, $__bag); ?>
             const currentCategoryId = current.getAttribute('data-category-id');
 
             if (current.checked) {
-                // If checking a test, uncheck other tests in the same category (one per category rule)
-                Array.from(testCheckboxes).forEach(cb => {
-                    if (cb !== current && cb.getAttribute('data-category-id') === currentCategoryId) {
-                        cb.checked = false;
+                // Get category name to check if it's Blood Chemistry
+                const categories = {};
+                document.querySelectorAll('[id^="category-"]').forEach(categoryDiv => {
+                    const categoryId = categoryDiv.id.replace('category-', '');
+                    const categoryHeader = categoryDiv.previousElementSibling.querySelector('h4');
+                    if (categoryHeader) {
+                        const categoryName = categoryHeader.textContent.trim().toLowerCase();
+                        categories[categoryId] = categoryName;
                     }
                 });
+
+                const currentCategoryName = categories[currentCategoryId];
+
+                // Allow multiple selections for Blood Chemistry, single selection for others
+                if (currentCategoryName !== 'blood chemistry') {
+                    // If checking a test in non-Blood Chemistry category, uncheck other tests in the same category
+                    Array.from(testCheckboxes).forEach(cb => {
+                        if (cb !== current && cb.getAttribute('data-category-id') === currentCategoryId) {
+                            cb.checked = false;
+                        }
+                    });
+                }
+                // For Blood Chemistry, allow multiple selections (no unchecking)
             }
 
             // Handle package/blood chemistry blocking for both checking and unchecking

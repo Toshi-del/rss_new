@@ -180,8 +180,8 @@
                     </div>
                 </div>
 
-                <input type="hidden" name="medical_test_categories_id" id="medical_test_categories_id" value="{{ old('medical_test_categories_id') }}">
-                <input type="hidden" name="medical_test_id" id="medical_test_id" value="{{ old('medical_test_id') }}">
+                <input type="hidden" name="medical_test_categories_id" id="medical_test_categories_id" value="{{ is_array(old('medical_test_categories_id')) ? json_encode(old('medical_test_categories_id')) : old('medical_test_categories_id') }}">
+                <input type="hidden" name="medical_test_id" id="medical_test_id" value="{{ is_array(old('medical_test_id')) ? json_encode(old('medical_test_id')) : old('medical_test_id') }}">
                 <div id="selected_tests_container">
                     <!-- Selected tests will be added here as hidden inputs -->
                 </div>

@@ -234,9 +234,17 @@
                     </div>
                     <div class="flex-1">
                         <h4 class="font-semibold text-gray-900 text-lg">
-                            {{ optional($appointment->medicalTestCategory)->name ?? 'Medical Examination' }}
-                            @if($appointment->medicalTest)
-                                - {{ $appointment->medicalTest->name }}
+                            @php
+                                $firstCategory = $appointment->first_category;
+                                $firstTest = $appointment->first_test;
+                                $testCount = count($appointment->medical_test_id ?: []);
+                            @endphp
+                            {{ $firstCategory->name ?? 'Medical Examination' }}
+                            @if($firstTest)
+                                - {{ $firstTest->name }}
+                                @if($testCount > 1)
+                                    <span class="text-sm text-gray-500">(+{{ $testCount - 1 }} more)</span>
+                                @endif
                             @endif
                         </h4>
                         <div class="flex items-center space-x-6 text-sm text-gray-600 mt-2">

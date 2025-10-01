@@ -93,18 +93,49 @@ class EcgtechController extends Controller
     /**
      * Show pre-employment records for ECG tech
      */
-    public function preEmployment()
+    public function preEmployment(Request $request)
     {
-        $preEmployments = PreEmploymentRecord::where('status', 'approved')
-            ->whereHas('medicalTest', function ($q) {
-                $q->where('name', 'Pre-Employment with ECG and Drug test')
-                  ->orWhereIn('name', ['Package A', 'Package B', 'Package C', 'Package D', 'Package E']);
-            })
-            ->whereDoesntHave('preEmploymentExamination', function ($q) {
-                $q->whereIn('status', ['completed', 'Approved', 'sent_to_company']);
-            })
+        $query = PreEmploymentRecord::where('status', 'approved');
+
+        // Get ECG status filter (default to 'needs_attention')
+        $ecgStatus = $request->filled('ecg_status') ? $request->ecg_status : 'needs_attention';
+
+        // Apply ECG status filtering
+        if ($ecgStatus === 'needs_attention') {
+            // Records without ECG completion in preEmploymentExamination
+            $query->whereDoesntHave('preEmploymentExamination', function($q) {
+                $q->whereNotNull('ecg')
+                  ->where('ecg', '!=', '');
+            });
+        } elseif ($ecgStatus === 'ecg_completed') {
+            // Records with ECG completion in preEmploymentExamination
+            $query->whereHas('preEmploymentExamination', function($q) {
+                $q->whereNotNull('ecg')
+                  ->where('ecg', '!=', '');
+            });
+        }
+
+        // Apply additional filters
+        if ($request->filled('company')) {
+            $query->where('company_name', $request->company);
+        }
+
+        if ($request->filled('gender')) {
+            $query->where('sex', $request->gender);
+        }
+
+        // Apply search filter
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$searchTerm}%"])
+                  ->orWhere('email', 'like', "%{$searchTerm}%")
+                  ->orWhere('company_name', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        $preEmployments = $query->with(['medicalTest', 'preEmploymentExamination'])
             ->latest()
-            ->with('medicalTest')
             ->paginate(15);
         
         return view('ecgtech.pre-employment', compact('preEmployments'));
@@ -113,20 +144,43 @@ class EcgtechController extends Controller
     /**
      * Show the annual physical patients list
      */
-    public function annualPhysical()
+    public function annualPhysical(Request $request)
     {
-        $patients = Patient::where('status', 'approved')
-            ->whereHas('appointment', function ($q) {
-                $q->where('status', 'approved')
-                  ->whereHas('medicalTest', function ($testQuery) {
-                      $testQuery->where('name', 'Annual Medical with ECG and Drug test')
-                               ->orWhereIn('name', ['Package A', 'Package B', 'Package C', 'Package D', 'Package E']);
-                  });
-            })
-            ->whereDoesntHave('annualPhysicalExamination', function ($q) {
-                $q->whereIn('status', ['completed', 'sent_to_company']);
-            })
-            ->with(['appointment.medicalTest'])
+        $query = Patient::where('status', 'approved');
+
+        // Get ECG status filter (default to 'needs_attention')
+        $ecgStatus = $request->filled('ecg_status') ? $request->ecg_status : 'needs_attention';
+
+        // Apply ECG status filtering
+        if ($ecgStatus === 'needs_attention') {
+            // Patients without ECG completion in annualPhysicalExamination
+            $query->whereDoesntHave('annualPhysicalExamination', function($q) {
+                $q->whereNotNull('ecg')
+                  ->where('ecg', '!=', '');
+            });
+        } elseif ($ecgStatus === 'ecg_completed') {
+            // Patients with ECG completion in annualPhysicalExamination
+            $query->whereHas('annualPhysicalExamination', function($q) {
+                $q->whereNotNull('ecg')
+                  ->where('ecg', '!=', '');
+            });
+        }
+
+        // Apply additional filters
+        if ($request->filled('gender')) {
+            $query->where('sex', $request->gender);
+        }
+
+        // Apply search filter
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$searchTerm}%"])
+                  ->orWhere('email', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        $patients = $query->with(['appointment.medicalTest', 'annualPhysicalExamination'])
             ->latest()
             ->paginate(15);
         
@@ -138,13 +192,45 @@ class EcgtechController extends Controller
      * 
      * @return \Illuminate\View\View
      */
-    public function opd()
+    public function opd(Request $request)
     {
-        $opdPatients = User::where('role', 'opd')
-            ->whereDoesntHave('opdExamination', function ($q) {
-                $q->whereIn('status', ['completed', 'sent_to_company']);
-            })
-            ->latest()->paginate(15);
+        $query = User::where('role', 'opd');
+
+        // Get ECG status filter (default to 'needs_attention')
+        $ecgStatus = $request->filled('ecg_status') ? $request->ecg_status : 'needs_attention';
+
+        // Apply ECG status filtering
+        if ($ecgStatus === 'needs_attention') {
+            // Users without ECG completion in opdExamination
+            $query->whereDoesntHave('opdExamination', function($q) {
+                $q->whereNotNull('ecg')
+                  ->where('ecg', '!=', '');
+            });
+        } elseif ($ecgStatus === 'ecg_completed') {
+            // Users with ECG completion in opdExamination
+            $query->whereHas('opdExamination', function($q) {
+                $q->whereNotNull('ecg')
+                  ->where('ecg', '!=', '');
+            });
+        }
+
+        // Apply additional filters
+        if ($request->filled('gender')) {
+            $query->where('gender', $request->gender);
+        }
+
+        // Apply search filter
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->whereRaw("CONCAT(fname, ' ', lname) LIKE ?", ["%{$searchTerm}%"])
+                  ->orWhere('email', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        $opdPatients = $query->with(['opdExamination'])
+            ->latest()
+            ->paginate(15);
         
         return view('ecgtech.opd', compact('opdPatients'));
     }

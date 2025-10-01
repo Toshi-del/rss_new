@@ -926,7 +926,6 @@ class NurseController extends Controller
             'drug_test.age' => 'required|integer|min:1|max:150',
             'drug_test.gender' => 'required|in:Male,Female',
             'drug_test.examination_datetime' => 'required|date',
-            'drug_test.admission_date' => 'nullable|date',
             'drug_test.last_intake_date' => 'nullable|date',
             'drug_test.test_method' => 'required|string|max:255',
             'drug_test.methamphetamine_result' => 'required|in:Negative,Positive',

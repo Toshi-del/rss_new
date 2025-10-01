@@ -176,8 +176,12 @@
                     </div>
                 </div>
 
-                <input type="hidden" name="medical_test_categories_id" id="medical_test_categories_id" value="{{ old('medical_test_categories_id', $appointment->medicalTestCategory->id ?? '') }}">
-                <input type="hidden" name="medical_test_id" id="medical_test_id" value="{{ old('medical_test_id', $appointment->medicalTest->id ?? '') }}">
+                @php
+                    $currentCategoryIds = $appointment->medical_test_categories_id ?: [];
+                    $currentTestIds = $appointment->medical_test_id ?: [];
+                @endphp
+                <input type="hidden" name="medical_test_categories_id" id="medical_test_categories_id" value="{{ is_array(old('medical_test_categories_id')) ? json_encode(old('medical_test_categories_id')) : (old('medical_test_categories_id') ?: json_encode($currentCategoryIds)) }}">
+                <input type="hidden" name="medical_test_id" id="medical_test_id" value="{{ is_array(old('medical_test_id')) ? json_encode(old('medical_test_id')) : (old('medical_test_id') ?: json_encode($currentTestIds)) }}">
                 <div id="selected_tests_container">
                     <!-- Selected tests will be added here as hidden inputs -->
                 </div>
@@ -195,8 +199,8 @@
 
                 @php
                     $uniqueCategories = $medicalTestCategories->unique(function($c){ return strtolower($c->name ?? ''); });
-                    $currentTestId = $appointment->medicalTest->id ?? null;
-                    $currentCategoryId = $appointment->medicalTestCategory->id ?? null;
+                    $currentTestIds = $appointment->medical_test_id ?: [];
+                    $currentCategoryIds = $appointment->medical_test_categories_id ?: [];
                 @endphp
                 @foreach($uniqueCategories as $category)
                     @php 
@@ -220,21 +224,25 @@
                                             @endif
                                         </div>
                                         <div class="flex items-center space-x-3">
-                                            <span id="selected-count-{{ $category->id }}" class="text-sm font-medium text-indigo-600 bg-indigo-100 px-2 py-1 rounded-full {{ $currentCategoryId == $category->id ? '' : 'hidden' }}">
-                                                {{ $currentCategoryId == $category->id ? '1 selected' : '0 selected' }}
+                                            @php
+                                                $selectedInCategory = array_intersect($currentTestIds, $category->medicalTests->pluck('id')->toArray());
+                                                $selectedCount = count($selectedInCategory);
+                                            @endphp
+                                            <span id="selected-count-{{ $category->id }}" class="text-sm font-medium text-indigo-600 bg-indigo-100 px-2 py-1 rounded-full {{ $selectedCount > 0 ? '' : 'hidden' }}">
+                                                {{ $selectedCount }} selected
                                             </span>
-                                            <i id="chevron-{{ $category->id }}" class="fas fa-chevron-down text-indigo-600 transform transition-transform duration-200 {{ $currentCategoryId == $category->id ? 'rotate-180' : '' }}"></i>
+                                            <i id="chevron-{{ $category->id }}" class="fas fa-chevron-down text-indigo-600 transform transition-transform duration-200 {{ $selectedCount > 0 ? 'rotate-180' : '' }}"></i>
                                         </div>
                                     </div>
                                 </button>
                                 
                                 <!-- Collapsible Content -->
-                                <div id="category-{{ $category->id }}" class="{{ $currentCategoryId == $category->id ? '' : 'hidden' }} border-t border-indigo-100">
+                                <div id="category-{{ $category->id }}" class="{{ array_intersect($currentCategoryIds, [$category->id]) ? '' : 'hidden' }} border-t border-indigo-100">
                                     <div class="p-4 bg-indigo-50">
                                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             @foreach($uniqueTests as $test)
                                                 <label for="appointment_test_{{ $test->id }}" class="cursor-pointer block">
-                                                    <div class="bg-white rounded-lg p-5 border-2 {{ $currentTestId == $test->id ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200' }} hover:border-blue-400 hover:shadow-md transition-all duration-200">
+                                                    <div class="bg-white rounded-lg p-5 border-2 {{ in_array($test->id, $currentTestIds) ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200' }} hover:border-blue-400 hover:shadow-md transition-all duration-200">
                                                         <div class="flex items-start">
                                                             <input
                                                                 id="appointment_test_{{ $test->id }}"
@@ -244,7 +252,7 @@
                                                                 data-category-id="{{ $category->id }}"
                                                                 data-test-id="{{ $test->id }}"
                                                                 class="mt-1 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded category-checkbox"
-                                                                {{ $currentTestId == $test->id ? 'checked' : '' }}
+                                                                {{ in_array($test->id, $currentTestIds) ? 'checked' : '' }}
                                                             >
                                                             <div class="ml-3 flex-1">
                                                                 <h5 class="text-base font-bold text-gray-900 mb-1">{{ $test->name }}</h5>
@@ -353,36 +361,42 @@
             </div>
 
             <!-- Selected Test Info Card -->
-            <div id="selectedTestInfo" class="content-card rounded-xl p-8 shadow-lg border border-gray-200" style="{{ $currentTestId ? 'display: block;' : 'display: none;' }}">
+            <div id="selectedTestInfo" class="content-card rounded-xl p-8 shadow-lg border border-gray-200" style="{{ count($currentTestIds) > 0 ? 'display: block;' : 'display: none;' }}">
                 <div class="flex items-center space-x-3 mb-6">
                     <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                         <i class="fas fa-check-circle text-blue-600"></i>
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-gray-900">Selected Test</h3>
-                        <p class="text-gray-600 text-sm">Your chosen medical examination</p>
+                        <h3 class="text-xl font-bold text-gray-900">Selected Tests</h3>
+                        <p class="text-gray-600 text-sm">Your chosen medical examinations</p>
                     </div>
                 </div>
                 <div id="testDetails">
-                    @if($currentTestId && $appointment->medicalTest)
+                    @if(count($currentTestIds) > 0)
+                        @php
+                            $selectedTests = \App\Models\MedicalTest::whereIn('id', $currentTestIds)->get();
+                            $totalPrice = $selectedTests->sum('price');
+                        @endphp
                         <div class="space-y-4">
-                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                                <h4 class="text-sm font-semibold text-gray-900">{{ $appointment->medicalTest->name }}</h4>
-                                @if($appointment->medicalTest->description)
-                                    <p class="text-xs text-gray-600 mt-1">{{ $appointment->medicalTest->description }}</p>
-                                @endif
-                                @if($appointment->medicalTest->price > 0)
-                                    <p class="text-sm font-bold text-emerald-600 mt-2">₱{{ number_format((float)$appointment->medicalTest->price, 2) }}</p>
-                                @else
-                                    <p class="text-sm text-blue-600 mt-2">Contact for pricing</p>
-                                @endif
-                            </div>
+                            @foreach($selectedTests as $test)
+                                <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                    <h4 class="text-sm font-semibold text-gray-900">{{ $test->name }}</h4>
+                                    @if($test->description)
+                                        <p class="text-xs text-gray-600 mt-1">{{ $test->description }}</p>
+                                    @endif
+                                    @if($test->price > 0)
+                                        <p class="text-sm font-bold text-emerald-600 mt-2">₱{{ number_format((float)$test->price, 2) }}</p>
+                                    @else
+                                        <p class="text-sm text-blue-600 mt-2">Contact for pricing</p>
+                                    @endif
+                                </div>
+                            @endforeach
                         </div>
-                        @if($appointment->medicalTest->price > 0)
+                        @if($totalPrice > 0)
                             <div class="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
                                 <div class="flex justify-between items-center">
                                     <span class="text-sm font-semibold text-emerald-800">Total Price:</span>
-                                    <span class="text-xl font-bold text-emerald-600">₱{{ number_format((float)$appointment->medicalTest->price, 2) }}</span>
+                                    <span class="text-xl font-bold text-emerald-600">₱{{ number_format($totalPrice, 2) }}</span>
                                 </div>
                             </div>
                         @endif
