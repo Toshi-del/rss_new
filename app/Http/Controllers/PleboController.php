@@ -55,12 +55,17 @@ class PleboController extends Controller
                 });
             })
             ->where(function($query) {
+                // Only show records without checklist OR with incomplete checklist
                 $query->whereDoesntHave('medicalChecklist')
                       ->orWhereHas('medicalChecklist', function($q) {
+                          // Incomplete if ANY of the required fields are empty
                           $q->where(function($subQ) {
                               $subQ->whereNull('stool_exam_done_by')
+                                   ->orWhere('stool_exam_done_by', '')
                                    ->orWhereNull('urinalysis_done_by')
-                                   ->orWhereNull('blood_extraction_done_by');
+                                   ->orWhere('urinalysis_done_by', '')
+                                   ->orWhereNull('blood_extraction_done_by')
+                                   ->orWhere('blood_extraction_done_by', '');
                           });
                       });
             })
@@ -103,12 +108,17 @@ class PleboController extends Controller
                 });
             })
             ->where(function($query) {
+                // Only show records without checklist OR with incomplete checklist
                 $query->whereDoesntHave('medicalChecklist')
                       ->orWhereHas('medicalChecklist', function($q) {
+                          // Incomplete if ANY of the required fields are empty
                           $q->where(function($subQ) {
                               $subQ->whereNull('stool_exam_done_by')
+                                   ->orWhere('stool_exam_done_by', '')
                                    ->orWhereNull('urinalysis_done_by')
-                                   ->orWhereNull('blood_extraction_done_by');
+                                   ->orWhere('urinalysis_done_by', '')
+                                   ->orWhereNull('blood_extraction_done_by')
+                                   ->orWhere('blood_extraction_done_by', '');
                           });
                       });
             })
@@ -120,9 +130,14 @@ class PleboController extends Controller
         // Get annual physical patients that don't have a medical checklist or have an incomplete one
         $patients = Patient::where('status', 'approved')
             ->where(function($query) {
+                // Only show patients without checklist OR with incomplete checklist
                 $query->whereDoesntHave('medicalChecklist')
                       ->orWhereHas('medicalChecklist', function($q) {
-                          $q->whereNull('blood_extraction_done_by');
+                          // Incomplete if blood extraction is empty
+                          $q->where(function($subQ) {
+                              $subQ->whereNull('blood_extraction_done_by')
+                                   ->orWhere('blood_extraction_done_by', '');
+                          });
                       });
             })
             ->whereDoesntHave('annualPhysicalExamination', function($q) {
@@ -134,9 +149,14 @@ class PleboController extends Controller
             
         $patientCount = Patient::where('status', 'approved')
             ->where(function($query) {
+                // Only show patients without checklist OR with incomplete checklist
                 $query->whereDoesntHave('medicalChecklist')
                       ->orWhereHas('medicalChecklist', function($q) {
-                          $q->whereNull('blood_extraction_done_by');
+                          // Incomplete if blood extraction is empty
+                          $q->where(function($subQ) {
+                              $subQ->whereNull('blood_extraction_done_by')
+                                   ->orWhere('blood_extraction_done_by', '');
+                          });
                       });
             })
             ->whereDoesntHave('annualPhysicalExamination', function($q) {
@@ -147,9 +167,14 @@ class PleboController extends Controller
         // Get OPD patients that don't have a medical checklist or have an incomplete one
         $opdPatients = User::where('role', 'opd')
             ->where(function($query) {
+                // Only show patients without checklist OR with incomplete checklist
                 $query->whereDoesntHave('medicalChecklist')
                       ->orWhereHas('medicalChecklist', function($q) {
-                          $q->whereNull('blood_extraction_done_by');
+                          // Incomplete if blood extraction is empty
+                          $q->where(function($subQ) {
+                              $subQ->whereNull('blood_extraction_done_by')
+                                   ->orWhere('blood_extraction_done_by', '');
+                          });
                       });
             })
             ->whereDoesntHave('opdExamination', function($q) {
@@ -161,9 +186,14 @@ class PleboController extends Controller
             
         $opdCount = User::where('role', 'opd')
             ->where(function($query) {
+                // Only show patients without checklist OR with incomplete checklist
                 $query->whereDoesntHave('medicalChecklist')
                       ->orWhereHas('medicalChecklist', function($q) {
-                          $q->whereNull('blood_extraction_done_by');
+                          // Incomplete if blood extraction is empty
+                          $q->where(function($subQ) {
+                              $subQ->whereNull('blood_extraction_done_by')
+                                   ->orWhere('blood_extraction_done_by', '');
+                          });
                       });
             })
             ->whereDoesntHave('opdExamination', function($q) {
@@ -280,15 +310,19 @@ class PleboController extends Controller
             $query->where(function($q) {
                 $q->whereDoesntHave('medicalChecklist')
                   ->orWhereHas('medicalChecklist', function($subQ) {
+                      // Incomplete if ANY of the required fields are empty
                       $subQ->where(function($checkQ) {
                           $checkQ->whereNull('stool_exam_done_by')
+                                 ->orWhere('stool_exam_done_by', '')
                                  ->orWhereNull('urinalysis_done_by')
-                                 ->orWhereNull('blood_extraction_done_by');
+                                 ->orWhere('urinalysis_done_by', '')
+                                 ->orWhereNull('blood_extraction_done_by')
+                                 ->orWhere('blood_extraction_done_by', '');
                       });
                   });
             });
         } elseif ($bloodStatus === 'collection_completed') {
-            // Records where blood collection is completed
+            // Records where blood collection is completed (all required fields filled)
             $query->whereHas('medicalChecklist', function($q) {
                 $q->whereNotNull('stool_exam_done_by')
                   ->where('stool_exam_done_by', '!=', '')
@@ -333,9 +367,14 @@ class PleboController extends Controller
     {
         $patients = Patient::where('status', 'approved')
             ->where(function($query) {
+                // Only show patients without checklist OR with incomplete checklist
                 $query->whereDoesntHave('medicalChecklist')
                       ->orWhereHas('medicalChecklist', function($q) {
-                          $q->whereNull('blood_extraction_done_by');
+                          // Incomplete if blood extraction is empty
+                          $q->where(function($subQ) {
+                              $subQ->whereNull('blood_extraction_done_by')
+                                   ->orWhere('blood_extraction_done_by', '');
+                          });
                       });
             })
             ->whereDoesntHave('annualPhysicalExamination', function($q) {
@@ -354,9 +393,14 @@ class PleboController extends Controller
     {
         $opdPatients = User::where('role', 'opd')
             ->where(function($query) {
+                // Only show patients without checklist OR with incomplete checklist
                 $query->whereDoesntHave('medicalChecklist')
                       ->orWhereHas('medicalChecklist', function($q) {
-                          $q->whereNull('blood_extraction_done_by');
+                          // Incomplete if blood extraction is empty
+                          $q->where(function($subQ) {
+                              $subQ->whereNull('blood_extraction_done_by')
+                                   ->orWhere('blood_extraction_done_by', '');
+                          });
                       });
             })
             ->whereDoesntHave('opdExamination', function($q) {

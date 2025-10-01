@@ -73,7 +73,15 @@
                                         <div class="text-xs text-blue-600 font-medium mt-1">
                                             <i class="fas fa-box mr-1"></i>From: {{ $test['package_name'] }}
                                             @if($test['package_price'] > 0)
-                                                (Package: ₱{{ number_format($test['package_price'], 2) }})
+                                                ({{ $test['package_category'] ?? 'Package' }}: ₱{{ number_format($test['package_price'], 2) }})
+                                            @endif
+                                            @if(!empty($test['blood_chemistry_sources']))
+                                                @foreach($test['blood_chemistry_sources'] as $bcSource)
+                                                    <br><i class="fas fa-flask mr-1"></i>{{ $bcSource['name'] }}
+                                                    @if($bcSource['price'] > 0)
+                                                        (Blood Chemistry: ₱{{ number_format($bcSource['price'], 2) }})
+                                                    @endif
+                                                @endforeach
                                             @endif
                                         </div>
                                     @elseif($test['price'] > 0)
@@ -81,11 +89,12 @@
                                     @endif
                                 </label>
                                 @php
-                                    $currentResult = old($fieldName, $examination->lab_report[strtolower(str_replace([' ', '-', '&'], '_', $test['test_name']))] ?? '');
+                                    $testSlug = strtolower(str_replace([' ', '-', '&'], '_', $test['test_name']));
+                                    // Check both {test} and {test}_result for backward compatibility
+                                    $currentResult = old($fieldName, $examination->lab_report[$testSlug . '_result'] ?? $examination->lab_report[$testSlug] ?? '');
                                     $isOthers = !in_array($currentResult, ['', 'Not available', 'Normal', 'Not normal']) && !empty($currentResult);
                                     $othersValue = $isOthers ? $currentResult : '';
                                     $selectValue = $isOthers ? 'Others' : ($currentResult ?: 'Not available');
-                                    $testSlug = strtolower(str_replace([' ', '-', '&'], '_', $test['test_name']));
                                 @endphp
                                 <select name="{{ $fieldName }}" 
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 result-dropdown"
@@ -123,11 +132,12 @@
                         <div class="space-y-2">
                             <label class="block text-sm font-semibold text-gray-700">{{ $testName }}</label>
                             @php
-                                $currentResult = old($fieldName, $examination->lab_report[strtolower(str_replace([' ', '-', '&'], '_', $testName))] ?? '');
+                                $testSlug = strtolower(str_replace([' ', '-', '&'], '_', $testName));
+                                // Check both {test} and {test}_result for backward compatibility
+                                $currentResult = old($fieldName, $examination->lab_report[$testSlug . '_result'] ?? $examination->lab_report[$testSlug] ?? '');
                                 $isOthers = !in_array($currentResult, ['', 'Not available', 'Normal', 'Not normal']) && !empty($currentResult);
                                 $othersValue = $isOthers ? $currentResult : '';
                                 $selectValue = $isOthers ? 'Others' : ($currentResult ?: 'Not available');
-                                $testSlug = strtolower(str_replace([' ', '-', '&'], '_', $testName));
                             @endphp
                             <select name="{{ $fieldName }}" 
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 result-dropdown"
@@ -200,6 +210,17 @@
                                         @if($test['is_package_component'] ?? false)
                                             <div class="text-xs text-blue-600 mt-1">
                                                 <i class="fas fa-box mr-1"></i>{{ $test['package_name'] }}
+                                                @if($test['package_price'] > 0)
+                                                    ({{ $test['package_category'] ?? 'Package' }}: ₱{{ number_format($test['package_price'], 2) }})
+                                                @endif
+                                                @if(!empty($test['blood_chemistry_sources']))
+                                                    @foreach($test['blood_chemistry_sources'] as $bcSource)
+                                                        <br><i class="fas fa-flask mr-1"></i>{{ $bcSource['name'] }}
+                                                        @if($bcSource['price'] > 0)
+                                                            (Blood Chemistry: ₱{{ number_format($bcSource['price'], 2) }})
+                                                        @endif
+                                                    @endforeach
+                                                @endif
                                             </div>
                                         @elseif($test['price'] > 0)
                                             <div class="text-xs text-emerald-600">(₱{{ number_format($test['price'], 2) }})</div>

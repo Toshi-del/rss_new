@@ -176,10 +176,21 @@ class PreEmploymentRecord extends Model
     {
         $selectedTests = $this->all_selected_tests ?? collect();
         $pathologistTests = collect();
+        
+        // Collect all source information (packages and individual tests)
+        $packageSources = [];
+        $bloodChemistrySources = [];
 
         foreach ($selectedTests as $test) {
             // Check if this is a pre-employment package that needs expansion
             if ($this->isPreEmploymentPackage($test['test_name'])) {
+                // Track package source
+                $packageSources[] = [
+                    'name' => $test['test_name'],
+                    'price' => $test['price'],
+                    'category' => $test['category_name'] ?? 'Medical Test Package'
+                ];
+                
                 // Add the core pathologist tests for pre-employment packages
                 $packageTests = $this->getPreEmploymentPackageTests($test['test_name']);
                 foreach ($packageTests as $packageTest) {
@@ -190,6 +201,8 @@ class PreEmploymentRecord extends Model
                         'is_package_component' => true,
                         'package_name' => $test['test_name'],
                         'package_price' => $test['price'],
+                        'package_category' => $test['category_name'] ?? 'Medical Test Package',
+                        'blood_chemistry_sources' => [], // Will be populated later
                     ]);
                 }
                 
@@ -202,18 +215,38 @@ class PreEmploymentRecord extends Model
                         'is_package_component' => true,
                         'package_name' => $test['test_name'],
                         'package_price' => $test['price'],
+                        'package_category' => $test['category_name'] ?? 'Medical Test Package',
+                        'blood_chemistry_sources' => [], // Will be populated later
                     ]);
                 }
             } else {
+                // Track Blood Chemistry sources separately
+                if (($test['category_name'] ?? '') === 'Blood Chemistry') {
+                    $bloodChemistrySources[] = [
+                        'name' => $test['test_name'],
+                        'price' => $test['price'] ?? 0,
+                    ];
+                }
+                
                 // For non-package tests, check if it's a pathologist test
                 if ($this->isPathologistTest($test['test_name'], $test['category_name'])) {
                     $pathologistTests->push(array_merge($test, [
                         'is_package_component' => false,
                         'package_name' => null,
                         'package_price' => 0,
+                        'package_category' => null,
+                        'blood_chemistry_sources' => [],
                     ]));
                 }
             }
+        }
+        
+        // Add blood chemistry source information to all tests
+        if (!empty($bloodChemistrySources)) {
+            $pathologistTests = $pathologistTests->map(function($test) use ($bloodChemistrySources) {
+                $test['blood_chemistry_sources'] = $bloodChemistrySources;
+                return $test;
+            });
         }
 
         return $pathologistTests;

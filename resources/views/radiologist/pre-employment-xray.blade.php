@@ -89,8 +89,8 @@
                                       ->where('xray_image_path', '!=', '');
                                 })
                                 ->whereDoesntHave('preEmploymentExamination', function($q) {
-                                    $q->whereNotNull('xray_findings')
-                                      ->where('xray_findings', '!=', '');
+                                    $q->whereNotNull('findings')
+                                      ->where('findings', '!=', '');
                                 })
                                 ->count();
                         @endphp
@@ -136,8 +136,8 @@
                                       ->where('xray_image_path', '!=', '');
                                 })
                                 ->whereHas('preEmploymentExamination', function($q) {
-                                    $q->whereNotNull('xray_findings')
-                                      ->where('xray_findings', '!=', '');
+                                    $q->whereNotNull('findings')
+                                      ->where('findings', '!=', '');
                                 })
                                 ->count();
                         @endphp

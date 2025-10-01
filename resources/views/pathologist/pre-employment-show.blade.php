@@ -150,7 +150,20 @@
                                                 @if($test['is_package_component'] ?? false)
                                                     <p class="text-sm text-blue-600 mt-1">
                                                         <i class="fas fa-box mr-1"></i>From package: {{ $test['package_name'] }}
+                                                        @if($test['package_price'] > 0)
+                                                            ({{ $test['package_category'] ?? 'Package' }}: ₱{{ number_format($test['package_price'], 2) }})
+                                                        @endif
                                                     </p>
+                                                    @if(!empty($test['blood_chemistry_sources']))
+                                                        @foreach($test['blood_chemistry_sources'] as $bcSource)
+                                                            <p class="text-sm text-blue-600 mt-1">
+                                                                <i class="fas fa-flask mr-1"></i>{{ $bcSource['name'] }}
+                                                                @if($bcSource['price'] > 0)
+                                                                    (Blood Chemistry: ₱{{ number_format($bcSource['price'], 2) }})
+                                                                @endif
+                                                            </p>
+                                                        @endforeach
+                                                    @endif
                                                 @endif
                                             </div>
                                             @if($test['is_package_component'] ?? false)

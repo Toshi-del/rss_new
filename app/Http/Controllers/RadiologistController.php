@@ -204,17 +204,39 @@ class RadiologistController extends Controller
         }
         
         $lab = is_array($exam->lab_findings) ? $exam->lab_findings : [];
-        $lab['chest_xray'] = [
+        
+        // Initialize chest_xray array if it doesn't exist
+        if (!isset($lab['chest_xray'])) {
+            $lab['chest_xray'] = [];
+        }
+        
+        // Store the current radiologist's review
+        $currentRadiologistId = auth()->id();
+        $radiologist = Auth::user();
+        
+        // Initialize reviews array if it doesn't exist
+        if (!isset($lab['chest_xray']['reviews'])) {
+            $lab['chest_xray']['reviews'] = [];
+        }
+        
+        // Add or update this radiologist's review
+        $lab['chest_xray']['reviews'][$currentRadiologistId] = [
             'result' => $request->input('cxr_result'),
             'finding' => $request->input('cxr_finding'),
-            'reviewed_by' => auth()->id(),
+            'radiologist_name' => $radiologist->name,
             'reviewed_at' => now()->toDateTimeString(),
         ];
+        
+        // Keep the most recent review as the primary result (for backward compatibility)
+        $lab['chest_xray']['result'] = $request->input('cxr_result');
+        $lab['chest_xray']['finding'] = $request->input('cxr_finding');
+        $lab['chest_xray']['reviewed_by'] = $currentRadiologistId;
+        $lab['chest_xray']['reviewed_at'] = now()->toDateTimeString();
+        
         $exam->lab_findings = $lab;
         $exam->save();
         
         // Create notification for admin when X-ray interpretation is completed
-        $radiologist = Auth::user();
         $patientName = $record->full_name;
         
         Notification::createForAdmin(
@@ -235,7 +257,7 @@ class RadiologistController extends Controller
             $exam
         );
         
-        return redirect()->route('radiologist.pre-employment-xray')->with('success', 'Chest X-Ray findings updated successfully. The record will remain visible to other radiologists.');
+        return redirect()->route('radiologist.pre-employment-xray')->with('success', 'Chest X-Ray findings submitted successfully. This record has been removed from your queue but remains visible to other radiologists.');
     }
 
     public function updateAnnualPhysical(\Illuminate\Http\Request $request, $id)
@@ -262,17 +284,39 @@ class RadiologistController extends Controller
         }
         
         $lab = is_array($exam->lab_findings) ? $exam->lab_findings : [];
-        $lab['chest_xray'] = [
+        
+        // Initialize chest_xray array if it doesn't exist
+        if (!isset($lab['chest_xray'])) {
+            $lab['chest_xray'] = [];
+        }
+        
+        // Store the current radiologist's review
+        $currentRadiologistId = auth()->id();
+        $radiologist = Auth::user();
+        
+        // Initialize reviews array if it doesn't exist
+        if (!isset($lab['chest_xray']['reviews'])) {
+            $lab['chest_xray']['reviews'] = [];
+        }
+        
+        // Add or update this radiologist's review
+        $lab['chest_xray']['reviews'][$currentRadiologistId] = [
             'result' => $request->input('cxr_result'),
             'finding' => $request->input('cxr_finding'),
-            'reviewed_by' => auth()->id(),
+            'radiologist_name' => $radiologist->name,
             'reviewed_at' => now()->toDateTimeString(),
         ];
+        
+        // Keep the most recent review as the primary result (for backward compatibility)
+        $lab['chest_xray']['result'] = $request->input('cxr_result');
+        $lab['chest_xray']['finding'] = $request->input('cxr_finding');
+        $lab['chest_xray']['reviewed_by'] = $currentRadiologistId;
+        $lab['chest_xray']['reviewed_at'] = now()->toDateTimeString();
+        
         $exam->lab_findings = $lab;
         $exam->save();
         
         // Create notification for admin when X-ray interpretation is completed
-        $radiologist = Auth::user();
         $patientName = $patient->full_name;
         
         Notification::createForAdmin(
@@ -293,7 +337,7 @@ class RadiologistController extends Controller
             $exam
         );
         
-        return redirect()->route('radiologist.annual-physical-xray')->with('success', 'Chest X-Ray findings updated successfully. The record will remain visible to other radiologists.');
+        return redirect()->route('radiologist.annual-physical-xray')->with('success', 'Chest X-Ray findings submitted successfully. This record has been removed from your queue but remains visible to other radiologists.');
     }
 
     /**
@@ -301,7 +345,9 @@ class RadiologistController extends Controller
      */
     public function preEmploymentXray(Request $request)
     {
-        $query = PreEmploymentRecord::with(['medicalTestCategory', 'medicalTest', 'medicalChecklist'])
+        $currentRadiologistId = auth()->id();
+        
+        $query = PreEmploymentRecord::with(['medicalTestCategory', 'medicalTest', 'medicalChecklist', 'preEmploymentExamination'])
             ->where('status', 'approved')
             ->where(function($query) {
                 // Check medical test relationships OR other_exams column for X-ray services
@@ -328,7 +374,6 @@ class RadiologistController extends Controller
                 });
             });
 
-        // Handle tab filtering
         $xrayStatus = $request->get('xray_status', 'needs_attention');
         
         if ($xrayStatus === 'needs_attention') {
@@ -336,10 +381,6 @@ class RadiologistController extends Controller
             $query->whereHas('medicalChecklist', function ($q) {
                 $q->whereNotNull('chest_xray_done_by')
                   ->whereNotNull('xray_image_path');
-            })
-            ->whereDoesntHave('preEmploymentExamination', function ($q) {
-                $q->whereNotNull('xray_findings')
-                  ->where('xray_findings', '!=', '');
             });
         } elseif ($xrayStatus === 'review_completed') {
             // Records where radiologist review is completed
@@ -353,7 +394,27 @@ class RadiologistController extends Controller
             });
         }
 
-        $preEmployments = $query->latest()->get();
+        $allRecords = $query->latest()->get();
+        
+        // Filter out records that THIS radiologist has already reviewed
+        $preEmployments = $allRecords->filter(function ($record) use ($currentRadiologistId) {
+            $exam = $record->preEmploymentExamination;
+            
+            // If no examination exists yet, show the record
+            if (!$exam) {
+                return true;
+            }
+            
+            // Check if this radiologist has already reviewed this record
+            $labFindings = $exam->lab_findings ?? [];
+            if (isset($labFindings['chest_xray']['reviews'][$currentRadiologistId])) {
+                // This radiologist has already reviewed this record, hide it
+                return false;
+            }
+            
+            // This radiologist hasn't reviewed yet, show the record
+            return true;
+        });
 
         return view('radiologist.pre-employment-xray', compact('preEmployments'));
     }
@@ -363,19 +424,37 @@ class RadiologistController extends Controller
      */
     public function annualPhysicalXray()
     {
-        $patients = Patient::where('status', 'approved')
+        $currentRadiologistId = auth()->id();
+        
+        // Get all approved patients with X-ray images
+        $allPatients = Patient::where('status', 'approved')
             ->whereHas('medicalChecklist', function ($q) {
                 $q->whereNotNull('chest_xray_done_by')
                   ->whereNotNull('xray_image_path');
             })
-            ->whereDoesntHave('annualPhysicalExamination', function ($q) {
-                $q->whereNotNull('lab_findings->chest_xray->result')
-                  ->whereNotNull('lab_findings->chest_xray->finding')
-                  ->where('lab_findings->chest_xray->reviewed_by', auth()->id());
-            })
-            ->with('medicalChecklist')
+            ->with(['medicalChecklist', 'annualPhysicalExamination'])
             ->latest()
             ->get();
+        
+        // Filter out patients that THIS radiologist has already reviewed
+        $patients = $allPatients->filter(function ($patient) use ($currentRadiologistId) {
+            $exam = $patient->annualPhysicalExamination;
+            
+            // If no examination exists yet, show the patient
+            if (!$exam) {
+                return true;
+            }
+            
+            // Check if this radiologist has already reviewed this patient
+            $labFindings = $exam->lab_findings ?? [];
+            if (isset($labFindings['chest_xray']['reviews'][$currentRadiologistId])) {
+                // This radiologist has already reviewed this patient, hide it
+                return false;
+            }
+            
+            // This radiologist hasn't reviewed yet, show the patient
+            return true;
+        });
 
         return view('radiologist.annual-physical-xray', compact('patients'));
     }

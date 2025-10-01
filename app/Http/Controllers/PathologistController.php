@@ -947,10 +947,18 @@ class PathologistController extends Controller
     {
         $examination = AnnualPhysicalExamination::findOrFail($id);
 
+        // Log incoming data for debugging
+        \Log::info('Annual Physical Update Request', [
+            'examination_id' => $id,
+            'lab_report_count' => count($request->lab_report ?? []),
+            'lab_report_keys' => array_keys($request->lab_report ?? []),
+            'status' => $request->status
+        ]);
+
         $request->validate([
             'status' => 'required|string|in:Pending,completed,sent_to_company',
             'lab_report' => 'nullable|array',
-            'lab_report.*' => 'nullable|string|max:500',
+            'lab_report.*' => 'nullable|string|max:1000',
             'visual' => 'nullable|string|max:255',
             'ishihara_test' => 'nullable|string|max:255',
             'ecg' => 'nullable|string|max:255',
@@ -963,16 +971,42 @@ class PathologistController extends Controller
         try {
             DB::beginTransaction();
 
-            $examination->update([
+            // Only update lab_report and status - don't overwrite nurse's data
+            $updateData = [
                 'status' => $request->status,
                 'lab_report' => $request->lab_report ?? [],
-                'visual' => $request->visual,
-                'ishihara_test' => $request->ishihara_test,
-                'ecg' => $request->ecg,
-                'skin_marks' => $request->skin_marks,
-                'physical_findings' => $request->physical_findings,
-                'lab_findings' => $request->lab_findings,
-                'findings' => $request->findings,
+            ];
+            
+            \Log::info('Update Data', ['lab_report' => $updateData['lab_report']]);
+            
+            // Only update other fields if they are actually provided (not null/empty)
+            if ($request->filled('visual')) {
+                $updateData['visual'] = $request->visual;
+            }
+            if ($request->filled('ishihara_test')) {
+                $updateData['ishihara_test'] = $request->ishihara_test;
+            }
+            if ($request->filled('ecg')) {
+                $updateData['ecg'] = $request->ecg;
+            }
+            if ($request->filled('skin_marks')) {
+                $updateData['skin_marks'] = $request->skin_marks;
+            }
+            if ($request->filled('physical_findings')) {
+                $updateData['physical_findings'] = $request->physical_findings;
+            }
+            if ($request->filled('lab_findings')) {
+                $updateData['lab_findings'] = $request->lab_findings;
+            }
+            if ($request->filled('findings')) {
+                $updateData['findings'] = $request->findings;
+            }
+
+            $examination->update($updateData);
+            
+            \Log::info('Annual Physical Examination Updated Successfully', [
+                'id' => $examination->id,
+                'lab_report_saved' => $examination->fresh()->lab_report
             ]);
 
             // Create notification for admin when pathologist completes lab report
@@ -1050,10 +1084,18 @@ class PathologistController extends Controller
     {
         $examination = PreEmploymentExamination::findOrFail($id);
 
+        // Log incoming data for debugging
+        \Log::info('Pre-Employment Update Request', [
+            'examination_id' => $id,
+            'lab_report_count' => count($request->lab_report ?? []),
+            'lab_report_keys' => array_keys($request->lab_report ?? []),
+            'status' => $request->status
+        ]);
+
         $request->validate([
             'status' => 'required|string|in:Pending,Approved,sent_to_company',
             'lab_report' => 'nullable|array',
-            'lab_report.*' => 'nullable|string|max:500',
+            'lab_report.*' => 'nullable|string|max:1000',
             'visual' => 'nullable|string|max:255',
             'ishihara_test' => 'nullable|string|max:255',
             'ecg' => 'nullable|string|max:255',
@@ -1070,20 +1112,54 @@ class PathologistController extends Controller
         try {
             DB::beginTransaction();
 
-            $examination->update([
+            // Only update lab_report and status - don't overwrite nurse's data
+            $updateData = [
                 'status' => $request->status,
                 'lab_report' => $request->lab_report ?? [],
-                'visual' => $request->visual,
-                'ishihara_test' => $request->ishihara_test,
-                'ecg' => $request->ecg,
-                'skin_marks' => $request->skin_marks,
-                'illness_history' => $request->illness_history,
-                'accidents_operations' => $request->accidents_operations,
-                'past_medical_history' => $request->past_medical_history,
-                'family_history' => $request->family_history,
-                'physical_findings' => $request->physical_findings,
-                'lab_findings' => $request->lab_findings,
-                'findings' => $request->findings,
+            ];
+            
+            \Log::info('Update Data', ['lab_report' => $updateData['lab_report']]);
+            
+            // Only update other fields if they are actually provided (not null/empty)
+            if ($request->filled('visual')) {
+                $updateData['visual'] = $request->visual;
+            }
+            if ($request->filled('ishihara_test')) {
+                $updateData['ishihara_test'] = $request->ishihara_test;
+            }
+            if ($request->filled('ecg')) {
+                $updateData['ecg'] = $request->ecg;
+            }
+            if ($request->filled('skin_marks')) {
+                $updateData['skin_marks'] = $request->skin_marks;
+            }
+            if ($request->filled('illness_history')) {
+                $updateData['illness_history'] = $request->illness_history;
+            }
+            if ($request->filled('accidents_operations')) {
+                $updateData['accidents_operations'] = $request->accidents_operations;
+            }
+            if ($request->filled('past_medical_history')) {
+                $updateData['past_medical_history'] = $request->past_medical_history;
+            }
+            if ($request->filled('family_history')) {
+                $updateData['family_history'] = $request->family_history;
+            }
+            if ($request->filled('physical_findings')) {
+                $updateData['physical_findings'] = $request->physical_findings;
+            }
+            if ($request->filled('lab_findings')) {
+                $updateData['lab_findings'] = $request->lab_findings;
+            }
+            if ($request->filled('findings')) {
+                $updateData['findings'] = $request->findings;
+            }
+
+            $examination->update($updateData);
+            
+            \Log::info('Pre-Employment Examination Updated Successfully', [
+                'id' => $examination->id,
+                'lab_report_saved' => $examination->fresh()->lab_report
             ]);
 
             // Create notification for admin when pathologist completes lab report
@@ -1315,22 +1391,49 @@ class PathologistController extends Controller
         try {
             DB::beginTransaction();
 
-            $examination->update([
+            // Only update lab_report, lab_results and status - don't overwrite nurse's data
+            $updateData = [
                 'status' => $request->status,
                 'lab_report' => $request->lab_report ?? [],
                 'lab_results' => $request->lab_results ?? [],
-                'visual' => $request->visual,
-                'ishihara_test' => $request->ishihara_test,
-                'ecg' => $request->ecg,
-                'skin_marks' => $request->skin_marks,
-                'illness_history' => $request->illness_history,
-                'accidents_operations' => $request->accidents_operations,
-                'past_medical_history' => $request->past_medical_history,
-                'family_history' => $request->family_history,
-                'physical_findings' => $request->physical_findings,
-                'lab_findings' => $request->lab_findings,
-                'findings' => $request->findings,
-            ]);
+            ];
+            
+            // Only update other fields if they are actually provided (not null/empty)
+            if ($request->filled('visual')) {
+                $updateData['visual'] = $request->visual;
+            }
+            if ($request->filled('ishihara_test')) {
+                $updateData['ishihara_test'] = $request->ishihara_test;
+            }
+            if ($request->filled('ecg')) {
+                $updateData['ecg'] = $request->ecg;
+            }
+            if ($request->filled('skin_marks')) {
+                $updateData['skin_marks'] = $request->skin_marks;
+            }
+            if ($request->filled('illness_history')) {
+                $updateData['illness_history'] = $request->illness_history;
+            }
+            if ($request->filled('accidents_operations')) {
+                $updateData['accidents_operations'] = $request->accidents_operations;
+            }
+            if ($request->filled('past_medical_history')) {
+                $updateData['past_medical_history'] = $request->past_medical_history;
+            }
+            if ($request->filled('family_history')) {
+                $updateData['family_history'] = $request->family_history;
+            }
+            if ($request->filled('physical_findings')) {
+                $updateData['physical_findings'] = $request->physical_findings;
+            }
+            if ($request->filled('lab_findings')) {
+                $updateData['lab_findings'] = $request->lab_findings;
+            }
+            if ($request->filled('findings')) {
+                $updateData['findings'] = $request->findings;
+            }
+
+            $examination->update($updateData);
 
             // Create notification for admin when pathologist completes lab report
             if (!empty($request->lab_report) && is_array($request->lab_report) && count(array_filter($request->lab_report)) > 0) {

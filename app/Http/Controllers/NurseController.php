@@ -60,12 +60,8 @@ class NurseController extends Controller
             
         $opdCount = User::where('role', 'opd')->count();
 
-        // Count patients without completed examinations
-        $annualPhysicalCount = Patient::where('status', 'approved')
-            ->whereDoesntHave('annualPhysicalExamination', function ($q) {
-                $q->whereIn('status', ['completed', 'sent_to_company']);
-            })
-            ->count();
+        // Count all approved patients (nurses can work with all patients)
+        $annualPhysicalCount = Patient::where('status', 'approved')->count();
 
         return view('nurse.dashboard', compact(
             'patients',
@@ -167,9 +163,10 @@ class NurseController extends Controller
      */
     public function annualPhysical()
     {
+        // Show all approved patients with their examination status
+        // Nurses can see all patients regardless of examination completion
         $patients = Patient::with(['annualPhysicalExamination'])
             ->where('status', 'approved')
-            ->whereDoesntHave('annualPhysicalExamination')
             ->latest()
             ->paginate(15);
         
@@ -570,16 +567,31 @@ class NurseController extends Controller
 
         $validated = $request->validate($validationRules, $validationMessages);
 
+        // Log visual field for debugging
+        \Log::info('Pre-Employment Examination - Visual field data:', [
+            'visual' => $validated['visual'] ?? 'NOT SET',
+            'request_visual' => $request->input('visual'),
+            'all_validated' => array_keys($validated)
+        ]);
+
         // Auto-populate linkage fields from the source record
         $record = PreEmploymentRecord::findOrFail($validated['pre_employment_record_id']);
         $validated['user_id'] = $record->created_by;
         $validated['name'] = $record->first_name . ' ' . $record->last_name;
         $validated['company_name'] = $record->company_name;
         $validated['date'] = now()->toDateString();
-        // Set status to make immediately visible to doctor
+        // Set status to 'Approved' - immediately visible to doctor
         $validated['status'] = 'Approved';
+        $validated['created_by'] = auth()->id();
         
         $examination = \App\Models\PreEmploymentExamination::create($validated);
+        
+        // Log created examination data
+        \Log::info('Pre-Employment Examination created:', [
+            'id' => $examination->id,
+            'visual' => $examination->visual,
+            'visual_from_db' => $examination->fresh()->visual
+        ]);
 
         // Handle drug test form if present
         $this->handleDrugTestForm($request, [
@@ -671,14 +683,30 @@ class NurseController extends Controller
 
         $validated = $request->validate($validationRules, $validationMessages);
 
+        // Log visual field for debugging
+        \Log::info('Annual Physical Examination - Visual field data:', [
+            'visual' => $validated['visual'] ?? 'NOT SET',
+            'request_visual' => $request->input('visual'),
+            'all_validated' => array_keys($validated)
+        ]);
+
         // Auto-populate linkage fields from the patient
         $patient = Patient::findOrFail($validated['patient_id']);
         $validated['user_id'] = Auth::id();
         $validated['name'] = $patient->full_name;
         $validated['date'] = now()->toDateString();
+        // Set status to 'completed' - immediately visible to doctor
         $validated['status'] = 'completed';
+        $validated['created_by'] = auth()->id();
         
         $examination = \App\Models\AnnualPhysicalExamination::create($validated);
+        
+        // Log created examination data
+        \Log::info('Annual Physical Examination created:', [
+            'id' => $examination->id,
+            'visual' => $examination->visual,
+            'visual_from_db' => $examination->fresh()->visual
+        ]);
 
         // Handle drug test form if present
         $this->handleDrugTestForm($request, [
@@ -717,9 +745,10 @@ class NurseController extends Controller
      */
     public function opd()
     {
+        // Show all OPD patients with their examination status
+        // Nurses can see all OPD patients regardless of examination completion
         $opdPatients = User::with(['opdExamination'])
             ->where('role', 'opd')
-            ->whereDoesntHave('opdExamination')
             ->latest()
             ->get();
         
@@ -777,7 +806,8 @@ class NurseController extends Controller
         $opdPatient = User::findOrFail($validated['user_id']);
         $validated['name'] = trim(($opdPatient->fname ?? '') . ' ' . ($opdPatient->lname ?? ''));
         $validated['date'] = now()->toDateString();
-        $validated['status'] = 'completed';
+        // Set status to 'pending' - doctor can view but won't auto-appear in review queue
+        $validated['status'] = 'pending';
         
         $examination = OpdExamination::create($validated);
 

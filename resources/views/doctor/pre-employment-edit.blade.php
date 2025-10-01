@@ -286,63 +286,7 @@
                     </div>
                     </div>
                 </div>
-                <!-- Laboratory Examination Report Section -->
-                <div class="bg-gray-50 rounded-xl p-6 border-l-4 border-gray-500">
-                    <div class="flex items-center mb-6">
-                        <i class="fas fa-flask text-gray-600 text-xl mr-3"></i>
-                        <h3 class="text-lg font-bold text-gray-800">Laboratory Examination Report</h3>
-                    </div>
-                    
-                    @php
-                        $lab = $preEmployment->lab_report ?? [];
-                        $labFields = [
-                            'urinalysis' => ['icon' => 'fas fa-vial', 'color' => 'yellow'],
-                            'cbc' => ['icon' => 'fas fa-tint', 'color' => 'red'],
-                            'xray' => ['icon' => 'fas fa-x-ray', 'color' => 'gray'],
-                            'fecalysis' => ['icon' => 'fas fa-microscope', 'color' => 'brown'],
-                            'blood_chemistry' => ['icon' => 'fas fa-heartbeat', 'color' => 'pink'],
-                            'others' => ['icon' => 'fas fa-plus-circle', 'color' => 'indigo']
-                        ];
-                    @endphp
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                        @foreach($labFields as $field => $config)
-                            <div class="bg-white rounded-lg p-4 border-l-4 border-{{ $config['color'] }}-500">
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="{{ $config['icon'] }} text-{{ $config['color'] }}-600 mr-2"></i>{{ str_replace('_', ' ', ucwords($field)) }}
-                                </label>
-                                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
-                                    {{ data_get($lab, $field, 'Test not performed') }}
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                    
-                    <!-- Additional Laboratory Tests -->
-                    <div class="bg-white rounded-lg p-4">
-                        <h4 class="text-md font-semibold text-gray-700 mb-4">
-                            <i class="fas fa-plus-square text-teal-600 mr-2"></i>Additional Laboratory Tests
-                        </h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-orange-500">
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-shield-virus text-orange-600 mr-2"></i>HBsAg Screening
-                                </label>
-                                <div class="bg-white p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
-                                    {{ data_get($lab, 'hbsag_screening', 'Screening not performed') }}
-                                </div>
-                            </div>
-                            <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-purple-500">
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-virus text-purple-600 mr-2"></i>HEPA A IGG & IGM
-                                </label>
-                                <div class="bg-white p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
-                                    {{ data_get($lab, 'hepa_a_igg_igm', 'Test not performed') }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+               
 
                 <!-- Physical Findings Section -->
                 <div class="bg-blue-50 rounded-xl p-6 border-l-4 border-blue-500">
@@ -386,64 +330,150 @@
                         @endforeach
                     </div>
                 </div>
-                <!-- Laboratory Test Results Section (Read-only) -->
-                <!-- Laboratory Test Results Section (Read-only) -->
-                <div class="bg-green-50 rounded-xl p-6 border-l-4 border-green-500">
+                <!-- Pathologist Examination Report Section (Read-only) -->
+                @php
+                    $pathologistTests = $preEmployment->preEmploymentRecord->pathologist_tests ?? collect();
+                    $groupedTests = $pathologistTests->groupBy('category_name');
+                @endphp
+                
+                @if($pathologistTests->isNotEmpty())
+                <div class="bg-teal-50 rounded-xl p-6 border-l-4 border-teal-500 mb-8">
                     <div class="flex items-center justify-between mb-6">
                         <div class="flex items-center">
-                            <i class="fas fa-microscope text-green-600 text-xl mr-3"></i>
-                            <h3 class="text-lg font-bold text-green-800">Laboratory Test Results</h3>
+                            <i class="fas fa-flask text-teal-600 text-xl mr-3"></i>
+                            <h3 class="text-lg font-bold text-teal-800">Pathologist Examination Report</h3>
                         </div>
-                        <span class="px-3 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
-                            <i class="fas fa-lock mr-1"></i> Staff Entry
+                        <span class="px-3 py-1 text-xs font-semibold bg-teal-100 text-teal-800 rounded-full">
+                            <i class="fas fa-user-md mr-1"></i> Pathologist Entry
                         </span>
                     </div>
                     
-                    @php
-                        $labRows = [
-                            'Chest X-Ray' => ['icon' => 'fas fa-x-ray', 'color' => 'gray', 'key' => 'xray'],
-                            'Urinalysis' => ['icon' => 'fas fa-vial', 'color' => 'yellow', 'key' => 'urinalysis'],
-                            'Fecalysis' => ['icon' => 'fas fa-microscope', 'color' => 'brown', 'key' => 'fecalysis'],
-                            'CBC' => ['icon' => 'fas fa-tint', 'color' => 'red', 'key' => 'cbc'],
-                            'Drug Test' => ['icon' => 'fas fa-pills', 'color' => 'orange', 'key' => 'drug_test'],
-                            'HBsAg Screening' => ['icon' => 'fas fa-shield-virus', 'color' => 'purple', 'key' => 'hbsag_screening'],
-                            'HEPA A IGG & IGM' => ['icon' => 'fas fa-virus', 'color' => 'pink', 'key' => 'hepa_a_igg_igm'],
-                            'Others' => ['icon' => 'fas fa-plus-circle', 'color' => 'indigo', 'key' => 'others']
-                        ];
-                    @endphp
-                    
-                    <div class="space-y-4">
-                        @foreach($labRows as $row => $config)
-                            @php
-                                $testKey = $config['key'];
-                                $findingsKey = $testKey . '_findings';
-                                $result = data_get($preEmployment->lab_report, $testKey, null);
-                                $findings = data_get($preEmployment->lab_report, $findingsKey, null);
-                            @endphp
+                    @foreach($groupedTests as $categoryName => $tests)
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-4">
+                            <h4 class="text-md font-bold text-gray-800 mb-4">
+                                <i class="fas fa-vial mr-2 text-teal-600"></i>{{ $categoryName }}
+                            </h4>
                             
-                            <div class="bg-white rounded-lg p-4 border border-gray-200">
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                                    <div class="flex items-center">
-                                        <i class="{{ $config['icon'] }} text-{{ $config['color'] }}-600 mr-3"></i>
-                                        <span class="font-semibold text-gray-700">{{ $row }}</span>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 mb-1">Result</label>
-                                        <div class="p-2 bg-gray-50 rounded border border-gray-200 text-sm text-gray-700 min-h-[2.5rem]">
-                                            {{ $result ?? 'Not recorded' }}
+                            <div class="space-y-3">
+                                @foreach($tests as $test)
+                                    @php
+                                        $testSlug = strtolower(str_replace([' ', '-', '&'], '_', $test['test_name']));
+                                        $result = $preEmployment->lab_report[$testSlug . '_result'] ?? $preEmployment->lab_report[$testSlug] ?? 'Not available';
+                                        $findings = $preEmployment->lab_report[$testSlug . '_findings'] ?? '';
+                                    @endphp
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-flask text-teal-500 mr-2"></i>
+                                            <div>
+                                                <span class="font-semibold text-gray-700">{{ $test['test_name'] }}</span>
+                                                @if($test['is_package_component'] ?? false)
+                                                    <div class="text-xs text-blue-600 mt-1">
+                                                        <i class="fas fa-box mr-1"></i>From: {{ $test['package_name'] }}
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-500 mb-1">Result</label>
+                                            <div class="p-2 bg-white rounded border border-gray-200 text-sm {{ $result === 'Normal' ? 'text-green-700 font-semibold' : ($result === 'Not normal' ? 'text-red-700 font-semibold' : 'text-gray-700') }}">
+                                                {{ $result }}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-500 mb-1">Findings</label>
+                                            <div class="p-2 bg-white rounded border border-gray-200 text-sm text-gray-700 min-h-[2.5rem]">
+                                                {{ $findings ?: 'No findings' }}
+                                            </div>
                                         </div>
                                     </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 mb-1">Findings</label>
-                                        <div class="p-2 bg-gray-50 rounded border border-gray-200 text-sm text-gray-700 min-h-[2.5rem]">
-                                            {{ $findings ?? 'No findings' }}
-                                        </div>
-                                    </div>
-                                </div>
+                                @endforeach
                             </div>
-                        @endforeach
+                        </div>
+                    @endforeach
+                </div>
+                @endif
+                
+                <!-- X-Ray Image Section -->
+                <div class="bg-gray-50 rounded-xl p-6 border-l-4 border-gray-500 mb-8">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-x-ray text-gray-600 text-xl mr-3"></i>
+                        <h3 class="text-lg font-bold text-gray-800">X-RAY IMAGE</h3>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg border border-gray-300 p-6">
+                        <!-- X-Ray Image Display -->
+                        <div class="mb-4">
+                            <div class="border-2 border-gray-300 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center" style="min-height: 200px;">
+                                @if(!empty($preEmployment->xray_image))
+                                    <img src="{{ asset('storage/' . $preEmployment->xray_image) }}" 
+                                         alt="X-Ray Image" 
+                                         class="max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
+                                         onclick="openFullscreen(this)">
+                                @else
+                                    <div class="text-center py-12">
+                                        <i class="fas fa-image text-gray-300 text-6xl mb-3"></i>
+                                        <p class="text-gray-400 text-sm">No X-Ray image uploaded</p>
+                                    </div>
+                                @endif
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2 italic">Click image to open fullscreen and zoom</p>
+                        </div>
+                        
+                        <!-- Patient Information -->
+                        <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">FULL NAME</label>
+                                <p class="font-semibold text-gray-900">{{ $preEmployment->preEmploymentRecord->full_name ?? 'N/A' }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">SEX</label>
+                                <p class="font-semibold text-gray-900">{{ $preEmployment->preEmploymentRecord->sex ?? 'N/A' }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">AGE</label>
+                                <p class="font-semibold text-gray-900">{{ $preEmployment->preEmploymentRecord->age ?? 'N/A' }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">COMPANY</label>
+                                <p class="font-semibold text-gray-900">{{ $preEmployment->preEmploymentRecord->company_name ?? 'N/A' }}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- X-Ray Results Table -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full border-collapse border border-gray-300">
+                                <thead>
+                                    <tr class="bg-gray-100">
+                                        <th class="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Test</th>
+                                        <th class="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Result</th>
+                                        <th class="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Findings</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700">Chest X-Ray</td>
+                                        <td class="border border-gray-300 px-4 py-3">
+                                            <select name="xray_result" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                                <option value="">--</option>
+                                                <option value="Normal" {{ old('xray_result', $preEmployment->xray_result ?? '') == 'Normal' ? 'selected' : '' }}>Normal</option>
+                                                <option value="Abnormal" {{ old('xray_result', $preEmployment->xray_result ?? '') == 'Abnormal' ? 'selected' : '' }}>Abnormal</option>
+                                            </select>
+                                        </td>
+                                        <td class="border border-gray-300 px-4 py-3">
+                                            <input type="text" 
+                                                   name="xray_findings" 
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" 
+                                                   value="{{ old('xray_findings', $preEmployment->xray_findings ?? '') }}"
+                                                   placeholder="Enter findings">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
+                
                 <!-- ECG Section -->
                 <div class="bg-red-50 rounded-xl p-6 border-l-4 border-red-500">
                     <div class="flex items-center mb-4">
@@ -492,5 +522,46 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    function openFullscreen(img) {
+        // Create fullscreen modal
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; cursor: zoom-out;';
+        
+        // Create image element
+        const fullImg = document.createElement('img');
+        fullImg.src = img.src;
+        fullImg.style.cssText = 'max-width: 90%; max-height: 90%; object-fit: contain;';
+        
+        // Create close button
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+        closeBtn.style.cssText = 'position: absolute; top: 20px; right: 20px; background: white; color: black; border: none; padding: 10px 15px; border-radius: 50%; cursor: pointer; font-size: 20px; z-index: 10000;';
+        
+        modal.appendChild(fullImg);
+        modal.appendChild(closeBtn);
+        document.body.appendChild(modal);
+        
+        // Close on click
+        modal.onclick = function() {
+            document.body.removeChild(modal);
+        };
+        
+        closeBtn.onclick = function(e) {
+            e.stopPropagation();
+            document.body.removeChild(modal);
+        };
+        
+        // Close on ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.body.contains(modal)) {
+                document.body.removeChild(modal);
+            }
+        });
+    }
+</script>
 @endsection
 
