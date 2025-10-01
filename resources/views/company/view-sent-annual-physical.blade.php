@@ -3,32 +3,47 @@
 @section('title', 'Annual Physical Examination Results')
 
 @section('content')
-<div class="min-h-screen" style="font-family: 'Poppins', sans-serif;">
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50" style="font-family: 'Poppins', sans-serif;">
     <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
         
-        <!-- Header Section -->
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div class="px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-700">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
+        <!-- Modern Header Section -->
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+            <div class="relative px-8 py-8 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+                <!-- Decorative background elements -->
+                <div class="absolute inset-0 bg-black/10"></div>
+                <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+                <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24"></div>
+                
+                <div class="relative flex items-center justify-between">
+                    <div class="flex items-center space-x-6">
                         <a href="{{ route('company.medical-results', ['status' => 'sent_results']) }}" 
-                           class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 shadow-sm mr-6">
+                           class="inline-flex items-center px-6 py-3 bg-white/20 backdrop-blur-sm text-white rounded-xl text-sm font-semibold hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300 shadow-lg border border-white/20">
                             <i class="fas fa-arrow-left mr-2"></i>
                             Back to Results
                         </a>
                         <div>
-                            <h1 class="text-2xl font-bold text-white mb-2" style="font-family: 'Poppins', sans-serif;">
-                                <i class="fas fa-file-medical mr-3"></i>Annual Physical Examination
-                            </h1>
-                            <p class="text-blue-100">Examination results sent by RSS Citi Health Services</p>
+                            <div class="flex items-center mb-3">
+                                <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mr-4">
+                                    <i class="fas fa-file-medical text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <h1 class="text-3xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
+                                        Annual Physical Medical Report
+                                    </h1>
+                                    <p class="text-blue-100 text-lg">Complete examination results and billing summary</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-3">
-                        <div class="bg-blue-500 rounded-lg px-4 py-2">
-                            <p class="text-blue-100 text-sm font-medium">Status</p>
-                            <p class="text-white text-lg font-bold">Completed</p>
+                    <div class="flex items-center space-x-4">
+                        <div class="bg-white/20 backdrop-blur-sm rounded-xl px-6 py-4 border border-white/20">
+                            <p class="text-blue-100 text-sm font-medium">Report Status</p>
+                            <div class="flex items-center mt-1">
+                                <div class="w-2 h-2 bg-blue-300 rounded-full mr-2 animate-pulse"></div>
+                                <p class="text-white text-lg font-bold">Completed & Sent</p>
+                            </div>
                         </div>
-                        <button onclick="window.print()" class="inline-flex items-center px-6 py-3 bg-white text-blue-600 rounded-lg text-sm font-bold hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 shadow-sm no-print">
+                        <button onclick="window.print()" class="inline-flex items-center px-6 py-4 bg-white text-blue-600 rounded-xl text-sm font-bold hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300 shadow-lg no-print">
                             <i class="fas fa-print mr-2"></i>
                             Print Report
                         </button>
@@ -39,58 +54,196 @@
 
         <!-- Info Message -->
         @if(session('info'))
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div class="px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-700">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-blue-100">
+            <div class="px-8 py-6 bg-gradient-to-r from-blue-600 to-indigo-600">
                 <div class="flex items-center">
-                    <i class="fas fa-info-circle text-white text-xl mr-3"></i>
-                    <span class="text-white font-medium">{{ session('info') }}</span>
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mr-4">
+                        <i class="fas fa-info-circle text-white text-lg"></i>
+                    </div>
+                    <span class="text-white font-semibold text-lg">{{ session('info') }}</span>
                 </div>
             </div>
         </div>
         @endif
 
-        <!-- Patient Information -->
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div class="px-8 py-6 bg-gradient-to-r from-purple-600 to-purple-700 border-l-4 border-purple-800">
-                <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
-                    <i class="fas fa-user-md mr-3"></i>Patient Information
-                </h2>
-                <p class="text-purple-100 mt-1">Basic patient details and examination overview</p>
+        <!-- Billing Summary & Patient Overview -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Billing Summary Card -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 h-full">
+                    <div class="px-6 py-6 bg-gradient-to-r from-blue-600 to-indigo-600">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-receipt text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold text-white">Billing Summary</h2>
+                                <p class="text-blue-100">Annual physical examination costs</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        @php
+                            $totalAmount = 0;
+                            $selectedTests = [];
+                            
+                            // Get tests from the appointment
+                            if ($examination->patient && $examination->patient->appointment) {
+                                $appointment = $examination->patient->appointment;
+                                if ($appointment->medicalTest) {
+                                    $selectedTests[] = [
+                                        'category' => $appointment->medicalTestCategory->name ?? 'Annual Physical',
+                                        'test' => $appointment->medicalTest->name,
+                                        'price' => $appointment->medicalTest->price ?? 0
+                                    ];
+                                    $totalAmount += $appointment->medicalTest->price ?? 0;
+                                }
+                                
+                                // Use stored total_price if available and different
+                                if ($appointment->total_price > 0) {
+                                    $totalAmount = $appointment->total_price;
+                                }
+                            }
+                        @endphp
+                        
+                        <div class="space-y-4">
+                            @if(!empty($selectedTests))
+                                @foreach($selectedTests as $test)
+                                <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
+                                    <div class="flex-1">
+                                        <p class="font-semibold text-gray-900">{{ $test['test'] }}</p>
+                                        <p class="text-sm text-gray-500">{{ $test['category'] }}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-bold text-blue-600">₱{{ number_format($test['price'], 2) }}</p>
+                                    </div>
+                                </div>
+                                @endforeach
+                                
+                                <div class="pt-4 border-t-2 border-blue-100">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-lg font-bold text-gray-900">Total Amount</p>
+                                            <p class="text-sm text-gray-500">Annual physical examination</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-2xl font-bold text-blue-600">₱{{ number_format($totalAmount, 2) }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                @if($examination->patient && $examination->patient->appointment && $examination->patient->appointment->billing_type)
+                                <div class="mt-4 p-4 bg-indigo-50 rounded-xl border border-indigo-200">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-credit-card text-indigo-600 mr-2"></i>
+                                        <div>
+                                            <p class="font-semibold text-indigo-900">Billing Type</p>
+                                            <p class="text-indigo-700 capitalize">{{ $examination->patient->appointment->billing_type }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endif
+                            @else
+                                <div class="text-center py-8">
+                                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <i class="fas fa-receipt text-gray-400 text-xl"></i>
+                                    </div>
+                                    <p class="text-gray-500 font-medium">No billing information available</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="p-8">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-purple-50 rounded-xl p-6 border-l-4 border-purple-600">
+
+            <!-- Patient Information Card -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 h-full">
+                    <div class="px-6 py-6 bg-gradient-to-r from-purple-600 to-pink-600">
                         <div class="flex items-center">
-                            <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center mr-4">
-                                <span class="text-white font-bold text-lg">
-                                    {{ strtoupper(substr($examination->name, 0, 2)) }}
-                                </span>
+                            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-user-md text-white text-xl"></i>
                             </div>
                             <div>
-                                <h3 class="text-lg font-bold text-purple-900">{{ $examination->name }}</h3>
-                                <p class="text-purple-700 text-sm">Patient ID: {{ $examination->patient_id }}</p>
+                                <h2 class="text-xl font-bold text-white">Patient Information</h2>
+                                <p class="text-purple-100">Annual physical examination details</p>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-blue-50 rounded-xl p-6 border-l-4 border-blue-600">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mr-4">
-                                <i class="fas fa-calendar text-white text-lg"></i>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Patient Details -->
+                            <div class="space-y-6">
+                                <div class="flex items-center p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100">
+                                    <div class="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
+                                        <span class="text-white font-bold text-xl">
+                                            {{ strtoupper(substr($examination->name, 0, 2)) }}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-900">{{ $examination->name }}</h3>
+                                        <p class="text-purple-600 font-medium">Annual Physical Patient</p>
+                                        <p class="text-sm text-gray-500 mt-1">Patient ID: {{ $examination->patient_id }}</p>
+                                    </div>
+                                </div>
+                                
+                                @if($examination->patient && $examination->patient->email)
+                                <div class="flex items-center p-4 bg-gray-50 rounded-xl">
+                                    <div class="w-10 h-10 bg-gray-600 rounded-lg flex items-center justify-center mr-3">
+                                        <i class="fas fa-envelope text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-500">Email Address</p>
+                                        <p class="text-gray-900 font-semibold">{{ $examination->patient->email }}</p>
+                                    </div>
+                                </div>
+                                @endif
+                                
+                                @if($examination->patient && $examination->patient->phone)
+                                <div class="flex items-center p-4 bg-gray-50 rounded-xl">
+                                    <div class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center mr-3">
+                                        <i class="fas fa-phone text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-500">Phone Number</p>
+                                        <p class="text-gray-900 font-semibold">{{ $examination->patient->phone }}</p>
+                                    </div>
+                                </div>
+                                @endif
                             </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-blue-900">Examination Date</h3>
-                                <p class="text-blue-700 text-sm">{{ \Carbon\Carbon::parse($examination->date)->format('M d, Y') }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-green-50 rounded-xl p-6 border-l-4 border-green-600">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center mr-4">
-                                <i class="fas fa-check-circle text-white text-lg"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-green-900">Report Status</h3>
-                                <p class="text-green-700 text-sm">Sent on {{ $examination->updated_at->format('M d, Y') }}</p>
+                            
+                            <!-- Examination & Date Details -->
+                            <div class="space-y-6">
+                                <div class="flex items-center p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                                    <div class="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
+                                        <i class="fas fa-calendar text-white text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-500">Examination Date</p>
+                                        <h3 class="text-lg font-bold text-gray-900">{{ \Carbon\Carbon::parse($examination->date)->format('M d, Y') }}</h3>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100">
+                                    <div class="w-12 h-12 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl flex items-center justify-center mr-4">
+                                        <i class="fas fa-check-circle text-white text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-500">Report Status</p>
+                                        <h3 class="text-lg font-bold text-gray-900">Completed</h3>
+                                        <p class="text-green-600 text-sm">Sent on {{ $examination->updated_at->format('M d, Y') }}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-100">
+                                    <div class="w-12 h-12 bg-gradient-to-r from-amber-600 to-orange-600 rounded-xl flex items-center justify-center mr-4">
+                                        <i class="fas fa-clock text-white text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-500">Report Sent</p>
+                                        <h3 class="text-lg font-bold text-gray-900">{{ $examination->updated_at->format('M d, Y g:i A') }}</h3>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -99,31 +252,47 @@
         </div>
 
         <!-- Medical History Section -->
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div class="px-8 py-6 bg-gradient-to-r from-indigo-600 to-indigo-700 border-l-4 border-indigo-800">
-                <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
-                    <i class="fas fa-history mr-3"></i>Medical History
-                </h2>
-                <p class="text-indigo-100 mt-1">Patient's medical background and history</p>
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+            <div class="px-8 py-6 bg-gradient-to-r from-indigo-600 to-purple-600">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4">
+                        <i class="fas fa-history text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
+                            Medical History
+                        </h2>
+                        <p class="text-indigo-100 mt-1">Patient's medical background and history</p>
+                    </div>
+                </div>
             </div>
             <div class="p-8">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-indigo-50 rounded-xl p-6 border-l-4 border-indigo-600">
-                        <h3 class="text-lg font-bold text-indigo-900 mb-3">
-                            <i class="fas fa-notes-medical mr-2"></i>Illness History
-                        </h3>
+                    <div class="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl p-6 border border-indigo-100 hover:shadow-lg transition-all duration-300">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center mr-3">
+                                <i class="fas fa-notes-medical text-white"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-indigo-900">Illness History</h3>
+                        </div>
                         <p class="text-indigo-800 leading-relaxed">{{ $examination->illness_history ?? 'Not specified' }}</p>
                     </div>
-                    <div class="bg-red-50 rounded-xl p-6 border-l-4 border-red-600">
-                        <h3 class="text-lg font-bold text-red-900 mb-3">
-                            <i class="fas fa-ambulance mr-2"></i>Accidents/Operations
-                        </h3>
+                    <div class="bg-gradient-to-br from-red-50 to-pink-50 rounded-2xl p-6 border border-red-100 hover:shadow-lg transition-all duration-300">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center mr-3">
+                                <i class="fas fa-ambulance text-white"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-red-900">Accidents/Operations</h3>
+                        </div>
                         <p class="text-red-800 leading-relaxed">{{ $examination->accidents_operations ?? 'None reported' }}</p>
                     </div>
-                    <div class="bg-amber-50 rounded-xl p-6 border-l-4 border-amber-600">
-                        <h3 class="text-lg font-bold text-amber-900 mb-3">
-                            <i class="fas fa-clipboard-list mr-2"></i>Past Medical History
-                        </h3>
+                    <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-100 hover:shadow-lg transition-all duration-300">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-amber-600 rounded-xl flex items-center justify-center mr-3">
+                                <i class="fas fa-clipboard-list text-white"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-amber-900">Past Medical History</h3>
+                        </div>
                         <p class="text-amber-800 leading-relaxed">{{ $examination->past_medical_history ?? 'No major medical issues' }}</p>
                     </div>
                 </div>
@@ -131,58 +300,73 @@
         </div>
 
         <!-- Family History & Personal Habits -->
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div class="px-8 py-6 bg-gradient-to-r from-emerald-600 to-emerald-700 border-l-4 border-emerald-800">
-                <h2 class="text-xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
-                    <i class="fas fa-users mr-3"></i>Family History & Personal Habits
-                </h2>
-                <p class="text-emerald-100 mt-1">Hereditary conditions and lifestyle factors</p>
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+            <div class="px-8 py-6 bg-gradient-to-r from-emerald-600 to-teal-600">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-4">
+                        <i class="fas fa-users text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white" style="font-family: 'Poppins', sans-serif;">
+                            Family History & Personal Habits
+                        </h2>
+                        <p class="text-emerald-100 mt-1">Hereditary conditions and lifestyle factors</p>
+                    </div>
+                </div>
             </div>
             <div class="p-8">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <!-- Family History -->
-                    <div class="bg-blue-50 rounded-xl p-6 border-l-4 border-blue-600">
-                        <h3 class="text-lg font-bold text-blue-900 mb-4">
-                            <i class="fas fa-dna mr-2"></i>Family History
-                        </h3>
-                        <div class="flex flex-wrap gap-2">
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100 hover:shadow-lg transition-all duration-300">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-dna text-white text-lg"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-blue-900">Family History</h3>
+                        </div>
+                        <div class="flex flex-wrap gap-3">
                             @if($examination->family_history && count($examination->family_history) > 0)
                                 @foreach($examination->family_history as $condition)
-                                    <span class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white">
-                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                    <span class="inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold bg-blue-600 text-white shadow-sm hover:bg-blue-700 transition-colors duration-200">
+                                        <i class="fas fa-exclamation-triangle mr-2"></i>
                                         {{ $condition }}
                                     </span>
                                 @endforeach
                             @else
-                                <div class="text-center w-full py-4">
-                                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                                        <i class="fas fa-check text-blue-600"></i>
+                                <div class="text-center w-full py-8">
+                                    <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                        <i class="fas fa-check text-blue-600 text-xl"></i>
                                     </div>
-                                    <p class="text-blue-800 font-medium">No family history recorded</p>
+                                    <p class="text-blue-800 font-semibold text-lg">No family history recorded</p>
+                                    <p class="text-blue-600 text-sm mt-1">Clean family medical history</p>
                                 </div>
                             @endif
                         </div>
                     </div>
 
                     <!-- Personal Habits -->
-                    <div class="bg-green-50 rounded-xl p-6 border-l-4 border-green-600">
-                        <h3 class="text-lg font-bold text-green-900 mb-4">
-                            <i class="fas fa-leaf mr-2"></i>Personal Habits
-                        </h3>
-                        <div class="flex flex-wrap gap-2">
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100 hover:shadow-lg transition-all duration-300">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-leaf text-white text-lg"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-green-900">Personal Habits</h3>
+                        </div>
+                        <div class="flex flex-wrap gap-3">
                             @if($examination->personal_habits && count($examination->personal_habits) > 0)
                                 @foreach($examination->personal_habits as $habit)
-                                    <span class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-green-600 text-white">
-                                        <i class="fas fa-info-circle mr-1"></i>
+                                    <span class="inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold bg-green-600 text-white shadow-sm hover:bg-green-700 transition-colors duration-200">
+                                        <i class="fas fa-info-circle mr-2"></i>
                                         {{ $habit }}
                                     </span>
                                 @endforeach
                             @else
-                                <div class="text-center w-full py-4">
-                                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                                        <i class="fas fa-check text-green-600"></i>
+                                <div class="text-center w-full py-8">
+                                    <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                        <i class="fas fa-check text-green-600 text-xl"></i>
                                     </div>
-                                    <p class="text-green-800 font-medium">No personal habits recorded</p>
+                                    <p class="text-green-800 font-semibold text-lg">No personal habits recorded</p>
+                                    <p class="text-green-600 text-sm mt-1">Healthy lifestyle indicated</p>
                                 </div>
                             @endif
                         </div>
@@ -396,6 +580,90 @@
     .no-print {
         display: none !important;
     }
+    
+    /* Print-specific styles for better readability */
+    body {
+        background: white !important;
+    }
+    
+    .bg-gradient-to-br,
+    .bg-gradient-to-r {
+        background: #f8fafc !important;
+        color: #1f2937 !important;
+    }
+    
+    .shadow-xl,
+    .shadow-lg {
+        box-shadow: none !important;
+        border: 1px solid #e5e7eb !important;
+    }
+    
+    .text-white {
+        color: #1f2937 !important;
+    }
+    
+    .rounded-2xl,
+    .rounded-xl {
+        border-radius: 8px !important;
+    }
+    
+    /* Ensure proper page breaks */
+    .bg-white {
+        page-break-inside: avoid;
+        margin-bottom: 1rem;
+    }
+}
+
+/* Enhanced animations and transitions */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bg-white {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.bg-white:nth-child(2) { animation-delay: 0.1s; }
+.bg-white:nth-child(3) { animation-delay: 0.2s; }
+.bg-white:nth-child(4) { animation-delay: 0.3s; }
+.bg-white:nth-child(5) { animation-delay: 0.4s; }
+.bg-white:nth-child(6) { animation-delay: 0.5s; }
+
+/* Glass morphism effect */
+.glass-morphism {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Hover effects */
+.hover\:shadow-lg:hover {
+    transform: translateY(-2px);
+}
+
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 </style>
 @endsection

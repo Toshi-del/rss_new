@@ -174,7 +174,13 @@ class CompanyController extends Controller
     public function viewSentPreEmployment($id)
     {
         $user = Auth::user();
-        $examination = \App\Models\PreEmploymentExamination::where('id', $id)
+        $examination = \App\Models\PreEmploymentExamination::with([
+            'preEmploymentRecord.medicalTests',
+            'preEmploymentRecord.medicalTestCategories',
+            'preEmploymentRecord.preEmploymentMedicalTests.medicalTest',
+            'preEmploymentRecord.preEmploymentMedicalTests.medicalTestCategory'
+        ])
+            ->where('id', $id)
             ->where('company_name', $user->company)
             ->where('status', 'sent_to_company')
             ->firstOrFail();
@@ -188,7 +194,11 @@ class CompanyController extends Controller
     public function viewSentAnnualPhysical($id)
     {
         $user = Auth::user();
-        $examination = \App\Models\AnnualPhysicalExamination::where('id', $id)
+        $examination = \App\Models\AnnualPhysicalExamination::with([
+            'patient.appointment.medicalTestCategory',
+            'patient.appointment.medicalTest'
+        ])
+            ->where('id', $id)
             ->where('status', 'sent_to_company')
             ->whereHas('patient.appointment', function($query) use ($user) {
                 $query->where('created_by', $user->id);
