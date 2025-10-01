@@ -50,6 +50,7 @@
                         <i class="fas fa-exclamation-circle mr-2"></i>
                         Needs Review
                         @php
+                            // Count patients that need pathologist attention (no meaningful lab results yet)
                             $needsAttentionCount = \App\Models\Patient::where('status', 'approved')
                                 ->whereHas('medicalChecklists', function($q) {
                                     $q->where('examination_type', 'annual-physical')
@@ -60,7 +61,18 @@
                                 })
                                 ->whereDoesntHave('annualPhysicalExamination', function($q) {
                                     $q->whereNotNull('lab_report')
-                                      ->where('lab_report', '!=', '');
+                                      ->where('lab_report', '!=', '[]')
+                                      ->where('lab_report', '!=', '{}')
+                                      ->where(function($subQuery) {
+                                          // Check for actual meaningful lab results (not just "Not available" or empty)
+                                          $subQuery->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"cbc_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"urinalysis_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"stool_exam_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"fbs_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"bun_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"creatinine_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"additional_exams_results\"')) NOT IN ('', 'Not available')");
+                                      });
                                 })
                                 ->count();
                         @endphp
@@ -74,6 +86,7 @@
                         <i class="fas fa-check-circle mr-2"></i>
                         Lab Completed
                         @php
+                            // Count patients with actual meaningful lab results completed
                             $completedCount = \App\Models\Patient::where('status', 'approved')
                                 ->whereHas('medicalChecklists', function($q) {
                                     $q->where('examination_type', 'annual-physical')
@@ -84,7 +97,18 @@
                                 })
                                 ->whereHas('annualPhysicalExamination', function($q) {
                                     $q->whereNotNull('lab_report')
-                                      ->where('lab_report', '!=', '');
+                                      ->where('lab_report', '!=', '[]')
+                                      ->where('lab_report', '!=', '{}')
+                                      ->where(function($subQuery) {
+                                          // Check for actual meaningful lab results (not just "Not available" or empty)
+                                          $subQuery->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"cbc_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"urinalysis_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"stool_exam_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"fbs_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"bun_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"creatinine_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"additional_exams_results\"')) NOT IN ('', 'Not available')");
+                                      });
                                 })
                                 ->count();
                         @endphp

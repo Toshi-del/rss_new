@@ -86,24 +86,40 @@ class PathologistController extends Controller
         
         switch ($labStatus) {
             case 'needs_attention':
-                // Default: Records that need pathologist attention (no lab data submitted yet)
+                // Default: Records that need pathologist attention (no meaningful lab results yet)
                 $query->whereDoesntHave('preEmploymentExamination', function($q) {
-                    $q->where(function($subQuery) {
-                        $subQuery->whereNotNull('lab_report')
-                                 ->where('lab_report', '!=', '[]')
-                                 ->where('lab_report', '!=', '{}');
-                    });
+                    $q->whereNotNull('lab_report')
+                      ->where('lab_report', '!=', '[]')
+                      ->where('lab_report', '!=', '{}')
+                      ->where(function($subQuery) {
+                          // Check for actual meaningful lab results (not just "Not available" or empty)
+                          $subQuery->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"cbc_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"urinalysis_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"stool_exam_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"fbs_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"bun_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"creatinine_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"additional_exams_results\"')) NOT IN ('', 'Not available')");
+                      });
                 });
                 break;
                 
             case 'lab_completed':
-                // Records that have lab data submitted
+                // Records with actual meaningful lab results completed
                 $query->whereHas('preEmploymentExamination', function($q) {
-                    $q->where(function($subQuery) {
-                        $subQuery->whereNotNull('lab_report')
-                                 ->where('lab_report', '!=', '[]')
-                                 ->where('lab_report', '!=', '{}');
-                    });
+                    $q->whereNotNull('lab_report')
+                      ->where('lab_report', '!=', '[]')
+                      ->where('lab_report', '!=', '{}')
+                      ->where(function($subQuery) {
+                          // Check for actual meaningful lab results (not just "Not available" or empty)
+                          $subQuery->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"cbc_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"urinalysis_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"stool_exam_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"fbs_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"bun_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"creatinine_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"additional_exams_results\"')) NOT IN ('', 'Not available')");
+                      });
                 });
                 break;
         }
@@ -171,105 +187,65 @@ class PathologistController extends Controller
             }
         }
 
-        // Lab status filtering
-        // Set default lab_status to 'pending_and_blocked' if not specified
-        $labStatusAnnual = $request->filled('lab_status') ? $request->lab_status : 'pending_and_blocked';
+        // Lab status filtering - match the view tab parameters
+        $labStatus = $request->filled('lab_status') ? $request->lab_status : 'needs_attention';
         
-        if ($labStatusAnnual && $labStatusAnnual !== 'all') {
-            switch ($labStatusAnnual) {
-                case 'pending_and_blocked':
-                    // Default: Patients that need lab work (both pending and blocked)
-                    $query->where(function($mainQuery) {
-                        // Pending: Patients that have medical checklist completed but no lab data submitted
-                        $mainQuery->where(function($pendingQuery) {
-                            $pendingQuery->whereHas('medicalChecklists', function($q) {
-                                $q->where('examination_type', 'annual_physical')
-                                  ->where(function($subQuery) {
-                                      $subQuery->whereNotNull('stool_exam_done_by')
-                                               ->where('stool_exam_done_by', '!=', '')
-                                               ->orWhere(function($innerQuery) {
-                                                   $innerQuery->whereNotNull('urinalysis_done_by')
-                                                             ->where('urinalysis_done_by', '!=', '');
-                                               });
-                                  });
-                            })
-                            ->whereDoesntHave('annualPhysicalExamination', function($q) {
-                                $q->where(function($subQuery) {
-                                    $subQuery->whereNotNull('lab_report')
-                                             ->where('lab_report', '!=', '[]')
-                                             ->where('lab_report', '!=', '{}');
-                                });
-                            });
-                        })
-                        // OR Blocked: Patients that don't have medical checklist completed
-                        ->orWhere(function($blockedQuery) {
-                            $blockedQuery->whereDoesntHave('medicalChecklists', function($q) {
-                                $q->where('examination_type', 'annual_physical')
-                                  ->where(function($subQuery) {
-                                      $subQuery->whereNotNull('stool_exam_done_by')
-                                               ->where('stool_exam_done_by', '!=', '')
-                                               ->orWhere(function($innerQuery) {
-                                                   $innerQuery->whereNotNull('urinalysis_done_by')
-                                                             ->where('urinalysis_done_by', '!=', '');
-                                               });
-                                  });
-                            });
-                        });
-                    });
-                    break;
-                    
-                case 'pending':
-                    // Patients that have medical checklist completed but no lab data submitted
-                    $query->whereHas('medicalChecklists', function($q) {
-                        $q->where('examination_type', 'annual_physical')
-                          ->where(function($subQuery) {
-                              $subQuery->whereNotNull('stool_exam_done_by')
-                                       ->where('stool_exam_done_by', '!=', '')
-                                       ->orWhere(function($innerQuery) {
-                                           $innerQuery->whereNotNull('urinalysis_done_by')
-                                                     ->where('urinalysis_done_by', '!=', '');
-                                       });
-                          });
-                    })
-                    ->whereDoesntHave('annualPhysicalExamination', function($q) {
-                        $q->where(function($subQuery) {
-                            $subQuery->whereNotNull('lab_report')
-                                     ->where('lab_report', '!=', '[]')
-                                     ->where('lab_report', '!=', '{}');
-                        });
-                    });
-                    break;
-                    
-                case 'completed':
-                    // Patients that have lab data submitted
-                    $query->whereHas('annualPhysicalExamination', function($q) {
-                        $q->where(function($subQuery) {
-                            $subQuery->whereNotNull('lab_report')
-                                     ->where('lab_report', '!=', '[]')
-                                     ->where('lab_report', '!=', '{}');
-                        });
-                    });
-                    break;
-                    
-                case 'blocked':
-                    // Patients that don't have medical checklist completed
-                    $query->whereDoesntHave('medicalChecklists', function($q) {
-                        $q->where('examination_type', 'annual_physical')
-                          ->where(function($subQuery) {
-                              $subQuery->whereNotNull('stool_exam_done_by')
-                                       ->where('stool_exam_done_by', '!=', '')
-                                       ->orWhere(function($innerQuery) {
-                                           $innerQuery->whereNotNull('urinalysis_done_by')
-                                                     ->where('urinalysis_done_by', '!=', '');
-                                       });
-                          });
-                    });
-                    break;
-            }
+        switch ($labStatus) {
+            case 'needs_attention':
+                // Patients that need pathologist attention (no meaningful lab results yet)
+                $query->whereHas('medicalChecklists', function($q) {
+                    $q->where('examination_type', 'annual-physical')
+                      ->whereNotNull('stool_exam_done_by')
+                      ->where('stool_exam_done_by', '!=', '')
+                      ->whereNotNull('urinalysis_done_by')
+                      ->where('urinalysis_done_by', '!=', '');
+                })
+                ->whereDoesntHave('annualPhysicalExamination', function($q) {
+                    $q->whereNotNull('lab_report')
+                      ->where('lab_report', '!=', '[]')
+                      ->where('lab_report', '!=', '{}')
+                      ->where(function($subQuery) {
+                          // Check for actual meaningful lab results (not just "Not available" or empty)
+                          $subQuery->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"cbc_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"urinalysis_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"stool_exam_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"fbs_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"bun_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"creatinine_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"additional_exams_results\"')) NOT IN ('', 'Not available')");
+                      });
+                });
+                break;
+                
+            case 'lab_completed':
+                // Patients with actual meaningful lab results completed
+                $query->whereHas('medicalChecklists', function($q) {
+                    $q->where('examination_type', 'annual-physical')
+                      ->whereNotNull('stool_exam_done_by')
+                      ->where('stool_exam_done_by', '!=', '')
+                      ->whereNotNull('urinalysis_done_by')
+                      ->where('urinalysis_done_by', '!=', '');
+                })
+                ->whereHas('annualPhysicalExamination', function($q) {
+                    $q->whereNotNull('lab_report')
+                      ->where('lab_report', '!=', '[]')
+                      ->where('lab_report', '!=', '{}')
+                      ->where(function($subQuery) {
+                          // Check for actual meaningful lab results (not just "Not available" or empty)
+                          $subQuery->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"cbc_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"urinalysis_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"stool_exam_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"fbs_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"bun_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"creatinine_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"additional_exams_results\"')) NOT IN ('', 'Not available')");
+                      });
+                });
+                break;
         }
 
         // Filter patients that don't have completed examinations (unless specifically filtering for completed lab status)
-        if ($labStatusAnnual !== 'completed') {
+        if ($labStatus !== 'lab_completed') {
             $query->whereDoesntHave('annualPhysicalExamination', function ($q) {
                 $q->whereIn('status', ['completed', 'sent_to_company']);
             });
@@ -1219,105 +1195,51 @@ class PathologistController extends Controller
             $query->where('gender', $request->gender);
         }
 
-        // Lab status filtering - simplified to two tabs
-        // Set default lab_status to 'needs_attention' if not specified
-        $labStatusOpd = $request->filled('lab_status') ? $request->lab_status : 'needs_attention';
+        // Lab status filtering - match the view tab parameters
+        $labStatus = $request->filled('lab_status') ? $request->lab_status : 'needs_attention';
         
-        if ($labStatusOpd && $labStatusOpd !== 'all') {
-            switch ($labStatusOpd) {
-                case 'pending_and_blocked':
-                    // Default: Patients that need lab work (both pending and blocked)
-                    $query->where(function($mainQuery) {
-                        // Pending: Patients that have medical checklist completed but no lab data submitted
-                        $mainQuery->where(function($pendingQuery) {
-                            $pendingQuery->whereHas('medicalChecklists', function($q) {
-                                $q->where('examination_type', 'opd')
-                                  ->where(function($subQuery) {
-                                      $subQuery->whereNotNull('stool_exam_done_by')
-                                               ->where('stool_exam_done_by', '!=', '')
-                                               ->orWhere(function($innerQuery) {
-                                                   $innerQuery->whereNotNull('urinalysis_done_by')
-                                                             ->where('urinalysis_done_by', '!=', '');
-                                               });
-                                  });
-                            })
-                            ->whereDoesntHave('opdExamination', function($q) {
-                                $q->where(function($subQuery) {
-                                    $subQuery->whereNotNull('lab_report')
-                                             ->where('lab_report', '!=', '[]')
-                                             ->where('lab_report', '!=', '{}');
-                                });
-                            });
-                        })
-                        // OR Blocked: Patients that don't have medical checklist completed
-                        ->orWhere(function($blockedQuery) {
-                            $blockedQuery->whereDoesntHave('medicalChecklists', function($q) {
-                                $q->where('examination_type', 'opd')
-                                  ->where(function($subQuery) {
-                                      $subQuery->whereNotNull('stool_exam_done_by')
-                                               ->where('stool_exam_done_by', '!=', '')
-                                               ->orWhere(function($innerQuery) {
-                                                   $innerQuery->whereNotNull('urinalysis_done_by')
-                                                             ->where('urinalysis_done_by', '!=', '');
-                                               });
-                                  });
-                            });
-                        });
-                    });
-                    break;
-                    
-                case 'pending':
-                    // Patients that have medical checklist completed but no lab data submitted
-                    $query->whereHas('medicalChecklists', function($q) {
-                        $q->where('examination_type', 'opd')
-                          ->where(function($subQuery) {
-                              $subQuery->whereNotNull('stool_exam_done_by')
-                                       ->where('stool_exam_done_by', '!=', '')
-                                       ->orWhere(function($innerQuery) {
-                                           $innerQuery->whereNotNull('urinalysis_done_by')
-                                                     ->where('urinalysis_done_by', '!=', '');
-                                       });
-                          });
-                    })
-                    ->whereDoesntHave('opdExamination', function($q) {
-                        $q->where(function($subQuery) {
-                            $subQuery->whereNotNull('lab_report')
-                                     ->where('lab_report', '!=', '[]')
-                                     ->where('lab_report', '!=', '{}');
-                        });
-                    });
-                    break;
-                    
-                case 'completed':
-                    // Patients that have lab data submitted
-                    $query->whereHas('opdExamination', function($q) {
-                        $q->where(function($subQuery) {
-                            $subQuery->whereNotNull('lab_report')
-                                     ->where('lab_report', '!=', '[]')
-                                     ->where('lab_report', '!=', '{}');
-                        });
-                    });
-                    break;
-                    
-                case 'blocked':
-                    // Patients that don't have medical checklist completed
-                    $query->whereDoesntHave('medicalChecklists', function($q) {
-                        $q->where('examination_type', 'opd')
-                          ->where(function($subQuery) {
-                              $subQuery->whereNotNull('stool_exam_done_by')
-                                       ->where('stool_exam_done_by', '!=', '')
-                                       ->orWhere(function($innerQuery) {
-                                           $innerQuery->whereNotNull('urinalysis_done_by')
-                                                     ->where('urinalysis_done_by', '!=', '');
-                                       });
-                          });
-                    });
-                    break;
-            }
+        switch ($labStatus) {
+            case 'needs_attention':
+                // OPD patients that need pathologist attention (no meaningful lab results yet)
+                $query->whereDoesntHave('opdExamination', function($q) {
+                    $q->whereNotNull('lab_report')
+                      ->where('lab_report', '!=', '[]')
+                      ->where('lab_report', '!=', '{}')
+                      ->where(function($subQuery) {
+                          // Check for actual meaningful lab results (not just "Not available" or empty)
+                          $subQuery->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"cbc_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"urinalysis_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"stool_exam_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"fbs_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"bun_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"creatinine_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"additional_exams_results\"')) NOT IN ('', 'Not available')");
+                      });
+                });
+                break;
+                
+            case 'lab_completed':
+                // OPD patients with actual meaningful lab results completed
+                $query->whereHas('opdExamination', function($q) {
+                    $q->whereNotNull('lab_report')
+                      ->where('lab_report', '!=', '[]')
+                      ->where('lab_report', '!=', '{}')
+                      ->where(function($subQuery) {
+                          // Check for actual meaningful lab results (not just "Not available" or empty)
+                          $subQuery->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"cbc_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"urinalysis_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"stool_exam_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"fbs_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"bun_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"creatinine_result\"')) NOT IN ('', 'Not available')")
+                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"additional_exams_results\"')) NOT IN ('', 'Not available')");
+                      });
+                });
+                break;
         }
 
         // Filter patients that don't have completed examinations (unless specifically filtering for completed lab status)
-        if ($labStatusOpd !== 'completed') {
+        if ($labStatus !== 'lab_completed') {
             $query->whereDoesntHave('opdExamination', function ($q) {
                 $q->whereIn('status', ['completed', 'sent_to_company']);
             });

@@ -102,13 +102,22 @@
                         <i class="fas fa-exclamation-circle mr-2"></i>
                         Needs Attention
                         @php
+                            // Count records that need pathologist attention (no meaningful lab results yet)
                             $needsAttentionCount = \App\Models\PreEmploymentRecord::where('status', 'approved')
                                 ->whereDoesntHave('preEmploymentExamination', function($q) {
-                                    $q->where(function($subQuery) {
-                                        $subQuery->whereNotNull('lab_report')
-                                                 ->where('lab_report', '!=', '[]')
-                                                 ->where('lab_report', '!=', '{}');
-                                    });
+                                    $q->whereNotNull('lab_report')
+                                      ->where('lab_report', '!=', '[]')
+                                      ->where('lab_report', '!=', '{}')
+                                      ->where(function($subQuery) {
+                                          // Check for actual meaningful lab results (not just "Not available" or empty)
+                                          $subQuery->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"cbc_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"urinalysis_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"stool_exam_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"fbs_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"bun_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"creatinine_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"additional_exams_results\"')) NOT IN ('', 'Not available')");
+                                      });
                                 })
                                 ->count();
                         @endphp
@@ -122,13 +131,22 @@
                         <i class="fas fa-check-circle mr-2"></i>
                         Lab Completed
                         @php
+                            // Count records with actual meaningful lab results completed
                             $completedCount = \App\Models\PreEmploymentRecord::where('status', 'approved')
                                 ->whereHas('preEmploymentExamination', function($q) {
-                                    $q->where(function($subQuery) {
-                                        $subQuery->whereNotNull('lab_report')
-                                                 ->where('lab_report', '!=', '[]')
-                                                 ->where('lab_report', '!=', '{}');
-                                    });
+                                    $q->whereNotNull('lab_report')
+                                      ->where('lab_report', '!=', '[]')
+                                      ->where('lab_report', '!=', '{}')
+                                      ->where(function($subQuery) {
+                                          // Check for actual meaningful lab results (not just "Not available" or empty)
+                                          $subQuery->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"cbc_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"urinalysis_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"stool_exam_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"fbs_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"bun_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"creatinine_result\"')) NOT IN ('', 'Not available')")
+                                                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(lab_report, '$.\"additional_exams_results\"')) NOT IN ('', 'Not available')");
+                                      });
                                 })
                                 ->count();
                         @endphp
@@ -270,8 +288,15 @@
                                     foreach($examinations as $exam) {
                                         $labData = $exam->lab_report;
                                         if ($labData && is_array($labData)) {
-                                            foreach($labData as $key => $value) {
-                                                if (!empty($value) && $value !== 'Not available' && !str_contains($key, '_others')) {
+                                            // Check for meaningful lab results (not just "Not available" or empty)
+                                            $meaningfulResults = [
+                                                'cbc_result', 'urinalysis_result', 'stool_exam_result', 
+                                                'fbs_result', 'bun_result', 'creatinine_result', 'additional_exams_results'
+                                            ];
+                                            
+                                            foreach($meaningfulResults as $resultField) {
+                                                $value = $labData[$resultField] ?? '';
+                                                if (!empty($value) && $value !== 'Not available' && trim($value) !== '') {
                                                     $hasSubmittedData = true;
                                                     $latestExamination = $exam;
                                                     break 2;
