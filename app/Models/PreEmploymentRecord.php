@@ -230,7 +230,7 @@ class PreEmploymentRecord extends Model
             'Pre-Employment with Drug test and AUDIO and ISHIHARA',
         ];
 
-        return in_array($testName, $preEmploymentPackages);
+        return is_string($testName) && in_array($testName, $preEmploymentPackages, true);
     }
 
     /**
@@ -271,7 +271,12 @@ class PreEmploymentRecord extends Model
             'Bacteriology',
         ];
 
+        // Ensure $categoryName is a string before checking in_array
+        if (!is_string($categoryName)) {
+            return false;
+        }
+
         // Note: Drug Monitoring Assay is handled by medtech/nurse, not pathologist
-        return in_array($categoryName, $pathologistCategories);
+        return in_array($categoryName, $pathologistCategories, true);
     }
 }

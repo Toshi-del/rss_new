@@ -122,10 +122,7 @@
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-clipboard-list mr-2 text-blue-600"></i>Past Medical History
                             </label>
-                            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 min-h-[4rem] text-sm text-gray-700">
-                                <?php echo e($preEmployment->past_medical_history ?: 'No past medical conditions recorded'); ?>
-
-                            </div>
+                            <textarea name="past_medical_history" class="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 min-h-[4rem] text-sm text-gray-700" placeholder="Enter past medical conditions"><?php echo e(old('past_medical_history', $preEmployment->past_medical_history)); ?></textarea>
                         </div>
                     </div>
                     
@@ -135,12 +132,15 @@
                         </label>
                         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                             <?php
-                                $family = $preEmployment->family_history ?? [];
+                                $family = is_array($preEmployment->family_history) ? $preEmployment->family_history : [];
                                 $options = ['asthma','arthritis','migraine','diabetes','heart_disease','tuberculosis','allergies','anemia','cancer','insanity','hypertension','epilepsy'];
                             ?>
                             <?php $__currentLoopData = $options; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $opt): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <label class="inline-flex items-center p-3 rounded-lg border transition-colors duration-200 <?php echo e(in_array($opt, $family ?? []) ? 'bg-green-100 border-green-300 text-green-800' : 'bg-gray-50 border-gray-200 text-gray-600'); ?>">
-                                    <input type="checkbox" name="family_history[]" value="<?php echo e($opt); ?>" class="mr-3 text-green-600 focus:ring-green-500" <?php echo e(in_array($opt, $family ?? []) ? 'checked' : ''); ?> disabled>
+                                <?php
+                                    $isChecked = is_array($family) && in_array($opt, $family, true);
+                                ?>
+                                <label class="inline-flex items-center p-3 rounded-lg border transition-colors duration-200 <?php echo e($isChecked ? 'bg-green-100 border-green-300 text-green-800' : 'bg-gray-50 border-gray-200 text-gray-600'); ?>">
+                                    <input type="checkbox" name="family_history[]" value="<?php echo e($opt); ?>" class="mr-3 text-green-600 focus:ring-green-500" <?php echo e($isChecked ? 'checked' : ''); ?>>
                                     <span class="text-sm font-medium"><?php echo e(str_replace('_', ' ', ucwords($opt))); ?></span>
                                 </label>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
@@ -161,7 +161,16 @@
                     <div class="bg-white rounded-lg p-4">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <?php
-                                $habits = $preEmployment->personal_habits ?? [];
+                                // Ensure $habits is an array and properly decoded if it's a JSON string
+                                $habits = [];
+                                if (isset($preEmployment->personal_habits)) {
+                                    if (is_string($preEmployment->personal_habits)) {
+                                        $habits = json_decode($preEmployment->personal_habits, true) ?? [];
+                                    } elseif (is_array($preEmployment->personal_habits)) {
+                                        $habits = $preEmployment->personal_habits;
+                                    }
+                                }
+                                
                                 $habitOptions = [
                                     'alcohol' => ['icon' => 'fas fa-wine-bottle', 'color' => 'red'],
                                     'cigarettes' => ['icon' => 'fas fa-smoking', 'color' => 'orange'],
@@ -169,11 +178,18 @@
                                 ];
                             ?>
                             <?php $__currentLoopData = $habitOptions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $habit => $config): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <div class="flex items-center p-4 rounded-lg border transition-colors duration-200 <?php echo e(in_array($habit, $habits ?? []) ? 'bg-blue-100 border-blue-300' : 'bg-gray-50 border-gray-200'); ?>">
-                                    <i class="<?php echo e($config['icon']); ?> text-<?php echo e($config['color']); ?>-600 mr-3"></i>
-                                    <span class="text-sm font-medium text-gray-700 mr-3"><?php echo e(str_replace('_', ' ', ucwords($habit))); ?></span>
-                                    <i class="fas <?php echo e(in_array($habit, $habits ?? []) ? 'fa-check-circle text-green-600' : 'fa-times-circle text-gray-400'); ?>"></i>
-                                </div>
+                                <?php
+                                    $hasHabit = is_array($habits) && array_key_exists($habit, $habits) && $habits[$habit];
+                                ?>
+                                <label class="flex items-center p-4 rounded-lg border transition-colors duration-200 <?php echo e($hasHabit ? 'bg-blue-100 border-blue-300' : 'bg-gray-50 border-gray-200'); ?>">
+                                    <input type="hidden" name="personal_habits[<?php echo e($habit); ?>]" value="0">
+                                    <input type="checkbox" name="personal_habits[<?php echo e($habit); ?>]" value="1" class="hidden" <?php echo e($hasHabit ? 'checked' : ''); ?>>
+                                    <span class="flex items-center">
+                                        <i class="<?php echo e($config['icon']); ?> text-<?php echo e($config['color']); ?>-600 mr-3"></i>
+                                        <span class="text-sm font-medium text-gray-700 mr-3"><?php echo e(str_replace('_', ' ', ucwords($habit))); ?></span>
+                                        <i class="fas <?php echo e($hasHabit ? 'fa-check-circle text-green-600' : 'fa-times-circle text-gray-400'); ?>"></i>
+                                    </span>
+                                </label>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </div>
                     </div>
@@ -380,52 +396,63 @@
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                 </div>
-                <!-- Laboratory Test Results Section -->
+                <!-- Laboratory Test Results Section (Read-only) -->
+                <!-- Laboratory Test Results Section (Read-only) -->
                 <div class="bg-green-50 rounded-xl p-6 border-l-4 border-green-500">
-                    <div class="flex items-center mb-6">
-                        <i class="fas fa-microscope text-green-600 text-xl mr-3"></i>
-                        <h3 class="text-lg font-bold text-green-800">Laboratory Test Results</h3>
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center">
+                            <i class="fas fa-microscope text-green-600 text-xl mr-3"></i>
+                            <h3 class="text-lg font-bold text-green-800">Laboratory Test Results</h3>
+                        </div>
+                        <span class="px-3 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
+                            <i class="fas fa-lock mr-1"></i> Staff Entry
+                        </span>
                     </div>
                     
                     <?php
                         $labRows = [
-                            'Chest X-Ray' => ['icon' => 'fas fa-x-ray', 'color' => 'gray'],
-                            'Urinalysis' => ['icon' => 'fas fa-vial', 'color' => 'yellow'],
-                            'Fecalysis' => ['icon' => 'fas fa-microscope', 'color' => 'brown'],
-                            'CBC' => ['icon' => 'fas fa-tint', 'color' => 'red'],
-                            'Drug Test' => ['icon' => 'fas fa-pills', 'color' => 'orange'],
-                            'HBsAg Screening' => ['icon' => 'fas fa-shield-virus', 'color' => 'purple'],
-                            'HEPA A IGG & IGM' => ['icon' => 'fas fa-virus', 'color' => 'pink'],
-                            'Others' => ['icon' => 'fas fa-plus-circle', 'color' => 'indigo']
+                            'Chest X-Ray' => ['icon' => 'fas fa-x-ray', 'color' => 'gray', 'key' => 'xray'],
+                            'Urinalysis' => ['icon' => 'fas fa-vial', 'color' => 'yellow', 'key' => 'urinalysis'],
+                            'Fecalysis' => ['icon' => 'fas fa-microscope', 'color' => 'brown', 'key' => 'fecalysis'],
+                            'CBC' => ['icon' => 'fas fa-tint', 'color' => 'red', 'key' => 'cbc'],
+                            'Drug Test' => ['icon' => 'fas fa-pills', 'color' => 'orange', 'key' => 'drug_test'],
+                            'HBsAg Screening' => ['icon' => 'fas fa-shield-virus', 'color' => 'purple', 'key' => 'hbsag_screening'],
+                            'HEPA A IGG & IGM' => ['icon' => 'fas fa-virus', 'color' => 'pink', 'key' => 'hepa_a_igg_igm'],
+                            'Others' => ['icon' => 'fas fa-plus-circle', 'color' => 'indigo', 'key' => 'others']
                         ];
                     ?>
                     
                     <div class="space-y-4">
                         <?php $__currentLoopData = $labRows; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $row => $config): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <div class="bg-white rounded-lg p-4 border border-gray-200">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                                <div class="flex items-center">
-                                    <i class="<?php echo e($config['icon']); ?> text-<?php echo e($config['color']); ?>-600 mr-3"></i>
-                                    <span class="font-semibold text-gray-700"><?php echo e($row); ?></span>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 mb-1">Result</label>
-                                    <?php
-                                        $testKey = strtolower(str_replace([' ', '-', '&'], ['_', '_', '_'], $row));
-                                        $testKey = str_replace('chest_x_ray', 'xray', $testKey);
-                                        $testKey = str_replace('hepa_a_igg___igm', 'hepa_a_igg_igm', $testKey);
-                                    ?>
-                                    <input type="text" name="lab_report[<?php echo e($testKey); ?>]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm" value="<?php echo e(old('lab_report.'.$testKey, data_get($preEmployment->lab_report, $testKey, ''))); ?>" placeholder="Enter test result">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 mb-1">Findings</label>
-                                    <?php
-                                        $findingsKey = $testKey . '_findings';
-                                    ?>
-                                    <input type="text" name="lab_report[<?php echo e($findingsKey); ?>]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm" value="<?php echo e(old('lab_report.'.$findingsKey, data_get($preEmployment->lab_report, $findingsKey, ''))); ?>" placeholder="Enter findings">
+                            <?php
+                                $testKey = $config['key'];
+                                $findingsKey = $testKey . '_findings';
+                                $result = data_get($preEmployment->lab_report, $testKey, null);
+                                $findings = data_get($preEmployment->lab_report, $findingsKey, null);
+                            ?>
+                            
+                            <div class="bg-white rounded-lg p-4 border border-gray-200">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                                    <div class="flex items-center">
+                                        <i class="<?php echo e($config['icon']); ?> text-<?php echo e($config['color']); ?>-600 mr-3"></i>
+                                        <span class="font-semibold text-gray-700"><?php echo e($row); ?></span>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Result</label>
+                                        <div class="p-2 bg-gray-50 rounded border border-gray-200 text-sm text-gray-700 min-h-[2.5rem]">
+                                            <?php echo e($result ?? 'Not recorded'); ?>
+
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Findings</label>
+                                        <div class="p-2 bg-gray-50 rounded border border-gray-200 text-sm text-gray-700 min-h-[2.5rem]">
+                                            <?php echo e($findings ?? 'No findings'); ?>
+
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
                 </div>
