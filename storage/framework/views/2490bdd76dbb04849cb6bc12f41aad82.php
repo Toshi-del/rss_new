@@ -140,13 +140,6 @@
                         </td>
                         <td class="px-6 py-6 whitespace-nowrap text-sm">
                             <div class="flex items-center space-x-2">
-                                <form action="<?php echo e(route('ecgtech.pre-employment.send-to-doctor', $preEmployment->id)); ?>" method="POST" class="inline">
-                                    <?php echo csrf_field(); ?>
-                                    <button type="submit" class="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors duration-200" title="Send to Doctor">
-                                        <i class="fas fa-paper-plane mr-1"></i>
-                                        Send
-                                    </button>
-                                </form>
                                 <a href="<?php echo e(route('ecgtech.medical-checklist-page.pre-employment', $preEmployment->id)); ?>" class="inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg transition-colors duration-200" title="ECG Checklist">
                                     <i class="fas fa-heartbeat mr-1"></i>
                                     ECG Check

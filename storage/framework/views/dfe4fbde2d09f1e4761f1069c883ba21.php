@@ -1,5 +1,3 @@
-
-
 <?php $__env->startSection('title', 'Medical Checklist - RSS Citi Health Services'); ?>
 <?php $__env->startSection('page-title', 'Medical Checklist'); ?>
 <?php $__env->startSection('page-description', 'Medical examination checklist and completion tracking'); ?>

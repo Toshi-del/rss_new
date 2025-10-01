@@ -1,412 +1,556 @@
 @extends('layouts.pathologist')
 
-@section('title', 'Annual Physical Patients')
-@section('page-title', 'Annual Physical Patients')
+@section('title', 'Annual Physical Examinations - RSS Citi Health Services')
+@section('page-title', 'Annual Physical Examinations')
+@section('page-description', 'Laboratory examinations for yearly health assessments')
 
 @section('content')
-@if(session('success'))
-    <div class="mb-4 p-4 rounded-lg bg-green-100 text-green-800 border border-green-300 text-center font-semibold shadow-sm">
-        <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
-    </div>
-@endif
-
-@if(session('error'))
-    <div class="mb-4 p-4 rounded-lg bg-red-100 text-red-800 border border-red-300 text-center font-semibold shadow-sm">
-        <i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}
-    </div>
-@endif
-
-<!-- Header Section -->
-<div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
-    <div class="p-6 border-b border-gray-200">
-        <div class="flex items-center justify-between">
-            <div>
-                <h2 class="text-2xl font-semibold text-gray-800">
-                    <i class="fas fa-user-check mr-3 text-teal-600"></i>Annual Physical Patients
-                </h2>
-                <p class="text-gray-600 text-sm mt-1">Manage patients requiring annual physical examination</p>
+<div class="space-y-8">
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center space-x-3">
+            <div class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-check text-emerald-600"></i>
             </div>
-            <div class="flex items-center space-x-3">
-                <div class="relative">
-                    <input type="text" id="searchInput" placeholder="Search patients..." 
-                           class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 w-64">
-                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                </div>
-                <button class="bg-gradient-to-r from-teal-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-teal-700 hover:to-blue-700 transition-all">
-                    <i class="fas fa-plus mr-2"></i>Add Patient
-                </button>
+            <div class="flex-1">
+                <p class="text-emerald-800 font-medium">{{ session('success') }}</p>
             </div>
-        </div>
-    </div>
-
-    <!-- Filters -->
-    <div class="p-6 bg-gray-50 border-b border-gray-200">
-        <div class="flex flex-wrap items-center gap-4">
-            <div class="flex items-center space-x-2">
-                <label class="text-sm font-medium text-gray-700">Filter by:</label>
-            </div>
-            
-            <div class="flex items-center space-x-2">
-                <select id="statusFilter" class="form-select text-sm border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">
-                    <option value="">All Status</option>
-                    <option value="approved">Approved</option>
-                    <option value="pending">Pending</option>
-                    <option value="declined">Declined</option>
-                </select>
-            </div>
-            
-            <div class="flex items-center space-x-2">
-                <select id="ageFilter" class="form-select text-sm border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">
-                    <option value="">All Ages</option>
-                    <option value="18-30">18-30</option>
-                    <option value="31-45">31-45</option>
-                    <option value="46-60">46-60</option>
-                    <option value="60+">60+</option>
-                </select>
-            </div>
-            
-            <div class="flex items-center space-x-2">
-                <button id="clearFilters" class="text-sm text-gray-600 hover:text-gray-800 px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50">
-                    Clear Filters
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Patients Table -->
-<div class="bg-white rounded-xl shadow-sm border border-gray-200">
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        <i class="fas fa-user mr-2"></i>Patient Name
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sex</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Test</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($patients as $patient)
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                                    <i class="fas fa-user text-blue-600"></i>
-                                </div>
-                                <div>
-                                    <div class="text-sm font-medium text-gray-900">
-                                        {{ $patient->first_name }} {{ $patient->last_name }}
-                                    </div>
-                                    <div class="text-sm text-gray-500">ID: {{ $patient->id }}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->age }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <span class="px-2 py-1 text-xs font-medium rounded-full {{ $patient->sex === 'Male' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800' }}">
-                                {{ $patient->sex }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->email }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->phone_number ?? 'N/A' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            @if($patient->appointment && $patient->appointment->medicalTestCategory)
-                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
-                                    {{ $patient->appointment->medicalTestCategory->name }}
-                                </span>
-                            @else
-                                <span class="text-gray-400">N/A</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            @if($patient->appointment && $patient->appointment->medicalTest)
-                                {{ $patient->appointment->medicalTest->name }}
-                            @else
-                                <span class="text-gray-400">N/A</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @php
-                                $statusClass = match($patient->status) {
-                                    'approved' => 'bg-green-100 text-green-800',
-                                    'declined' => 'bg-red-100 text-red-800',
-                                    'pending' => 'bg-yellow-100 text-yellow-800',
-                                    default => 'bg-gray-100 text-gray-800'
-                                };
-                            @endphp
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
-                                {{ ucfirst($patient->status) }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div class="flex flex-wrap gap-2">
-                                <!-- View Patient Details -->
-                                <button onclick="openPatientModal({{ $patient->id }})" 
-                                        class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-full transition-all duration-200 flex items-center text-sm font-medium shadow-sm hover:shadow-md" 
-                                        title="View Patient Details">
-                                    <i class="fas fa-eye mr-2 text-sm"></i>
-                                    View
-                                </button>
-                                
-                                <!-- Edit Lab Results -->
-                                <a href="{{ route('pathologist.annual-physical.edit', $patient->id) }}" 
-                                   class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-full transition-all duration-200 flex items-center text-sm font-medium shadow-sm hover:shadow-md" 
-                                   title="Edit Lab Results">
-                                    <i class="fas fa-edit mr-2 text-sm"></i>
-                                    Edit
-                                </a>
-                                
-                              
-                                <!-- Medical Checklist -->
-                                <a href="{{ route('pathologist.medical-checklist') }}?patient_id={{ $patient->id }}&examination_type=annual_physical" 
-                                   class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-full transition-all duration-200 flex items-center text-sm font-medium shadow-sm hover:shadow-md" 
-                                   title="Medical Checklist">
-                                    <i class="fas fa-clipboard-list mr-2 text-sm"></i>
-                                    Checklist
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="9" class="px-6 py-12 text-center">
-                            <div class="flex flex-col items-center">
-                                <i class="fas fa-user-check text-gray-300 text-4xl mb-4"></i>
-                                <h3 class="text-lg font-medium text-gray-900 mb-2">No annual physical patients found</h3>
-                                <p class="text-gray-500">Try adjusting your search criteria or add a new patient.</p>
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    @if($patients->hasPages())
-        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-            {{ $patients->links() }}
+            <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-600 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     @endif
-</div>
 
-<!-- Patient Details Modal -->
-<div id="patientModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900">
-                    <i class="fas fa-user-check mr-2 text-teal-600"></i>Patient Details
-                </h3>
-                <button onclick="closePatientModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
+    @if(session('error'))
+        <div class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center space-x-3">
+            <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-red-600"></i>
             </div>
-            <div id="patientContent">
-                <div class="space-y-4">
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <h4 class="font-semibold text-gray-800 mb-2">Loading patient details...</h4>
-                        <p class="text-sm text-gray-600">Please wait while we load the information.</p>
+            <div class="flex-1">
+                <p class="text-red-800 font-medium">{{ session('error') }}</p>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-600 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    @endif
+
+    <!-- Lab Status Tabs -->
+    <div class="content-card rounded-xl overflow-hidden shadow-lg border border-gray-200">
+        @php
+            $currentTab = request('lab_status', 'needs_attention');
+        @endphp
+        
+        <!-- Tab Navigation -->
+        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex space-x-1">
+                    <a href="{{ request()->fullUrlWithQuery(['lab_status' => 'needs_attention']) }}" 
+                       class="px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 {{ $currentTab === 'needs_attention' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50' }}">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        Needs Review
+                        @php
+                            $needsAttentionCount = \App\Models\Patient::where('status', 'approved')
+                                ->whereHas('medicalChecklists', function($q) {
+                                    $q->where('examination_type', 'annual-physical')
+                                      ->whereNotNull('stool_exam_done_by')
+                                      ->where('stool_exam_done_by', '!=', '')
+                                      ->whereNotNull('urinalysis_done_by')
+                                      ->where('urinalysis_done_by', '!=', '');
+                                })
+                                ->whereDoesntHave('annualPhysicalExamination', function($q) {
+                                    $q->whereNotNull('lab_report')
+                                      ->where('lab_report', '!=', '');
+                                })
+                                ->count();
+                        @endphp
+                        <span class="ml-2 px-2 py-1 text-xs rounded-full {{ $currentTab === 'needs_attention' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600' }}">
+                            {{ $needsAttentionCount }}
+                        </span>
+                    </a>
+                    
+                    <a href="{{ request()->fullUrlWithQuery(['lab_status' => 'lab_completed']) }}" 
+                       class="px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 {{ $currentTab === 'lab_completed' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50' }}">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        Lab Completed
+                        @php
+                            $completedCount = \App\Models\Patient::where('status', 'approved')
+                                ->whereHas('medicalChecklists', function($q) {
+                                    $q->where('examination_type', 'annual-physical')
+                                      ->whereNotNull('stool_exam_done_by')
+                                      ->where('stool_exam_done_by', '!=', '')
+                                      ->whereNotNull('urinalysis_done_by')
+                                      ->where('urinalysis_done_by', '!=', '');
+                                })
+                                ->whereHas('annualPhysicalExamination', function($q) {
+                                    $q->whereNotNull('lab_report')
+                                      ->where('lab_report', '!=', '');
+                                })
+                                ->count();
+                        @endphp
+                        <span class="ml-2 px-2 py-1 text-xs rounded-full {{ $currentTab === 'lab_completed' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600' }}">
+                            {{ $completedCount }}
+                        </span>
+                    </a>
+                </div>
+                
+                <a href="{{ route('pathologist.annual-physical') }}" class="text-sm text-gray-500 hover:text-gray-700 font-medium">
+                    <i class="fas fa-times mr-1"></i>Clear All Filters
+                </a>
+            </div>
+        </div>
+
+        <!-- Additional Filters -->
+        <div class="p-6">
+            <form method="GET" action="{{ route('pathologist.annual-physical') }}" class="space-y-6">
+                <!-- Preserve current tab -->
+                <input type="hidden" name="lab_status" value="{{ $currentTab }}">
+                
+                <!-- Preserve search query -->
+                @if(request('search'))
+                    <input type="hidden" name="search" value="{{ request('search') }}">
+                @endif
+                
+                <!-- Filter Row: Gender only -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Gender Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                        <select name="gender" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm">
+                            <option value="">All Genders</option>
+                            <option value="male" {{ request('gender') === 'male' ? 'selected' : '' }}>Male</option>
+                            <option value="female" {{ request('gender') === 'female' ? 'selected' : '' }}>Female</option>
+                        </select>
                     </div>
+
+                    <!-- Placeholder -->
+                    <div></div>
+                </div>
+
+                <!-- Filter Actions -->
+                <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                    <div class="flex items-center space-x-4">
+                        <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                            <i class="fas fa-search mr-2"></i>Apply Filters
+                        </button>
+                        <a href="{{ request()->fullUrlWithQuery(['gender' => null, 'search' => null]) }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                            <i class="fas fa-undo mr-2"></i>Reset Filters
+                        </a>
+                    </div>
+                    
+                    <!-- Active Filters Display -->
+                    @if(request()->hasAny(['gender', 'search']))
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-gray-600">Active filters:</span>
+                            @if(request('search'))
+                                <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
+                                    Search: "{{ request('search') }}"
+                                    <a href="{{ request()->fullUrlWithQuery(['search' => null]) }}" class="ml-1 text-purple-600 hover:text-purple-800">×</a>
+                                </span>
+                            @endif
+                            @if(request('gender'))
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                                    Gender: {{ ucfirst(request('gender')) }}
+                                    <a href="{{ request()->fullUrlWithQuery(['gender' => null]) }}" class="ml-1 text-blue-600 hover:text-blue-800">×</a>
+                                </span>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    <div class="content-card rounded-xl overflow-hidden shadow-lg border border-gray-200">
+        <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20">
+                        <i class="fas fa-calendar-check text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Annual Physical Laboratory Management</h3>
+                        <p class="text-purple-100 text-sm">Laboratory assessments for yearly comprehensive health checkups</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Search Form -->
+                    <form method="GET" action="{{ route('pathologist.annual-physical') }}" class="flex items-center space-x-3">
+                        <!-- Preserve current filter -->
+                        @if(request('lab_status'))
+                            <input type="hidden" name="lab_status" value="{{ request('lab_status') }}">
+                        @endif
+                        @if(request('gender'))
+                            <input type="hidden" name="gender" value="{{ request('gender') }}">
+                        @endif
+                        @if(request('date_range'))
+                            <input type="hidden" name="date_range" value="{{ request('date_range') }}">
+                        @endif
+                        
+                        <!-- Search Bar -->
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-white/60 text-sm"></i>
+                            </div>
+                            <input type="text" 
+                                   name="search"
+                                   value="{{ request('search') }}"
+                                   class="glass-morphism pl-12 pr-4 py-2 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all duration-200 w-72 text-sm border border-white/20" 
+                                   placeholder="Search by name, email...">
+                        </div>
+                        
+                        <!-- Search Button -->
+                        <button type="submit" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 border border-white/20 backdrop-blur-sm">
+                            <i class="fas fa-search text-sm"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-@endsection
 
-@section('scripts')
-<script>
-    // Search functionality
-    document.getElementById('searchInput').addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        const rows = document.querySelectorAll('tbody tr');
-        
-        rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            if (text.includes(searchTerm)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    });
 
-    // Filter functionality
-    document.getElementById('statusFilter').addEventListener('change', applyFilters);
-    document.getElementById('ageFilter').addEventListener('change', applyFilters);
-    
-    function applyFilters() {
-        const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
-        const ageFilter = document.getElementById('ageFilter').value;
-        const rows = document.querySelectorAll('tbody tr');
-        
-        rows.forEach(row => {
-            const statusCell = row.querySelector('td:nth-child(8)');
-            const ageCell = row.querySelector('td:nth-child(2)');
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        @php
+            $totalPatients = $patients->count();
+            $completedCount = 0;
+            $pendingCount = 0;
+            $scheduledCount = $totalPatients;
             
-            const statusMatch = !statusFilter || statusCell.textContent.toLowerCase().includes(statusFilter);
-            
-            let ageMatch = true;
-            if (ageFilter) {
-                const age = parseInt(ageCell.textContent);
-                switch(ageFilter) {
-                    case '18-30':
-                        ageMatch = age >= 18 && age <= 30;
-                        break;
-                    case '31-45':
-                        ageMatch = age >= 31 && age <= 45;
-                        break;
-                    case '46-60':
-                        ageMatch = age >= 46 && age <= 60;
-                        break;
-                    case '60+':
-                        ageMatch = age > 60;
-                        break;
+            foreach($patients as $patient) {
+                $annualPhysicalExam = \App\Models\AnnualPhysicalExamination::where('patient_id', $patient->id)->first();
+                $medicalChecklist = \App\Models\MedicalChecklist::where('patient_id', $patient->id)
+                    ->where('examination_type', 'annual-physical')
+                    ->first();
+                    
+                if($annualPhysicalExam && $medicalChecklist) {
+                    $completedCount++;
+                } else {
+                    $pendingCount++;
                 }
             }
-            
-            if (statusMatch && ageMatch) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    }
-
-    // Clear filters
-    document.getElementById('clearFilters').addEventListener('click', function() {
-        document.getElementById('statusFilter').value = '';
-        document.getElementById('ageFilter').value = '';
-        document.getElementById('searchInput').value = '';
+        @endphp
         
-        // Show all rows
-        const rows = document.querySelectorAll('tbody tr');
-        rows.forEach(row => {
-            row.style.display = '';
-        });
-    });
-
-    // Modal functions
-    function openPatientModal(id) {
-        const modal = document.getElementById('patientModal');
-        const modalContent = document.getElementById('patientContent');
-        
-        // Simulate loading patient details
-        modalContent.innerHTML = `
-            <div class="space-y-6">
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h4 class="font-semibold text-gray-800 mb-3">
-                        <i class="fas fa-user mr-2 text-teal-600"></i>Personal Information
-                    </h4>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span class="font-medium text-gray-600">Patient ID:</span>
-                            <span class="text-gray-800">${id}</span>
-                        </div>
-                        <div>
-                            <span class="font-medium text-gray-600">Status:</span>
-                            <span class="text-green-600 font-medium">Approved</span>
-                        </div>
-                    </div>
+        <div class="content-card rounded-xl p-6 border-l-4 border-indigo-500 hover:shadow-lg transition-shadow duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Total Patients</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ $totalPatients }}</p>
+                    <p class="text-xs text-indigo-600 mt-1">Scheduled checkups</p>
                 </div>
-                
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h4 class="font-semibold text-gray-800 mb-3">
-                        <i class="fas fa-heartbeat mr-2 text-teal-600"></i>Medical History
-                    </h4>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span class="font-medium text-gray-600">Last Checkup:</span>
-                            <span class="text-gray-800">Loading...</span>
-                        </div>
-                        <div>
-                            <span class="font-medium text-gray-600">Allergies:</span>
-                            <span class="text-gray-800">None reported</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h4 class="font-semibold text-gray-800 mb-3">
-                        <i class="fas fa-calendar-alt mr-2 text-teal-600"></i>Appointment Details
-                    </h4>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span class="font-medium text-gray-600">Category:</span>
-                            <span class="text-gray-800">Loading...</span>
-                        </div>
-                        <div>
-                            <span class="font-medium text-gray-600">Test Type:</span>
-                            <span class="text-gray-800">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-                    <button onclick="closePatientModal()" class="px-4 py-2 text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">
-                        Close
-                    </button>
-                    <button onclick="editPatient(${id})" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">
-                        Edit Patient
-                    </button>
+                <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-users text-indigo-600 text-lg"></i>
                 </div>
             </div>
-        `;
-        modal.classList.remove('hidden');
-    }
+        </div>
 
-    function closePatientModal() {
-        document.getElementById('patientModal').classList.add('hidden');
-    }
+        <div class="content-card rounded-xl p-6 border-l-4 border-emerald-500 hover:shadow-lg transition-shadow duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Lab Completed</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ $completedCount }}</p>
+                    <p class="text-xs text-emerald-600 mt-1">Lab tests done</p>
+                </div>
+                <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-check-circle text-emerald-600 text-lg"></i>
+                </div>
+            </div>
+        </div>
 
-    function editPatient(id) {
-        // Implement edit patient functionality
-        alert('Edit patient ' + id);
-        closePatientModal();
-    }
+        <div class="content-card rounded-xl p-6 border-l-4 border-amber-500 hover:shadow-lg transition-shadow duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Pending Lab</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ $pendingCount }}</p>
+                    <p class="text-xs text-amber-600 mt-1">Awaiting lab work</p>
+                </div>
+                <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-clock text-amber-600 text-lg"></i>
+                </div>
+            </div>
+        </div>
 
-    function sendToDoctor(id) {
-        if (confirm('Are you sure you want to send this annual physical record to the doctor?')) {
-            // Create a form and submit it
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/pathologist/annual-physical/patient/${id}/send-to-doctor`;
+        <div class="content-card rounded-xl p-6 border-l-4 border-blue-500 hover:shadow-lg transition-shadow duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Completion Rate</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ $totalPatients > 0 ? round(($completedCount / $totalPatients) * 100) : 0 }}%</p>
+                    <p class="text-xs text-blue-600 mt-1">Lab progress</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-chart-line text-blue-600 text-lg"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Annual Physical Patients Table -->
+    <div class="content-card rounded-xl shadow-lg border border-gray-200">
+        <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-8 py-6 rounded-t-xl">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center backdrop-blur-sm border border-white/20">
+                        <i class="fas fa-table text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Annual Physical Laboratory Patients</h3>
+                        <p class="text-purple-100 text-sm">Laboratory examinations for yearly health assessment records</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-0">
+            @if($patients->count() > 0)
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Patient</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Demographics</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Contact Info</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Appointment</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-100">
+                            @foreach($patients as $patient)
+                                @php
+                                    $annualPhysicalExam = \App\Models\AnnualPhysicalExamination::where('patient_id', $patient->id)->first();
+                                    $medicalChecklist = \App\Models\MedicalChecklist::where('patient_id', $patient->id)
+                                        ->where('examination_type', 'annual-physical')
+                                        ->first();
+                                    $isCompleted = $annualPhysicalExam && $medicalChecklist;
+                                    $canSendToDoctor = $isCompleted;
+                                @endphp
+                                <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                                                <span class="text-indigo-600 font-semibold text-sm">
+                                                    {{ substr($patient->first_name, 0, 1) }}{{ substr($patient->last_name, 0, 1) }}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-semibold text-gray-900">{{ $patient->first_name }} {{ $patient->last_name }}</p>
+                                                <p class="text-xs text-gray-500">Patient ID: #{{ $patient->id }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm">
+                                            <p class="text-gray-900 font-medium">{{ $patient->age }} years old</p>
+                                            <p class="text-xs text-gray-500">{{ ucfirst($patient->sex) }}</p>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm">
+                                            <p class="text-gray-900 font-medium">{{ $patient->email }}</p>
+                                            <p class="text-xs text-gray-500">{{ $patient->phone ?? 'No phone' }}</p>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm">
+                                            <p class="text-gray-900 font-medium">Appointment #{{ $patient->appointment_id }}</p>
+                                            <p class="text-xs text-gray-500">Annual physical checkup</p>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($isCompleted)
+                                            <span class="px-3 py-1 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full">
+                                                <i class="fas fa-check-circle mr-1"></i>Lab Completed
+                                            </span>
+                                        @else
+                                            <span class="px-3 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">
+                                                <i class="fas fa-clock mr-1"></i>Pending Lab
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center space-x-2">
+                                            <!-- Lab Status Badge -->
+                                            @if($annualPhysicalExam)
+                                                <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full mr-2">
+                                                    <i class="fas fa-check-circle mr-1"></i>Lab Done
+                                                </span>
+                                            @else
+                                                <span class="px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded-full mr-2">
+                                                    <i class="fas fa-clock mr-1"></i>Pending Lab
+                                                </span>
+                                            @endif
+
+                                            <!-- View Details -->
+                                            <button class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+
+                                            <!-- Lab Results -->
+                                            <a href="{{ route('pathologist.annual-physical.edit', $patient->id) }}" 
+                                               class="p-2 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-colors" 
+                                               title="Lab Results">
+                                                <i class="fas fa-flask"></i>
+                                            </a>
+
+                                            <!-- Medical Checklist -->
+                                            <a href="{{ route('pathologist.medical-checklist') }}?patient_id={{ $patient->id }}&examination_type=annual_physical" 
+                                               class="p-2 text-purple-600 hover:text-purple-900 hover:bg-purple-50 rounded-lg transition-colors" 
+                                               title="Medical Checklist">
+                                                <i class="fas fa-clipboard-list"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <!-- Empty State -->
+                <div class="text-center py-16">
+                    <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-gray-100 flex items-center justify-center">
+                        <i class="fas fa-calendar-check text-4xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">No Annual Physical Patients</h3>
+                    <p class="text-gray-600 mb-8 max-w-md mx-auto">There are no patients scheduled for annual physical laboratory examinations. New appointments will appear here once scheduled.</p>
+                </div>
+            @endif
+        </div>
+        
+        <!-- Pagination -->
+        @if($patients->hasPages())
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-gray-700">
+                        Showing {{ $patients->firstItem() }} to {{ $patients->lastItem() }} of {{ $patients->total() }} results
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        {{-- Previous Page Link --}}
+                        @if ($patients->onFirstPage())
+                            <span class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg cursor-not-allowed">
+                                <i class="fas fa-chevron-left mr-1"></i>Previous
+                            </span>
+                        @else
+                            <a href="{{ $patients->appends(request()->query())->previousPageUrl() }}" 
+                               class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-chevron-left mr-1"></i>Previous
+                            </a>
+                        @endif
+
+                        {{-- Pagination Elements --}}
+                        @foreach ($patients->appends(request()->query())->getUrlRange(1, $patients->lastPage()) as $page => $url)
+                            @if ($page == $patients->currentPage())
+                                <span class="px-3 py-2 text-sm font-medium text-white bg-purple-600 border border-purple-600 rounded-lg">
+                                    {{ $page }}
+                                </span>
+                            @else
+                                <a href="{{ $url }}" 
+                                   class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                    {{ $page }}
+                                </a>
+                            @endif
+                        @endforeach
+
+                        {{-- Next Page Link --}}
+                        @if ($patients->hasMorePages())
+                            <a href="{{ $patients->appends(request()->query())->nextPageUrl() }}" 
+                               class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                Next<i class="fas fa-chevron-right ml-1"></i>
+                            </a>
+                        @else
+                            <span class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg cursor-not-allowed">
+                                Next<i class="fas fa-chevron-right ml-1"></i>
+                            </span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endif
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add smooth animations to content cards
+        const contentCards = document.querySelectorAll('.content-card');
+        contentCards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
+            card.classList.add('animate-fade-in-up');
+        });
+
+        // Auto-hide alert messages after 5 seconds
+        const alerts = document.querySelectorAll('[class*="bg-emerald-50"], [class*="bg-red-50"]');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                alert.style.transition = 'opacity 0.5s ease-out';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            }, 5000);
+        });
+
+        // Enhanced hover effects for table rows
+        const tableRows = document.querySelectorAll('tbody tr');
+        tableRows.forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(2px)';
+                this.style.transition = 'transform 0.2s ease-out';
+            });
             
-            const csrfToken = document.createElement('input');
-            csrfToken.type = 'hidden';
-            csrfToken.name = '_token';
-            csrfToken.value = '{{ csrf_token() }}';
-            form.appendChild(csrfToken);
+            row.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateX(0)';
+            });
+        });
+
+        // Enhanced button hover effects
+        const actionButtons = document.querySelectorAll('a[class*="p-2"]');
+        actionButtons.forEach(button => {
+            button.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.1)';
+                this.style.transition = 'transform 0.2s ease-out';
+            });
             
-            document.body.appendChild(form);
-            form.submit();
-        }
-    }
-
-    // Close modal when clicking outside
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('fixed')) {
-            e.target.classList.add('hidden');
-        }
-    });
-
-    // Close modal with Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            const modal = document.getElementById('patientModal');
-            if (modal && !modal.classList.contains('hidden')) {
-                modal.classList.add('hidden');
-            }
-        }
+            button.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
     });
 </script>
+
+<style>
+    @keyframes fade-in-up {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .animate-fade-in-up {
+        animation: fade-in-up 0.6s ease-out forwards;
+    }
+
+    /* Enhanced table styling */
+    tbody tr {
+        transition: all 0.2s ease-out;
+    }
+    
+    tbody tr:hover {
+        background-color: rgba(124, 58, 237, 0.02);
+        border-left: 3px solid #7c3aed;
+    }
+
+    /* Filter form enhancements */
+    .content-card form select:focus,
+    .content-card form input:focus {
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+</style>
+@endpush
 @endsection

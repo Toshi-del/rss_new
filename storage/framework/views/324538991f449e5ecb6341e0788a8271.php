@@ -31,6 +31,135 @@
 </div>
 <?php endif; ?>
 
+<!-- Blood Collection Status Tabs -->
+<div class="content-card rounded-xl overflow-hidden shadow-lg border border-gray-200 mb-8">
+    <?php
+        $currentTab = request('blood_status', 'needs_attention');
+    ?>
+    
+    <!-- Tab Navigation -->
+    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+            <div class="flex space-x-1">
+                <a href="<?php echo e(request()->fullUrlWithQuery(['blood_status' => 'needs_attention'])); ?>" 
+                   class="px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 <?php echo e($currentTab === 'needs_attention' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'); ?>">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    Needs Attention
+                    <?php
+                        $needsAttentionCount = \App\Models\User::where('status', 'approved')
+                            ->whereHas('medicalChecklists', function($q) {
+                                $q->where('examination_type', 'opd')
+                                  ->whereNotNull('stool_exam_done_by')
+                                  ->where('stool_exam_done_by', '!=', '')
+                                  ->whereNotNull('urinalysis_done_by')
+                                  ->where('urinalysis_done_by', '!=', '');
+                            })
+                            ->whereDoesntHave('opdExamination', function($q) {
+                                $q->whereNotNull('lab_report')
+                                  ->where('lab_report', '!=', '');
+                            })
+                            ->count();
+                    ?>
+                    <span class="ml-2 px-2 py-1 text-xs rounded-full <?php echo e($currentTab === 'needs_attention' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'); ?>">
+                        <?php echo e($needsAttentionCount); ?>
+
+                    </span>
+                </a>
+                
+                <a href="<?php echo e(request()->fullUrlWithQuery(['blood_status' => 'collection_completed'])); ?>" 
+                   class="px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 <?php echo e($currentTab === 'collection_completed' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'); ?>">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    Collection Completed
+                    <?php
+                        $completedCount = \App\Models\User::where('status', 'approved')
+                            ->whereHas('medicalChecklists', function($q) {
+                                $q->where('examination_type', 'opd')
+                                  ->whereNotNull('stool_exam_done_by')
+                                  ->where('stool_exam_done_by', '!=', '')
+                                  ->whereNotNull('urinalysis_done_by')
+                                  ->where('urinalysis_done_by', '!=', '');
+                            })
+                            ->whereHas('opdExamination', function($q) {
+                                $q->whereNotNull('lab_report')
+                                  ->where('lab_report', '!=', '');
+                            })
+                            ->count();
+                    ?>
+                    <span class="ml-2 px-2 py-1 text-xs rounded-full <?php echo e($currentTab === 'collection_completed' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'); ?>">
+                        <?php echo e($completedCount); ?>
+
+                    </span>
+                </a>
+            </div>
+            
+            <a href="<?php echo e(route('plebo.opd')); ?>" class="text-sm text-gray-500 hover:text-gray-700 font-medium">
+                <i class="fas fa-times mr-1"></i>Clear All Filters
+            </a>
+        </div>
+    </div>
+
+    <!-- Additional Filters -->
+    <div class="p-6">
+        <form method="GET" action="<?php echo e(route('plebo.opd')); ?>" class="space-y-6">
+            <!-- Preserve current tab -->
+            <input type="hidden" name="blood_status" value="<?php echo e($currentTab); ?>">
+            
+            <!-- Preserve search query -->
+            <?php if(request('search')): ?>
+                <input type="hidden" name="search" value="<?php echo e(request('search')); ?>">
+            <?php endif; ?>
+            
+            <!-- Filter Row: Gender only -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Gender Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                    <select name="gender" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                        <option value="">All Genders</option>
+                        <option value="male" <?php echo e(request('gender') === 'male' ? 'selected' : ''); ?>>Male</option>
+                        <option value="female" <?php echo e(request('gender') === 'female' ? 'selected' : ''); ?>>Female</option>
+                    </select>
+                </div>
+
+                <!-- Placeholder -->
+                <div></div>
+            </div>
+
+            <!-- Filter Actions -->
+            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                <div class="flex items-center space-x-4">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                        <i class="fas fa-search mr-2"></i>Apply Filters
+                    </button>
+                    <a href="<?php echo e(request()->fullUrlWithQuery(['gender' => null, 'search' => null])); ?>" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                        <i class="fas fa-undo mr-2"></i>Reset Filters
+                    </a>
+                </div>
+                
+                <!-- Active Filters Display -->
+                <?php if(request()->hasAny(['gender', 'search'])): ?>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-600">Active filters:</span>
+                        <?php if(request('search')): ?>
+                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                                Search: "<?php echo e(request('search')); ?>"
+                                <a href="<?php echo e(request()->fullUrlWithQuery(['search' => null])); ?>" class="ml-1 text-blue-600 hover:text-blue-800">×</a>
+                            </span>
+                        <?php endif; ?>
+                        <?php if(request('gender')): ?>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
+                                Gender: <?php echo e(ucfirst(request('gender'))); ?>
+
+                                <a href="<?php echo e(request()->fullUrlWithQuery(['gender' => null])); ?>" class="ml-1 text-purple-600 hover:text-purple-800">×</a>
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Stats Overview -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
     <!-- Total Patients -->
@@ -189,26 +318,7 @@
                                     Barcode
                                 </button>
                                 
-                                <!-- Send to Doctor -->
-                                <?php if($hasExamination && $hasMedicalChecklist): ?>
-                                    <form action="<?php echo e(route('plebo.opd.send-to-doctor', $patient->id)); ?>" method="POST" class="inline">
-                                        <?php echo csrf_field(); ?>
-                                        <button type="submit" 
-                                                class="inline-flex items-center px-3 py-1 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-colors duration-200"
-                                                title="Send to Doctor for Review"
-                                                onclick="return confirm('Send this record to the doctor for review?')">
-                                            <i class="fas fa-paper-plane mr-2"></i>
-                                            Send
-                                        </button>
-                                    </form>
-                                <?php else: ?>
-                                    <button disabled 
-                                            class="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-400 cursor-not-allowed rounded-lg"
-                                            title="Complete blood collection first">
-                                        <i class="fas fa-paper-plane mr-2"></i>
-                                        Send
-                                    </button>
-                                <?php endif; ?>
+                               
                             </div>
                         </td>
                     </tr>

@@ -67,6 +67,25 @@
 
                             </p>
                         </div>
+                        <?php if($record->address): ?>
+                        <div class="p-4 bg-amber-50 rounded-lg border-l-4 border-amber-600">
+                            <label class="block text-sm font-medium text-amber-700 mb-2">Address</label>
+                            <p class="text-lg font-semibold text-amber-900 flex items-start">
+                                <i class="fas fa-map-marker-alt mr-2 text-amber-600 mt-1"></i>
+                                <span><?php echo e($record->address); ?></span>
+                            </p>
+                        </div>
+                        <?php endif; ?>
+                        <?php if($record->company_name): ?>
+                        <div class="p-4 bg-cyan-50 rounded-lg border-l-4 border-cyan-600">
+                            <label class="block text-sm font-medium text-cyan-700 mb-2">Company</label>
+                            <p class="text-lg font-semibold text-cyan-900 flex items-center">
+                                <i class="fas fa-building mr-2 text-cyan-600"></i>
+                                <?php echo e($record->company_name); ?>
+
+                            </p>
+                        </div>
+                        <?php endif; ?>
                         <div class="p-4 bg-gray-50 rounded-lg border-l-4 border-gray-600">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Created Date</label>
                             <p class="text-lg font-semibold text-gray-900"><?php echo e($record->created_at->format('M d, Y H:i')); ?></p>
@@ -95,6 +114,105 @@
                     <!-- Display All Selected Tests -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <?php $__currentLoopData = $allTests; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $test): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php
+                                // Check if this is a package test
+                                $isPackageTest = str_contains(strtolower($test['test_name']), 'package');
+                                $expandedTests = null;
+                                
+                                if ($isPackageTest) {
+                                    $testName = strtolower(trim($test['test_name']));
+                                    
+                                    // Define the complete test lists for each package
+                                    $packageTests = [
+                                        'package a' => [
+                                            'ELECTROCARDIOGRAM',
+                                            'FASTING BLOOD SUGAR', 
+                                            'TOTAL CHOLESTEROL',
+                                            'BLOOD UREA NITROGEN',
+                                            'BLOOD URIC ACID',
+                                            'SGPT',
+                                            'CBC',
+                                            'URINALYSIS',
+                                            'FECALYSIS'
+                                        ],
+                                        'package b' => [
+                                            'ELECTROCARDIOGRAM',
+                                            'FASTING BLOOD SUGAR', 
+                                            'TOTAL CHOLESTEROL',
+                                            'BLOOD UREA NITROGEN',
+                                            'BLOOD URIC ACID',
+                                            'SGPT',
+                                            'CBC',
+                                            'URINALYSIS',
+                                            'FECALYSIS',
+                                            'TRIGLYCERIDE',
+                                            'HDL & LDL (GOOD AND BAD CHOLESTEROL)'
+                                        ],
+                                        'package c' => [
+                                            'ELECTROCARDIOGRAM',
+                                            'FASTING BLOOD SUGAR', 
+                                            'TOTAL CHOLESTEROL',
+                                            'BLOOD UREA NITROGEN',
+                                            'BLOOD URIC ACID',
+                                            'SGPT',
+                                            'CBC',
+                                            'URINALYSIS',
+                                            'FECALYSIS',
+                                            'TRIGLYCERIDE',
+                                            'HDL & LDL (GOOD AND BAD CHOLESTEROL)',
+                                            'CREATININE',
+                                            'BLOOD TYPING'
+                                        ],
+                                        'package d' => [
+                                            'ELECTROCARDIOGRAM',
+                                            'FASTING BLOOD SUGAR', 
+                                            'TOTAL CHOLESTEROL',
+                                            'BLOOD UREA NITROGEN',
+                                            'BLOOD URIC ACID',
+                                            'SGPT',
+                                            'CBC',
+                                            'URINALYSIS',
+                                            'FECALYSIS',
+                                            'TRIGLYCERIDE',
+                                            'HDL & LDL (GOOD AND BAD CHOLESTEROL)',
+                                            'CREATININE',
+                                            'BLOOD TYPING',
+                                            'SODIUM',
+                                            'POTASSIUM',
+                                            'CALCIUM',
+                                            'CHLORIDE'
+                                        ],
+                                        'package e' => [
+                                            'ELECTROCARDIOGRAM',
+                                            'FASTING BLOOD SUGAR', 
+                                            'TOTAL CHOLESTEROL',
+                                            'BLOOD UREA NITROGEN',
+                                            'BLOOD URIC ACID',
+                                            'SGPT',
+                                            'CBC',
+                                            'URINALYSIS',
+                                            'FECALYSIS',
+                                            'TRIGLYCERIDE',
+                                            'HDL & LDL (GOOD AND BAD CHOLESTEROL)',
+                                            'CREATININE',
+                                            'BLOOD TYPING',
+                                            'SODIUM',
+                                            'POTASSIUM',
+                                            'CALCIUM',
+                                            'CHLORIDE',
+                                            'TPAG (LIVER FUNCTION TEST)',
+                                            'SGOT',
+                                            'BILIRUBIN',
+                                            'AMYLASE'
+                                        ]
+                                    ];
+                                    
+                                    if (isset($packageTests[$testName])) {
+                                        $expandedTests = $packageTests[$testName];
+                                    }
+                                }
+                            ?>
+                            
                             <div class="bg-emerald-50 rounded-xl p-6 border-l-4 border-emerald-600 <?php echo e($test['is_primary'] ? 'ring-2 ring-emerald-300' : ''); ?>">
                                 <div class="flex items-start justify-between">
                                     <div class="flex-1">
@@ -106,6 +224,18 @@
                                                 </span>
                                             <?php endif; ?>
                                         </div>
+                                        
+                                        <?php if($isPackageTest && $expandedTests): ?>
+                                            <div class="mb-3">
+                                                <p class="text-sm font-medium text-emerald-800 mb-2">Package includes:</p>
+                                                <ul class="list-disc list-inside space-y-1 ml-2 text-xs text-emerald-700">
+                                                    <?php $__currentLoopData = $expandedTests; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                        <li><?php echo e($item); ?></li>
+                                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                                </ul>
+                                            </div>
+                                        <?php endif; ?>
+                                        
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-600 text-white">
                                             <i class="fas fa-tag mr-1"></i>
                                             <?php echo e($test['category_name']); ?>
@@ -215,7 +345,7 @@
                         
                         <div class="bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg p-4 text-white">
                             <div class="flex items-center justify-between mb-2">
-                                <p class="text-sm font-medium text-green-100">Total Amount</p>
+                                <p class="text-sm font-medium text-green-100">Estimated Total Amount</p>
                                 <i class="fas fa-receipt text-green-200"></i>
                             </div>
                             <p class="text-2xl font-bold text-white">₱<?php echo e(number_format($totalPrice, 2)); ?></p>

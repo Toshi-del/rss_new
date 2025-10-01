@@ -88,11 +88,28 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('/admin/messages/send', [AdminController::class, 'sendMessage']);
     Route::post('/admin/messages/mark-read', [AdminController::class, 'markAsRead']);
     Route::get('/admin/chat-users', [AdminController::class, 'chatUsers']);
+    
+    // Admin Notifications Routes
+    Route::get('/admin/notifications', [App\Http\Controllers\AdminNotificationController::class, 'index'])->name('admin.notifications');
+    Route::get('/admin/notifications/count', [App\Http\Controllers\AdminNotificationController::class, 'getCount']);
+    Route::get('/admin/notifications/recent', [App\Http\Controllers\AdminNotificationController::class, 'getRecent']);
+    Route::post('/admin/notifications/{id}/mark-read', [App\Http\Controllers\AdminNotificationController::class, 'markAsRead']);
+    Route::post('/admin/notifications/mark-all-read', [App\Http\Controllers\AdminNotificationController::class, 'markAllAsRead']);
+    Route::delete('/admin/notifications/{id}', [App\Http\Controllers\AdminNotificationController::class, 'destroy']);
+    
     Route::get('/admin/report', [AdminController::class, 'report'])->name('admin.report');
+    
+    
     Route::post('admin/appointments/{id}/approve', [App\Http\Controllers\AdminController::class, 'approveAppointment'])->name('admin.appointments.approve');
     Route::post('admin/appointments/{id}/decline', [App\Http\Controllers\AdminController::class, 'declineAppointment'])->name('admin.appointments.decline');
     Route::post('admin/pre-employment/{id}/approve', [App\Http\Controllers\AdminController::class, 'approvePreEmployment'])->name('admin.pre-employment.approve');
     Route::post('admin/pre-employment/{id}/decline', [App\Http\Controllers\AdminController::class, 'declinePreEmployment'])->name('admin.pre-employment.decline');
+    
+    // Bulk Operations for Pre-Employment
+    Route::post('admin/pre-employment/bulk-approve', [App\Http\Controllers\AdminController::class, 'bulkApprovePreEmployment'])->name('admin.pre-employment.bulk-approve');
+    Route::post('admin/pre-employment/bulk-decline', [App\Http\Controllers\AdminController::class, 'bulkDeclinePreEmployment'])->name('admin.pre-employment.bulk-decline');
+    Route::post('admin/pre-employment/bulk-send-links', [App\Http\Controllers\AdminController::class, 'bulkSendRegistrationLinks'])->name('admin.pre-employment.bulk-send-links');
+    Route::post('admin/pre-employment/bulk-delete', [App\Http\Controllers\AdminController::class, 'bulkDeletePreEmployment'])->name('admin.pre-employment.bulk-delete');
     
     // Test Assignment Routes
     Route::get('/admin/test-assignments', [AdminController::class, 'testAssignments'])->name('admin.test-assignments');

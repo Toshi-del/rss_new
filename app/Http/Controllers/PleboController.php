@@ -11,6 +11,7 @@ use App\Models\OpdExamination;
 use App\Models\MedicalChecklist;
 use App\Models\User;
 use App\Models\AppointmentTestAssignment;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,9 +25,43 @@ class PleboController extends Controller
         // Get pre-employment records that don't have a medical checklist or have an incomplete one
         $preEmployments = PreEmploymentRecord::where('status', 'approved')
             ->where(function($query) {
+                // Check medical test relationships OR other_exams column
+                $query->whereHas('medicalTest', function($q) {
+                    $q->where(function($subQ) {
+                        $subQ->where('name', 'like', '%Pre-Employment%')
+                             ->orWhere('name', 'like', '%CBC%')
+                             ->orWhere('name', 'like', '%FECA%')
+                             ->orWhere('name', 'like', '%Urine%')
+                             ->orWhere('name', 'like', '%Blood%')
+                             ->orWhere('name', 'like', '%Laboratory%');
+                    });
+                })->orWhereHas('medicalTests', function($q) {
+                    $q->where(function($subQ) {
+                        $subQ->where('name', 'like', '%Pre-Employment%')
+                             ->orWhere('name', 'like', '%CBC%')
+                             ->orWhere('name', 'like', '%FECA%')
+                             ->orWhere('name', 'like', '%Urine%')
+                             ->orWhere('name', 'like', '%Blood%')
+                             ->orWhere('name', 'like', '%Laboratory%');
+                    });
+                })->orWhere(function($q) {
+                    // Also check other_exams column for medical test information
+                    $q->where('other_exams', 'like', '%Pre-Employment%')
+                      ->orWhere('other_exams', 'like', '%CBC%')
+                      ->orWhere('other_exams', 'like', '%FECA%')
+                      ->orWhere('other_exams', 'like', '%Urine%')
+                      ->orWhere('other_exams', 'like', '%Blood%')
+                      ->orWhere('other_exams', 'like', '%Laboratory%');
+                });
+            })
+            ->where(function($query) {
                 $query->whereDoesntHave('medicalChecklist')
                       ->orWhereHas('medicalChecklist', function($q) {
-                          $q->whereNull('blood_extraction_done_by');
+                          $q->where(function($subQ) {
+                              $subQ->whereNull('stool_exam_done_by')
+                                   ->orWhereNull('urinalysis_done_by')
+                                   ->orWhereNull('blood_extraction_done_by');
+                          });
                       });
             })
             ->whereDoesntHave('preEmploymentExamination', function($q) {
@@ -38,9 +73,43 @@ class PleboController extends Controller
             
         $preEmploymentCount = PreEmploymentRecord::where('status', 'approved')
             ->where(function($query) {
+                // Check medical test relationships OR other_exams column
+                $query->whereHas('medicalTest', function($q) {
+                    $q->where(function($subQ) {
+                        $subQ->where('name', 'like', '%Pre-Employment%')
+                             ->orWhere('name', 'like', '%CBC%')
+                             ->orWhere('name', 'like', '%FECA%')
+                             ->orWhere('name', 'like', '%Urine%')
+                             ->orWhere('name', 'like', '%Blood%')
+                             ->orWhere('name', 'like', '%Laboratory%');
+                    });
+                })->orWhereHas('medicalTests', function($q) {
+                    $q->where(function($subQ) {
+                        $subQ->where('name', 'like', '%Pre-Employment%')
+                             ->orWhere('name', 'like', '%CBC%')
+                             ->orWhere('name', 'like', '%FECA%')
+                             ->orWhere('name', 'like', '%Urine%')
+                             ->orWhere('name', 'like', '%Blood%')
+                             ->orWhere('name', 'like', '%Laboratory%');
+                    });
+                })->orWhere(function($q) {
+                    // Also check other_exams column for medical test information
+                    $q->where('other_exams', 'like', '%Pre-Employment%')
+                      ->orWhere('other_exams', 'like', '%CBC%')
+                      ->orWhere('other_exams', 'like', '%FECA%')
+                      ->orWhere('other_exams', 'like', '%Urine%')
+                      ->orWhere('other_exams', 'like', '%Blood%')
+                      ->orWhere('other_exams', 'like', '%Laboratory%');
+                });
+            })
+            ->where(function($query) {
                 $query->whereDoesntHave('medicalChecklist')
                       ->orWhereHas('medicalChecklist', function($q) {
-                          $q->whereNull('blood_extraction_done_by');
+                          $q->where(function($subQ) {
+                              $subQ->whereNull('stool_exam_done_by')
+                                   ->orWhereNull('urinalysis_done_by')
+                                   ->orWhereNull('blood_extraction_done_by');
+                          });
                       });
             })
             ->whereDoesntHave('preEmploymentExamination', function($q) {
@@ -169,18 +238,88 @@ class PleboController extends Controller
     /**
      * List pre-employment records for plebo
      */
-    public function preEmployment()
+    public function preEmployment(Request $request)
     {
-        $preEmployments = PreEmploymentRecord::where('status', 'approved')
+        $query = PreEmploymentRecord::where('status', 'approved')
             ->where(function($query) {
-                $query->whereDoesntHave('medicalChecklist')
-                      ->orWhereHas('medicalChecklist', function($q) {
-                          $q->whereNull('blood_extraction_done_by');
+                // Check medical test relationships OR other_exams column
+                $query->whereHas('medicalTest', function($q) {
+                    $q->where(function($subQ) {
+                        $subQ->where('name', 'like', '%Pre-Employment%')
+                             ->orWhere('name', 'like', '%CBC%')
+                             ->orWhere('name', 'like', '%FECA%')
+                             ->orWhere('name', 'like', '%Urine%')
+                             ->orWhere('name', 'like', '%Blood%')
+                             ->orWhere('name', 'like', '%Laboratory%');
+                    });
+                })->orWhereHas('medicalTests', function($q) {
+                    $q->where(function($subQ) {
+                        $subQ->where('name', 'like', '%Pre-Employment%')
+                             ->orWhere('name', 'like', '%CBC%')
+                             ->orWhere('name', 'like', '%FECA%')
+                             ->orWhere('name', 'like', '%Urine%')
+                             ->orWhere('name', 'like', '%Blood%')
+                             ->orWhere('name', 'like', '%Laboratory%');
+                    });
+                })->orWhere(function($q) {
+                    // Also check other_exams column for medical test information
+                    $q->where('other_exams', 'like', '%Pre-Employment%')
+                      ->orWhere('other_exams', 'like', '%CBC%')
+                      ->orWhere('other_exams', 'like', '%FECA%')
+                      ->orWhere('other_exams', 'like', '%Urine%')
+                      ->orWhere('other_exams', 'like', '%Blood%')
+                      ->orWhere('other_exams', 'like', '%Laboratory%');
+                });
+            });
+
+        // Handle tab filtering
+        $bloodStatus = $request->get('blood_status', 'needs_attention');
+        
+        if ($bloodStatus === 'needs_attention') {
+            // Records that need blood collection (no medical checklist or incomplete)
+            $query->where(function($q) {
+                $q->whereDoesntHave('medicalChecklist')
+                  ->orWhereHas('medicalChecklist', function($subQ) {
+                      $subQ->where(function($checkQ) {
+                          $checkQ->whereNull('stool_exam_done_by')
+                                 ->orWhereNull('urinalysis_done_by')
+                                 ->orWhereNull('blood_extraction_done_by');
                       });
-            })
-            ->whereDoesntHave('preEmploymentExamination', function($q) {
-                $q->whereIn('status', ['Approved', 'sent_to_company']);
-            })
+                  });
+            });
+        } elseif ($bloodStatus === 'collection_completed') {
+            // Records where blood collection is completed
+            $query->whereHas('medicalChecklist', function($q) {
+                $q->whereNotNull('stool_exam_done_by')
+                  ->where('stool_exam_done_by', '!=', '')
+                  ->whereNotNull('urinalysis_done_by')
+                  ->where('urinalysis_done_by', '!=', '')
+                  ->whereNotNull('blood_extraction_done_by')
+                  ->where('blood_extraction_done_by', '!=', '');
+            });
+        }
+
+        // Apply additional filters
+        if ($request->filled('company')) {
+            $query->where('company_name', 'like', '%' . $request->company . '%');
+        }
+
+        if ($request->filled('gender')) {
+            $query->where('sex', $request->gender);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('first_name', 'like', '%' . $search . '%')
+                  ->orWhere('last_name', 'like', '%' . $search . '%')
+                  ->orWhere('email', 'like', '%' . $search . '%')
+                  ->orWhere('company_name', 'like', '%' . $search . '%');
+            });
+        }
+
+        $preEmployments = $query
+            ->with(['medicalTest', 'medicalChecklist'])
             ->latest()
             ->paginate(15);
             
@@ -340,6 +479,37 @@ class PleboController extends Controller
         ]);
 
         $medicalChecklist->update($data);
+
+        // Create notification for admin when blood collection is completed
+        if (!empty($data['stool_exam_done_by']) || !empty($data['urinalysis_done_by']) || !empty($data['blood_extraction_done_by'])) {
+            $phlebotomist = Auth::user();
+            $patientName = $data['name'];
+            $examinationType = ucwords(str_replace('_', ' ', $data['examination_type']));
+            
+            $completedTests = [];
+            if (!empty($data['stool_exam_done_by'])) $completedTests[] = 'Stool Exam';
+            if (!empty($data['urinalysis_done_by'])) $completedTests[] = 'Urinalysis';
+            if (!empty($data['blood_extraction_done_by'])) $completedTests[] = 'Blood Extraction';
+            
+            Notification::createForAdmin(
+                'specimen_collected',
+                'Specimen Collection Completed',
+                "Phlebotomist {$phlebotomist->name} has completed specimen collection for {$patientName} ({$examinationType}). Tests: " . implode(', ', $completedTests),
+                [
+                    'checklist_id' => $medicalChecklist->id,
+                    'patient_name' => $patientName,
+                    'phlebotomist_name' => $phlebotomist->name,
+                    'examination_type' => $data['examination_type'],
+                    'completed_tests' => $completedTests,
+                    'stool_exam_done' => !empty($data['stool_exam_done_by']),
+                    'urinalysis_done' => !empty($data['urinalysis_done_by']),
+                    'blood_extraction_done' => !empty($data['blood_extraction_done_by'])
+                ],
+                'medium',
+                $phlebotomist,
+                $medicalChecklist
+            );
+        }
 
         // Redirect based on examination type
         if ($data['examination_type'] === 'pre_employment') {

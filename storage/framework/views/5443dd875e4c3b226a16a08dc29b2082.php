@@ -50,15 +50,37 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <!-- Search Bar -->
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-white/60 text-sm"></i>
+                    <!-- Search Form -->
+                    <form method="GET" action="<?php echo e(route('admin.pre-employment')); ?>" class="flex items-center space-x-3">
+                        <!-- Preserve current filter -->
+                        <?php if(request('filter')): ?>
+                            <input type="hidden" name="filter" value="<?php echo e(request('filter')); ?>">
+                        <?php endif; ?>
+                        <?php if(request('company')): ?>
+                            <input type="hidden" name="company" value="<?php echo e(request('company')); ?>">
+                        <?php endif; ?>
+                        <?php if(request('status')): ?>
+                            <input type="hidden" name="status" value="<?php echo e(request('status')); ?>">
+                        <?php endif; ?>
+                        
+                        <!-- Search Bar -->
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-white/60 text-sm"></i>
+                            </div>
+                            <input type="text" 
+                                   name="search"
+                                   value="<?php echo e(request('search')); ?>"
+                                   class="glass-morphism pl-12 pr-4 py-2 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all duration-200 w-72 text-sm border border-white/20" 
+                                   placeholder="Search by name, email...">
                         </div>
-                        <input type="text" 
-                               class="glass-morphism pl-12 pr-4 py-2 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all duration-200 w-72 text-sm border border-white/20" 
-                               placeholder="Search records...">
-                    </div>
+                        
+                        <!-- Search Button -->
+                        <button type="submit" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 border border-white/20 backdrop-blur-sm">
+                            <i class="fas fa-search text-sm"></i>
+                        </button>
+                    </form>
+                    
                     <!-- Export Button -->
                     <button class="bg-white/10 hover:bg-white/20 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 border border-white/20 backdrop-blur-sm">
                         <i class="fas fa-download text-sm"></i>
@@ -66,6 +88,132 @@
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Advanced Filters -->
+    <div class="content-card rounded-xl overflow-hidden shadow-lg border border-gray-200">
+        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="fas fa-filter mr-2 text-gray-600"></i>Filters
+                </h3>
+                <button type="button" onclick="clearAllFilters()" class="text-sm text-gray-500 hover:text-gray-700 font-medium">
+                    <i class="fas fa-times mr-1"></i>Clear All
+                </button>
+            </div>
+        </div>
+        <div class="p-6">
+            <form method="GET" action="<?php echo e(route('admin.pre-employment')); ?>" class="space-y-4">
+                <!-- Preserve current filter tab -->
+                <?php if(request('filter')): ?>
+                    <input type="hidden" name="filter" value="<?php echo e(request('filter')); ?>">
+                <?php endif; ?>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Company Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Company</label>
+                        <select name="company" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm">
+                            <option value="">All Companies</option>
+                            <?php
+                                $companies = \App\Models\PreEmploymentRecord::whereNotNull('company_name')
+                                    ->distinct()
+                                    ->pluck('company_name')
+                                    ->sort();
+                            ?>
+                            <?php $__currentLoopData = $companies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $company): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($company); ?>" <?php echo e(request('company') === $company ? 'selected' : ''); ?>>
+                                    <?php echo e($company); ?>
+
+                                </option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </select>
+                    </div>
+                    
+                    <!-- Status Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                        <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm">
+                            <option value="">All Statuses</option>
+                            <option value="pending" <?php echo e(request('status') === 'pending' ? 'selected' : ''); ?>>Pending</option>
+                            <option value="Approved" <?php echo e(request('status') === 'Approved' ? 'selected' : ''); ?>>Approved</option>
+                            <option value="Declined" <?php echo e(request('status') === 'Declined' ? 'selected' : ''); ?>>Declined</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Registration Link Status -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Registration Link</label>
+                        <select name="link_status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm">
+                            <option value="">All</option>
+                            <option value="sent" <?php echo e(request('link_status') === 'sent' ? 'selected' : ''); ?>>Link Sent</option>
+                            <option value="not_sent" <?php echo e(request('link_status') === 'not_sent' ? 'selected' : ''); ?>>Link Not Sent</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Date Range -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                        <select name="date_range" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm">
+                            <option value="">All Time</option>
+                            <option value="today" <?php echo e(request('date_range') === 'today' ? 'selected' : ''); ?>>Today</option>
+                            <option value="week" <?php echo e(request('date_range') === 'week' ? 'selected' : ''); ?>>This Week</option>
+                            <option value="month" <?php echo e(request('date_range') === 'month' ? 'selected' : ''); ?>>This Month</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                    <div class="flex items-center space-x-4">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition-all duration-200">
+                            <i class="fas fa-search mr-2"></i>
+                            Apply Filters
+                        </button>
+                        <a href="<?php echo e(route('admin.pre-employment')); ?>" class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-all duration-200">
+                            <i class="fas fa-refresh mr-2"></i>
+                            Reset
+                        </a>
+                    </div>
+                    
+                    <!-- Active Filters Display -->
+                    <?php if(request()->hasAny(['company', 'status', 'link_status', 'date_range', 'search'])): ?>
+                        <div class="flex items-center space-x-2 text-sm">
+                            <span class="text-gray-500">Active filters:</span>
+                            <?php if(request('company')): ?>
+                                <span class="inline-flex items-center px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full text-xs">
+                                    Company: <?php echo e(request('company')); ?>
+
+                                </span>
+                            <?php endif; ?>
+                            <?php if(request('status')): ?>
+                                <span class="inline-flex items-center px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full text-xs">
+                                    Status: <?php echo e(request('status')); ?>
+
+                                </span>
+                            <?php endif; ?>
+                            <?php if(request('link_status')): ?>
+                                <span class="inline-flex items-center px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full text-xs">
+                                    Link: <?php echo e(request('link_status') === 'sent' ? 'Sent' : 'Not Sent'); ?>
+
+                                </span>
+                            <?php endif; ?>
+                            <?php if(request('date_range')): ?>
+                                <span class="inline-flex items-center px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full text-xs">
+                                    Date: <?php echo e(ucfirst(request('date_range'))); ?>
+
+                                </span>
+                            <?php endif; ?>
+                            <?php if(request('search')): ?>
+                                <span class="inline-flex items-center px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full text-xs">
+                                    Search: <?php echo e(request('search')); ?>
+
+                                </span>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -144,14 +292,62 @@
         <?php endif; ?>
     </div>
 
+    <!-- Bulk Actions Bar -->
+    <div id="bulkActionsBar" class="content-card rounded-xl overflow-hidden shadow-lg border border-gray-200 hidden">
+        <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-check-square text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Bulk Actions</h3>
+                        <p class="text-indigo-100 text-sm">
+                            <span id="selectedCount">0</span> record(s) selected
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button type="button" onclick="openBulkApproveModal()" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all duration-200">
+                        <i class="fas fa-check mr-2"></i>
+                        Approve Selected
+                    </button>
+                    <button type="button" onclick="openBulkDeclineModal()" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-all duration-200">
+                        <i class="fas fa-times mr-2"></i>
+                        Decline Selected
+                    </button>
+                    <button type="button" onclick="openBulkSendLinksModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all duration-200">
+                        <i class="fas fa-envelope mr-2"></i>
+                        Send Links
+                    </button>
+                    <button type="button" onclick="openBulkDeleteModal()" class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-all duration-200">
+                        <i class="fas fa-trash mr-2"></i>
+                        Delete Selected
+                    </button>
+                    <button type="button" onclick="clearSelection()" class="inline-flex items-center px-3 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg font-medium transition-all duration-200">
+                        <i class="fas fa-times mr-2"></i>
+                        Clear
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Pre-Employment Table -->
     <div class="content-card rounded-xl overflow-hidden shadow-lg border border-gray-200">
         <div class="overflow-x-auto">
             <table class="w-full" id="preEmploymentTable">
                 <thead class="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
                     <tr>
+                        <th class="text-left py-5 px-4 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">
+                            <div class="flex items-center">
+                                <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" class="w-4 h-4 text-cyan-600 bg-gray-100 border-gray-300 rounded focus:ring-cyan-500 focus:ring-2">
+                                <label for="selectAll" class="sr-only">Select all</label>
+                            </div>
+                        </th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">ID</th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Candidate Name</th>
+                        <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Company</th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Email</th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Medical Examination</th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Price</th>
@@ -163,6 +359,11 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     <?php $__empty_1 = true; $__currentLoopData = $preEmployments; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $preEmployment): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                         <tr class="hover:bg-cyan-50 transition-all duration-200 border-l-4 border-transparent hover:border-cyan-400">
+                            <td class="py-5 px-4 border-r border-gray-100">
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="selected_records[]" value="<?php echo e($preEmployment->id); ?>" onchange="updateSelection()" class="record-checkbox w-4 h-4 text-cyan-600 bg-gray-100 border-gray-300 rounded focus:ring-cyan-500 focus:ring-2">
+                                </div>
+                            </td>
                             <td class="py-5 px-6 border-r border-gray-100">
                                 <div class="flex items-center">
                                     <span class="inline-flex items-center justify-center w-8 h-8 bg-gray-100 rounded-lg text-sm font-bold text-gray-700">
@@ -186,6 +387,12 @@
                                         </div>
                                         <div class="text-xs text-gray-500">Record ID: #<?php echo e($preEmployment->id); ?></div>
                                     </div>
+                                </div>
+                            </td>
+                            <td class="py-5 px-6 border-r border-gray-100">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-building text-gray-400 text-xs"></i>
+                                    <span class="text-sm text-gray-700"><?php echo e($preEmployment->company_name ?? 'N/A'); ?></span>
                                 </div>
                             </td>
                             <td class="py-5 px-6 border-r border-gray-100">
@@ -257,42 +464,42 @@
                                 <?php endif; ?>
                             </td>
                             <td class="py-5 px-6">
-                                <div class="flex items-center space-x-2">
+                                <div class="flex items-center space-x-1">
                                     <?php if($preEmployment->status !== 'Approved'): ?>
                                         <button type="button" 
-                                                class="inline-flex items-center px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg text-xs font-medium transition-all duration-150 border border-green-200"
-                                                onclick="openPreEmploymentApproveModal(<?php echo e($preEmployment->id); ?>)">
-                                            <i class="fas fa-check mr-1"></i>
-                                            Approve
+                                                class="w-8 h-8 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-all duration-150 border border-green-200 flex items-center justify-center"
+                                                onclick="openPreEmploymentApproveModal(<?php echo e($preEmployment->id); ?>)"
+                                                title="Approve">
+                                            <i class="fas fa-check text-xs"></i>
                                         </button>
                                     <?php endif; ?>
                                     <?php if($preEmployment->status !== 'Declined'): ?>
                                         <button type="button" 
-                                                class="inline-flex items-center px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-medium transition-all duration-150 border border-red-200"
-                                                onclick="openPreEmploymentDeclineModal(<?php echo e($preEmployment->id); ?>)">
-                                            <i class="fas fa-times mr-1"></i>
-                                            Decline
+                                                class="w-8 h-8 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all duration-150 border border-red-200 flex items-center justify-center"
+                                                onclick="openPreEmploymentDeclineModal(<?php echo e($preEmployment->id); ?>)"
+                                                title="Decline">
+                                            <i class="fas fa-times text-xs"></i>
                                         </button>
                                     <?php endif; ?>
                                     <?php if($preEmployment->status === 'Approved' && !$preEmployment->registration_link_sent): ?>
                                         <button type="button" 
-                                                class="inline-flex items-center px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-xs font-medium transition-all duration-150 border border-blue-200"
-                                                onclick="openPreEmploymentSendEmailModal(<?php echo e($preEmployment->id); ?>, '<?php echo e($preEmployment->email ?? 'this candidate'); ?>')">
-                                            <i class="fas fa-envelope mr-1"></i>
-                                            Send Link
+                                                class="w-8 h-8 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-all duration-150 border border-blue-200 flex items-center justify-center"
+                                                onclick="openPreEmploymentSendEmailModal(<?php echo e($preEmployment->id); ?>, '<?php echo e($preEmployment->email ?? 'this candidate'); ?>')"
+                                                title="Send Registration Link">
+                                            <i class="fas fa-envelope text-xs"></i>
                                         </button>
                                     <?php endif; ?>
                                     <a href="<?php echo e(route('admin.pre-employment.details', $preEmployment->id)); ?>" 
-                                       class="inline-flex items-center px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium transition-all duration-150 border border-gray-200">
-                                        <i class="fas fa-eye mr-1"></i>
-                                        View
+                                       class="w-8 h-8 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all duration-150 border border-gray-200 flex items-center justify-center"
+                                       title="View Details">
+                                        <i class="fas fa-eye text-xs"></i>
                                     </a>
                                 </div>
                             </td>
                         </tr>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                         <tr>
-                            <td colspan="8" class="py-16 text-center border-2 border-dashed border-gray-300">
+                            <td colspan="10" class="py-16 text-center border-2 border-dashed border-gray-300">
                                 <div class="flex flex-col items-center space-y-4">
                                     <div class="w-20 h-20 bg-gradient-to-br from-cyan-100 to-cyan-200 rounded-full flex items-center justify-center border-4 border-cyan-300">
                                         <i class="fas fa-user-tie text-cyan-500 text-3xl"></i>
@@ -311,7 +518,7 @@
         
         <?php if(method_exists($preEmployments, 'links')): ?>
             <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                <?php echo e($preEmployments->links()); ?>
+                <?php echo e($preEmployments->appends(request()->query())->links()); ?>
 
             </div>
         <?php endif; ?>
@@ -528,6 +735,199 @@
     </div>
 </div>
 
+<!-- Bulk Approve Modal -->
+<div id="bulkApproveModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300">
+        <div class="bg-green-600 px-6 py-4 rounded-t-xl">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-check text-white text-lg"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white">Bulk Approve Records</h3>
+            </div>
+        </div>
+        <div class="p-6">
+            <div class="flex items-start space-x-4 mb-6">
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-2">Confirm Bulk Approval</h4>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        Are you sure you want to approve <span id="bulkApproveCount" class="font-bold text-green-600">0</span> selected record(s)? This will allow the candidates to proceed with registration.
+                    </p>
+                </div>
+            </div>
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <div class="flex items-center space-x-2 text-green-800">
+                    <i class="fas fa-info-circle text-sm"></i>
+                    <span class="text-sm font-medium">This action cannot be undone</span>
+                </div>
+            </div>
+            <div class="flex items-center justify-end space-x-3">
+                <button type="button" 
+                        onclick="closeBulkApproveModal()" 
+                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-all duration-150 border border-gray-200">
+                    Cancel
+                </button>
+                <button type="button" 
+                        onclick="confirmBulkApprove()" 
+                        class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all duration-150 shadow-md">
+                    <i class="fas fa-check mr-2"></i>
+                    Approve Records
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Decline Modal -->
+<div id="bulkDeclineModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300">
+        <div class="bg-red-600 px-6 py-4 rounded-t-xl">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-times text-white text-lg"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white">Bulk Decline Records</h3>
+            </div>
+        </div>
+        <div class="p-6">
+            <div class="flex items-start space-x-4 mb-6">
+                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-times-circle text-red-600 text-xl"></i>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-2">Confirm Bulk Decline</h4>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        Are you sure you want to decline <span id="bulkDeclineCount" class="font-bold text-red-600">0</span> selected record(s)? The candidates will be notified of the rejection.
+                    </p>
+                </div>
+            </div>
+            <div class="mb-6">
+                <label for="bulkDeclineReason" class="block text-sm font-medium text-gray-700 mb-2">
+                    Reason for declining (optional)
+                </label>
+                <textarea id="bulkDeclineReason" 
+                          rows="3" 
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm"
+                          placeholder="Provide a reason for declining these records..."></textarea>
+            </div>
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <div class="flex items-center space-x-2 text-red-800">
+                    <i class="fas fa-exclamation-triangle text-sm"></i>
+                    <span class="text-sm font-medium">This action cannot be undone</span>
+                </div>
+            </div>
+            <div class="flex items-center justify-end space-x-3">
+                <button type="button" 
+                        onclick="closeBulkDeclineModal()" 
+                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-all duration-150 border border-gray-200">
+                    Cancel
+                </button>
+                <button type="button" 
+                        onclick="confirmBulkDecline()" 
+                        class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-all duration-150 shadow-md">
+                    <i class="fas fa-times mr-2"></i>
+                    Decline Records
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Send Links Modal -->
+<div id="bulkSendLinksModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300">
+        <div class="bg-blue-600 px-6 py-4 rounded-t-xl">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-envelope text-white text-lg"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white">Bulk Send Registration Links</h3>
+            </div>
+        </div>
+        <div class="p-6">
+            <div class="flex items-start space-x-4 mb-6">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-envelope text-blue-600 text-xl"></i>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-2">Send Registration Links</h4>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        Send registration links to <span id="bulkSendLinksCount" class="font-bold text-blue-600">0</span> selected approved record(s)? This will allow them to complete their registration process.
+                    </p>
+                </div>
+            </div>
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div class="flex items-center space-x-2 text-blue-800">
+                    <i class="fas fa-info-circle text-sm"></i>
+                    <span class="text-sm font-medium">Emails will be sent immediately</span>
+                </div>
+            </div>
+            <div class="flex items-center justify-end space-x-3">
+                <button type="button" 
+                        onclick="closeBulkSendLinksModal()" 
+                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-all duration-150 border border-gray-200">
+                    Cancel
+                </button>
+                <button type="button" 
+                        onclick="confirmBulkSendLinks()" 
+                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all duration-150 shadow-md">
+                    <i class="fas fa-envelope mr-2"></i>
+                    Send Links
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Delete Modal -->
+<div id="bulkDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300">
+        <div class="bg-gray-600 px-6 py-4 rounded-t-xl">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-trash text-white text-lg"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white">Bulk Delete Records</h3>
+            </div>
+        </div>
+        <div class="p-6">
+            <div class="flex items-start space-x-4 mb-6">
+                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-2">Confirm Permanent Deletion</h4>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        Are you sure you want to permanently delete <span id="bulkDeleteCount" class="font-bold text-red-600">0</span> selected record(s)? This action cannot be undone and all data will be lost.
+                    </p>
+                </div>
+            </div>
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <div class="flex items-center space-x-2 text-red-800">
+                    <i class="fas fa-exclamation-triangle text-sm"></i>
+                    <span class="text-sm font-medium">This action is permanent and cannot be undone</span>
+                </div>
+            </div>
+            <div class="flex items-center justify-end space-x-3">
+                <button type="button" 
+                        onclick="closeBulkDeleteModal()" 
+                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-all duration-150 border border-gray-200">
+                    Cancel
+                </button>
+                <button type="button" 
+                        onclick="confirmBulkDelete()" 
+                        class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-all duration-150 shadow-md">
+                    <i class="fas fa-trash mr-2"></i>
+                    Delete Records
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <!-- Hidden Forms for Actions -->
 <form id="preEmploymentApproveForm" action="" method="POST" style="display: none;">
@@ -635,7 +1035,7 @@ function confirmBulkSendEmail() {
 
 // Close modals when clicking outside
 document.addEventListener('click', function(event) {
-    const modals = ['preEmploymentApproveModal', 'preEmploymentDeclineModal', 'preEmploymentSendEmailModal', 'bulkSendEmailModal'];
+    const modals = ['preEmploymentApproveModal', 'preEmploymentDeclineModal', 'preEmploymentSendEmailModal', 'bulkSendEmailModal', 'bulkApproveModal', 'bulkDeclineModal', 'bulkSendLinksModal', 'bulkDeleteModal'];
     modals.forEach(modalId => {
         const modal = document.getElementById(modalId);
         if (event.target === modal) {
@@ -643,6 +1043,9 @@ document.addEventListener('click', function(event) {
             document.body.style.overflow = 'auto';
             if (modalId === 'preEmploymentDeclineModal') {
                 document.getElementById('preEmploymentDeclineReason').value = '';
+            }
+            if (modalId === 'bulkDeclineModal') {
+                document.getElementById('bulkDeclineReason').value = '';
             }
             currentPreEmploymentId = null;
         }
@@ -652,7 +1055,7 @@ document.addEventListener('click', function(event) {
 // Close modals with Escape key
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
-        const modals = ['preEmploymentApproveModal', 'preEmploymentDeclineModal', 'preEmploymentSendEmailModal', 'bulkSendEmailModal'];
+        const modals = ['preEmploymentApproveModal', 'preEmploymentDeclineModal', 'preEmploymentSendEmailModal', 'bulkSendEmailModal', 'bulkApproveModal', 'bulkDeclineModal', 'bulkSendLinksModal', 'bulkDeleteModal'];
         modals.forEach(modalId => {
             const modal = document.getElementById(modalId);
             if (!modal.classList.contains('hidden')) {
@@ -661,11 +1064,251 @@ document.addEventListener('keydown', function(event) {
                 if (modalId === 'preEmploymentDeclineModal') {
                     document.getElementById('preEmploymentDeclineReason').value = '';
                 }
+                if (modalId === 'bulkDeclineModal') {
+                    document.getElementById('bulkDeclineReason').value = '';
+                }
                 currentPreEmploymentId = null;
             }
         });
     }
 });
+
+// Bulk Operations and Filter Functions
+function clearAllFilters() {
+    window.location.href = '<?php echo e(route("admin.pre-employment")); ?>';
+}
+
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.record-checkbox');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAll.checked;
+    });
+    
+    updateSelection();
+}
+
+function updateSelection() {
+    const checkboxes = document.querySelectorAll('.record-checkbox');
+    const checkedBoxes = document.querySelectorAll('.record-checkbox:checked');
+    const selectAll = document.getElementById('selectAll');
+    const bulkActionsBar = document.getElementById('bulkActionsBar');
+    const selectedCount = document.getElementById('selectedCount');
+    
+    // Update select all checkbox state
+    if (checkedBoxes.length === 0) {
+        selectAll.indeterminate = false;
+        selectAll.checked = false;
+    } else if (checkedBoxes.length === checkboxes.length) {
+        selectAll.indeterminate = false;
+        selectAll.checked = true;
+    } else {
+        selectAll.indeterminate = true;
+        selectAll.checked = false;
+    }
+    
+    // Show/hide bulk actions bar
+    if (checkedBoxes.length > 0) {
+        bulkActionsBar.classList.remove('hidden');
+        selectedCount.textContent = checkedBoxes.length;
+    } else {
+        bulkActionsBar.classList.add('hidden');
+    }
+}
+
+function clearSelection() {
+    const checkboxes = document.querySelectorAll('.record-checkbox');
+    const selectAll = document.getElementById('selectAll');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    selectAll.checked = false;
+    selectAll.indeterminate = false;
+    
+    updateSelection();
+}
+
+function getSelectedIds() {
+    const checkedBoxes = document.querySelectorAll('.record-checkbox:checked');
+    return Array.from(checkedBoxes).map(checkbox => checkbox.value);
+}
+
+// Bulk Modal Functions
+function openBulkApproveModal() {
+    const selectedIds = getSelectedIds();
+    if (selectedIds.length === 0) {
+        alert('Please select at least one record to approve.');
+        return;
+    }
+    
+    document.getElementById('bulkApproveCount').textContent = selectedIds.length;
+    document.getElementById('bulkApproveModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeBulkApproveModal() {
+    document.getElementById('bulkApproveModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+function confirmBulkApprove() {
+    const selectedIds = getSelectedIds();
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '<?php echo e(route("admin.pre-employment.bulk-approve")); ?>';
+    
+    const csrfToken = document.createElement('input');
+    csrfToken.type = 'hidden';
+    csrfToken.name = '_token';
+    csrfToken.value = '<?php echo e(csrf_token()); ?>';
+    form.appendChild(csrfToken);
+    
+    selectedIds.forEach(id => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'ids[]';
+        input.value = id;
+        form.appendChild(input);
+    });
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function openBulkDeclineModal() {
+    const selectedIds = getSelectedIds();
+    if (selectedIds.length === 0) {
+        alert('Please select at least one record to decline.');
+        return;
+    }
+    
+    document.getElementById('bulkDeclineCount').textContent = selectedIds.length;
+    document.getElementById('bulkDeclineReason').value = '';
+    document.getElementById('bulkDeclineModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeBulkDeclineModal() {
+    document.getElementById('bulkDeclineModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+    document.getElementById('bulkDeclineReason').value = '';
+}
+
+function confirmBulkDecline() {
+    const selectedIds = getSelectedIds();
+    const reason = document.getElementById('bulkDeclineReason').value;
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '<?php echo e(route("admin.pre-employment.bulk-decline")); ?>';
+    
+    const csrfToken = document.createElement('input');
+    csrfToken.type = 'hidden';
+    csrfToken.name = '_token';
+    csrfToken.value = '<?php echo e(csrf_token()); ?>';
+    form.appendChild(csrfToken);
+    
+    const reasonInput = document.createElement('input');
+    reasonInput.type = 'hidden';
+    reasonInput.name = 'reason';
+    reasonInput.value = reason;
+    form.appendChild(reasonInput);
+    
+    selectedIds.forEach(id => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'ids[]';
+        input.value = id;
+        form.appendChild(input);
+    });
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function openBulkSendLinksModal() {
+    const selectedIds = getSelectedIds();
+    if (selectedIds.length === 0) {
+        alert('Please select at least one approved record to send links.');
+        return;
+    }
+    
+    document.getElementById('bulkSendLinksCount').textContent = selectedIds.length;
+    document.getElementById('bulkSendLinksModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeBulkSendLinksModal() {
+    document.getElementById('bulkSendLinksModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+function confirmBulkSendLinks() {
+    const selectedIds = getSelectedIds();
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '<?php echo e(route("admin.pre-employment.bulk-send-links")); ?>';
+    
+    const csrfToken = document.createElement('input');
+    csrfToken.type = 'hidden';
+    csrfToken.name = '_token';
+    csrfToken.value = '<?php echo e(csrf_token()); ?>';
+    form.appendChild(csrfToken);
+    
+    selectedIds.forEach(id => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'ids[]';
+        input.value = id;
+        form.appendChild(input);
+    });
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function openBulkDeleteModal() {
+    const selectedIds = getSelectedIds();
+    if (selectedIds.length === 0) {
+        alert('Please select at least one record to delete.');
+        return;
+    }
+    
+    document.getElementById('bulkDeleteCount').textContent = selectedIds.length;
+    document.getElementById('bulkDeleteModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeBulkDeleteModal() {
+    document.getElementById('bulkDeleteModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+function confirmBulkDelete() {
+    const selectedIds = getSelectedIds();
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '<?php echo e(route("admin.pre-employment.bulk-delete")); ?>';
+    
+    const csrfToken = document.createElement('input');
+    csrfToken.type = 'hidden';
+    csrfToken.name = '_token';
+    csrfToken.value = '<?php echo e(csrf_token()); ?>';
+    form.appendChild(csrfToken);
+    
+    selectedIds.forEach(id => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'ids[]';
+        input.value = id;
+        form.appendChild(input);
+    });
+    
+    document.body.appendChild(form);
+    form.submit();
+}
 </script>
 <?php $__env->stopSection(); ?>
 

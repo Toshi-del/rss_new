@@ -1,5 +1,3 @@
-
-
 <?php $__env->startSection('title', 'Medical Test Categories'); ?>
 
 <?php $__env->startSection('content'); ?>
@@ -14,7 +12,7 @@
                     <p class="text-sm text-gray-600">Organize and manage your medical test categories efficiently</p>
                 </div>
                 <div class="mt-4 sm:mt-0">
-                    <a href="<?php echo e(route('medical-test-categories.create')); ?>" 
+                    <a href="<?php echo e(route('admin.medical-test-categories.create')); ?>" 
                        class="inline-flex items-center px-6 py-3 bg-blue-600 border border-transparent rounded-xl text-sm font-semibold text-white shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200">
                         <i class="fas fa-plus mr-2"></i>
                         Add New Category
@@ -139,12 +137,12 @@
 
                             <!-- Action Buttons -->
                             <div class="flex space-x-2">
-                                <a href="<?php echo e(route('medical-test-categories.show', $category)); ?>" 
+                                <a href="<?php echo e(route('admin.medical-test-categories.show', $category)); ?>" 
                                    class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                                     <i class="fas fa-eye mr-2"></i>
                                     View
                                 </a>
-                                <a href="<?php echo e(route('medical-test-categories.edit', $category)); ?>" 
+                                <a href="<?php echo e(route('admin.medical-test-categories.edit', $category)); ?>" 
                                    class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                                     <i class="fas fa-edit mr-2"></i>
                                     Edit
@@ -182,7 +180,7 @@
                     </div>
                     <h3 class="text-xl font-semibold text-gray-900 mb-3" style="font-family: 'Poppins', sans-serif;">No Categories Found</h3>
                     <p class="text-gray-500 mb-8">Get started by creating your first medical test category to organize your examinations.</p>
-                    <a href="<?php echo e(route('medical-test-categories.create')); ?>" 
+                    <a href="<?php echo e(route('admin.medical-test-categories.create')); ?>" 
                        class="inline-flex items-center px-6 py-3 bg-blue-600 border border-transparent rounded-xl text-sm font-semibold text-white shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200">
                         <i class="fas fa-plus mr-2"></i>
                         Create Your First Category

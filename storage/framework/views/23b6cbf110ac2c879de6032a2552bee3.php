@@ -54,6 +54,115 @@
         </div>
     </div>
 
+    <!-- Exam Status Tabs -->
+    <div class="content-card rounded-xl overflow-hidden shadow-lg border border-gray-200">
+        <?php
+            $currentTab = request('exam_status', 'needs_attention');
+        ?>
+        
+        <!-- Tab Navigation -->
+        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex space-x-1">
+                    <a href="<?php echo e(request()->fullUrlWithQuery(['exam_status' => 'needs_attention'])); ?>" 
+                       class="px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 <?php echo e($currentTab === 'needs_attention' ? 'bg-emerald-600 text-white' : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'); ?>">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        Needs Attention
+                        <?php
+                            $needsAttentionCount = \App\Models\Patient::where('status', 'approved')
+                                ->whereDoesntHave('annualPhysicalExamination')
+                                ->count();
+                        ?>
+                        <span class="ml-2 px-2 py-1 text-xs rounded-full <?php echo e($currentTab === 'needs_attention' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'); ?>">
+                            <?php echo e($needsAttentionCount); ?>
+
+                        </span>
+                    </a>
+                    
+                    <a href="<?php echo e(request()->fullUrlWithQuery(['exam_status' => 'exam_completed'])); ?>" 
+                       class="px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 <?php echo e($currentTab === 'exam_completed' ? 'bg-emerald-600 text-white' : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'); ?>">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        Completed
+                        <?php
+                            $completedCount = \App\Models\Patient::where('status', 'approved')
+                                ->whereHas('annualPhysicalExamination')
+                                ->count();
+                        ?>
+                        <span class="ml-2 px-2 py-1 text-xs rounded-full <?php echo e($currentTab === 'exam_completed' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'); ?>">
+                            <?php echo e($completedCount); ?>
+
+                        </span>
+                    </a>
+                </div>
+                
+                <a href="<?php echo e(route('nurse.annual-physical')); ?>" class="text-sm text-gray-500 hover:text-gray-700 font-medium">
+                    <i class="fas fa-times mr-1"></i>Clear All Filters
+                </a>
+            </div>
+        </div>
+
+        <!-- Additional Filters -->
+        <div class="p-6">
+            <form method="GET" action="<?php echo e(route('nurse.annual-physical')); ?>" class="space-y-6">
+                <!-- Preserve current tab -->
+                <input type="hidden" name="exam_status" value="<?php echo e($currentTab); ?>">
+                
+                <!-- Preserve search query -->
+                <?php if(request('search')): ?>
+                    <input type="hidden" name="search" value="<?php echo e(request('search')); ?>">
+                <?php endif; ?>
+                
+                <!-- Filter Row: Gender only -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Gender Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                        <select name="gender" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm">
+                            <option value="">All Genders</option>
+                            <option value="male" <?php echo e(request('gender') === 'male' ? 'selected' : ''); ?>>Male</option>
+                            <option value="female" <?php echo e(request('gender') === 'female' ? 'selected' : ''); ?>>Female</option>
+                        </select>
+                    </div>
+
+                    <!-- Placeholder -->
+                    <div></div>
+                </div>
+
+                <!-- Filter Actions -->
+                <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                    <div class="flex items-center space-x-4">
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                            <i class="fas fa-search mr-2"></i>Apply Filters
+                        </button>
+                        <a href="<?php echo e(request()->fullUrlWithQuery(['gender' => null, 'search' => null])); ?>" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                            <i class="fas fa-undo mr-2"></i>Reset Filters
+                        </a>
+                    </div>
+                    
+                    <!-- Active Filters Display -->
+                    <?php if(request()->hasAny(['gender', 'search'])): ?>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-gray-600">Active filters:</span>
+                            <?php if(request('search')): ?>
+                                <span class="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs">
+                                    Search: "<?php echo e(request('search')); ?>"
+                                    <a href="<?php echo e(request()->fullUrlWithQuery(['search' => null])); ?>" class="ml-1 text-emerald-600 hover:text-emerald-800">×</a>
+                                </span>
+                            <?php endif; ?>
+                            <?php if(request('gender')): ?>
+                                <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
+                                    Gender: <?php echo e(ucfirst(request('gender'))); ?>
+
+                                    <a href="<?php echo e(request()->fullUrlWithQuery(['gender' => null])); ?>" class="ml-1 text-purple-600 hover:text-purple-800">×</a>
+                                </span>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Quick Stats -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
         <?php
@@ -142,11 +251,6 @@
                         <p class="text-purple-100 text-sm">Comprehensive yearly health examination records</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <button class="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 font-medium">
-                        <i class="fas fa-filter mr-2"></i>Filter
-                    </button>
-                </div>
             </div>
         </div>
         
@@ -220,27 +324,44 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center space-x-2">
-                                           
-
-                                            <!-- Examination -->
+                                            <!-- Examination Status Badge -->
                                             <?php if($annualPhysicalExam): ?>
-                                                <a href="<?php echo e(route('nurse.annual-physical.edit', $annualPhysicalExam->id)); ?>" class="p-2 text-emerald-600 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg transition-colors" title="Edit Examination">
+                                                <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full mr-2">
+                                                    <i class="fas fa-check-circle mr-1"></i>Exam Completed
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded-full mr-2">
+                                                    <i class="fas fa-clock mr-1"></i>Pending Exam
+                                                </span>
+                                            <?php endif; ?>
+
+                                            <!-- Examination Action Buttons -->
+                                            <?php if($annualPhysicalExam): ?>
+                                                <a href="<?php echo e(route('nurse.annual-physical.edit', $annualPhysicalExam->id)); ?>" 
+                                                   class="p-2 text-emerald-600 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg transition-colors" 
+                                                   title="Edit Examination">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                             <?php else: ?>
                                                 <?php if($medicalChecklist && !empty($medicalChecklist->physical_exam_done_by)): ?>
-                                                    <a href="<?php echo e(route('nurse.annual-physical.create', ['patient_id' => $patient->id])); ?>" class="p-2 text-emerald-600 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg transition-colors" title="Create Examination">
+                                                    <a href="<?php echo e(route('nurse.annual-physical.create', ['patient_id' => $patient->id])); ?>" 
+                                                       class="p-2 text-emerald-600 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg transition-colors" 
+                                                       title="Create Examination">
                                                         <i class="fas fa-plus"></i>
                                                     </a>
                                                 <?php else: ?>
-                                                    <button class="p-2 text-gray-400 cursor-not-allowed rounded-lg" title="Complete medical checklist first" disabled>
+                                                    <button class="p-2 text-gray-400 cursor-not-allowed rounded-lg" 
+                                                            title="Complete medical checklist first" 
+                                                            disabled>
                                                         <i class="fas fa-plus"></i>
                                                     </button>
                                                 <?php endif; ?>
                                             <?php endif; ?>
 
                                             <!-- Medical Checklist -->
-                                            <a href="<?php echo e(route('nurse.medical-checklist.annual-physical', $patient->id)); ?>" class="p-2 text-purple-600 hover:text-purple-900 hover:bg-purple-50 rounded-lg transition-colors" title="Medical Checklist">
+                                            <a href="<?php echo e(route('nurse.medical-checklist.annual-physical', $patient->id)); ?>" 
+                                               class="p-2 text-purple-600 hover:text-purple-900 hover:bg-purple-50 rounded-lg transition-colors" 
+                                               title="Medical Checklist">
                                                 <i class="fas fa-clipboard-list"></i>
                                             </a>
 

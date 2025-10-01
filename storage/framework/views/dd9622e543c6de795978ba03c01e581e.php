@@ -32,6 +32,212 @@
 </div>
 <?php endif; ?>
 
+<!-- Blood Collection Status Tabs -->
+<div class="content-card rounded-xl overflow-hidden shadow-lg border border-gray-200 mb-8">
+    <?php
+        $currentTab = request('blood_status', 'needs_attention');
+    ?>
+    
+    <!-- Tab Navigation -->
+    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+            <div class="flex space-x-1">
+                <a href="<?php echo e(request()->fullUrlWithQuery(['blood_status' => 'needs_attention'])); ?>" 
+                   class="px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 <?php echo e($currentTab === 'needs_attention' ? 'bg-red-600 text-white' : 'text-gray-600 hover:text-red-600 hover:bg-red-50'); ?>">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    Needs Attention
+                    <?php
+                        $needsAttentionCount = \App\Models\PreEmploymentRecord::where('status', 'approved')
+                            ->where(function($query) {
+                                // Check medical test relationships OR other_exams column
+                                $query->whereHas('medicalTest', function($q) {
+                                    $q->where(function($subQ) {
+                                        $subQ->where('name', 'like', '%Pre-Employment%')
+                                             ->orWhere('name', 'like', '%CBC%')
+                                             ->orWhere('name', 'like', '%FECA%')
+                                             ->orWhere('name', 'like', '%Urine%')
+                                             ->orWhere('name', 'like', '%Blood%')
+                                             ->orWhere('name', 'like', '%Laboratory%');
+                                    });
+                                })->orWhereHas('medicalTests', function($q) {
+                                    $q->where(function($subQ) {
+                                        $subQ->where('name', 'like', '%Pre-Employment%')
+                                             ->orWhere('name', 'like', '%CBC%')
+                                             ->orWhere('name', 'like', '%FECA%')
+                                             ->orWhere('name', 'like', '%Urine%')
+                                             ->orWhere('name', 'like', '%Blood%')
+                                             ->orWhere('name', 'like', '%Laboratory%');
+                                    });
+                                })->orWhere(function($q) {
+                                    // Also check other_exams column for medical test information
+                                    $q->where('other_exams', 'like', '%Pre-Employment%')
+                                      ->orWhere('other_exams', 'like', '%CBC%')
+                                      ->orWhere('other_exams', 'like', '%FECA%')
+                                      ->orWhere('other_exams', 'like', '%Urine%')
+                                      ->orWhere('other_exams', 'like', '%Blood%')
+                                      ->orWhere('other_exams', 'like', '%Laboratory%');
+                                });
+                            })
+                            ->where(function($q) {
+                                $q->whereDoesntHave('medicalChecklist')
+                                  ->orWhereHas('medicalChecklist', function($subQ) {
+                                      $subQ->where(function($checkQ) {
+                                          $checkQ->whereNull('stool_exam_done_by')
+                                                 ->orWhereNull('urinalysis_done_by')
+                                                 ->orWhereNull('blood_extraction_done_by');
+                                      });
+                                  });
+                            })
+                            ->count();
+                    ?>
+                    <span class="ml-2 px-2 py-1 text-xs rounded-full <?php echo e($currentTab === 'needs_attention' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'); ?>">
+                        <?php echo e($needsAttentionCount); ?>
+
+                    </span>
+                </a>
+                
+                <a href="<?php echo e(request()->fullUrlWithQuery(['blood_status' => 'collection_completed'])); ?>" 
+                   class="px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 <?php echo e($currentTab === 'collection_completed' ? 'bg-red-600 text-white' : 'text-gray-600 hover:text-red-600 hover:bg-red-50'); ?>">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    Collection Completed
+                    <?php
+                        $completedCount = \App\Models\PreEmploymentRecord::where('status', 'approved')
+                            ->where(function($query) {
+                                // Check medical test relationships OR other_exams column
+                                $query->whereHas('medicalTest', function($q) {
+                                    $q->where(function($subQ) {
+                                        $subQ->where('name', 'like', '%Pre-Employment%')
+                                             ->orWhere('name', 'like', '%CBC%')
+                                             ->orWhere('name', 'like', '%FECA%')
+                                             ->orWhere('name', 'like', '%Urine%')
+                                             ->orWhere('name', 'like', '%Blood%')
+                                             ->orWhere('name', 'like', '%Laboratory%');
+                                    });
+                                })->orWhereHas('medicalTests', function($q) {
+                                    $q->where(function($subQ) {
+                                        $subQ->where('name', 'like', '%Pre-Employment%')
+                                             ->orWhere('name', 'like', '%CBC%')
+                                             ->orWhere('name', 'like', '%FECA%')
+                                             ->orWhere('name', 'like', '%Urine%')
+                                             ->orWhere('name', 'like', '%Blood%')
+                                             ->orWhere('name', 'like', '%Laboratory%');
+                                    });
+                                })->orWhere(function($q) {
+                                    // Also check other_exams column for medical test information
+                                    $q->where('other_exams', 'like', '%Pre-Employment%')
+                                      ->orWhere('other_exams', 'like', '%CBC%')
+                                      ->orWhere('other_exams', 'like', '%FECA%')
+                                      ->orWhere('other_exams', 'like', '%Urine%')
+                                      ->orWhere('other_exams', 'like', '%Blood%')
+                                      ->orWhere('other_exams', 'like', '%Laboratory%');
+                                });
+                            })
+                            ->whereHas('medicalChecklist', function($q) {
+                                $q->whereNotNull('stool_exam_done_by')
+                                  ->where('stool_exam_done_by', '!=', '')
+                                  ->whereNotNull('urinalysis_done_by')
+                                  ->where('urinalysis_done_by', '!=', '')
+                                  ->whereNotNull('blood_extraction_done_by')
+                                  ->where('blood_extraction_done_by', '!=', '');
+                            })
+                            ->count();
+                    ?>
+                    <span class="ml-2 px-2 py-1 text-xs rounded-full <?php echo e($currentTab === 'collection_completed' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'); ?>">
+                        <?php echo e($completedCount); ?>
+
+                    </span>
+                </a>
+            </div>
+            
+            <a href="<?php echo e(route('plebo.pre-employment')); ?>" class="text-sm text-gray-500 hover:text-gray-700 font-medium">
+                <i class="fas fa-times mr-1"></i>Clear All Filters
+            </a>
+        </div>
+    </div>
+
+    <!-- Additional Filters -->
+    <div class="p-6">
+        <form method="GET" action="<?php echo e(route('plebo.pre-employment')); ?>" class="space-y-6">
+            <!-- Preserve current tab -->
+            <input type="hidden" name="blood_status" value="<?php echo e($currentTab); ?>">
+            
+            <!-- Preserve search query -->
+            <?php if(request('search')): ?>
+                <input type="hidden" name="search" value="<?php echo e(request('search')); ?>">
+            <?php endif; ?>
+            
+            <!-- Filter Row: Company and Gender -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Company Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Company</label>
+                    <select name="company" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm">
+                        <option value="">All Companies</option>
+                        <?php
+                            $companies = $preEmployments->pluck('company_name')->filter()->unique()->sort()->values();
+                        ?>
+                        <?php $__currentLoopData = $companies; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $company): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($company); ?>" <?php echo e(request('company') === $company ? 'selected' : ''); ?>>
+                                <?php echo e($company); ?>
+
+                            </option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </select>
+                </div>
+
+                <!-- Gender Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                    <select name="gender" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm">
+                        <option value="">All Genders</option>
+                        <option value="male" <?php echo e(request('gender') === 'male' ? 'selected' : ''); ?>>Male</option>
+                        <option value="female" <?php echo e(request('gender') === 'female' ? 'selected' : ''); ?>>Female</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Filter Actions -->
+            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                <div class="flex items-center space-x-4">
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                        <i class="fas fa-search mr-2"></i>Apply Filters
+                    </button>
+                    <a href="<?php echo e(request()->fullUrlWithQuery(['company' => null, 'gender' => null, 'search' => null])); ?>" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                        <i class="fas fa-undo mr-2"></i>Reset Filters
+                    </a>
+                </div>
+                
+                <!-- Active Filters Display -->
+                <?php if(request()->hasAny(['company', 'gender', 'search'])): ?>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-600">Active filters:</span>
+                        <?php if(request('search')): ?>
+                            <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">
+                                Search: "<?php echo e(request('search')); ?>"
+                                <a href="<?php echo e(request()->fullUrlWithQuery(['search' => null])); ?>" class="ml-1 text-red-600 hover:text-red-800">×</a>
+                            </span>
+                        <?php endif; ?>
+                        <?php if(request('company')): ?>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                                Company: <?php echo e(request('company')); ?>
+
+                                <a href="<?php echo e(request()->fullUrlWithQuery(['company' => null])); ?>" class="ml-1 text-green-600 hover:text-green-800">×</a>
+                            </span>
+                        <?php endif; ?>
+                        <?php if(request('gender')): ?>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
+                                Gender: <?php echo e(ucfirst(request('gender'))); ?>
+
+                                <a href="<?php echo e(request()->fullUrlWithQuery(['gender' => null])); ?>" class="ml-1 text-purple-600 hover:text-purple-800">×</a>
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Stats Overview -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
     <!-- Total Records -->
@@ -180,21 +386,7 @@
                                     <i class="fas fa-barcode mr-2"></i>
                                     Barcode
                                 </button>
-                                
-                                <!-- Send to Doctor -->
-                                <?php
-                                    $hasMedicalChecklist = \App\Models\MedicalChecklist::where('pre_employment_record_id', $preEmployment->id)->exists();
-                                ?>
-                                <form action="<?php echo e(route('plebo.pre-employment.send-to-doctor', $preEmployment->id)); ?>" method="POST" class="inline">
-                                    <?php echo csrf_field(); ?>
-                                    <button type="submit" 
-                                            class="inline-flex items-center px-3 py-1 rounded-lg transition-colors duration-200 <?php echo e($hasMedicalChecklist ? 'bg-purple-100 hover:bg-purple-200 text-purple-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed'); ?>"
-                                            title="<?php echo e($hasMedicalChecklist ? 'Send to Doctor for Review' : 'Complete blood collection first'); ?>"
-                                            <?php echo e($hasMedicalChecklist ? 'onclick="return confirm(\'Send this record to the doctor for review?\')"' : 'disabled'); ?>>
-                                        <i class="fas fa-paper-plane mr-2"></i>
-                                        Send
-                                    </button>
-                                </form>
+                               
                             </div>
                         </td>
                     </tr>

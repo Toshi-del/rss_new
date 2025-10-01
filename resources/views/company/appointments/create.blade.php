@@ -233,11 +233,25 @@
                                 <!-- Collapsible Content -->
                                 <div id="category-{{ $category->id }}" class="hidden border-t border-indigo-100">
                                     <div class="p-4 bg-indigo-50">
+                                        <!-- Blocking Notice -->
+                                        <div id="blocking-notice-{{ $category->id }}" class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg hidden">
+                                            <div class="flex items-center space-x-2">
+                                                <i class="fas fa-info-circle text-yellow-600"></i>
+                                                <span class="text-sm text-yellow-800 font-medium" id="blocking-text-{{ $category->id }}"></span>
+                                            </div>
+                                        </div>
                                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             @foreach($uniqueTests as $test)
-                                                <label for="appointment_test_{{ $test->id }}" class="cursor-pointer block">
-                                                    <div class="bg-white rounded-lg p-5 border-2 border-gray-200 hover:border-blue-400 hover:shadow-md transition-all duration-200">
-                                                        <div class="flex items-start">
+                                                @php
+                                                    // Skip package-type tests in Blood Chemistry category
+                                                    $isPackageTest = str_contains(strtolower($test->name), 'package');
+                                                    if($categoryName === 'blood chemistry' && $isPackageTest) {
+                                                        continue;
+                                                    }
+                                                @endphp
+                                                <label for="appointment_test_{{ $test->id }}" class="cursor-pointer block h-full">
+                                                    <div class="bg-white rounded-lg p-5 border-2 border-gray-200 hover:border-blue-400 hover:shadow-md transition-all duration-200 h-full flex flex-col">
+                                                        <div class="flex items-start flex-1">
                                                             <input
                                                                 id="appointment_test_{{ $test->id }}"
                                                                 type="checkbox"
@@ -247,20 +261,160 @@
                                                                 data-test-id="{{ $test->id }}"
                                                                 class="mt-1 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded category-checkbox"
                                                             >
-                                                            <div class="ml-3 flex-1">
-                                                                <h5 class="text-base font-bold text-gray-900 mb-1">{{ $test->name }}</h5>
-                                                                @if($test->description)
-                                                                    <p class="text-sm text-gray-600 mb-2">{{ Str::limit($test->description, 60) }}</p>
-                                                                @endif
-                                                                @if(!is_null($test->price) && $test->price > 0)
-                                                                    <div class="bg-emerald-50 rounded-lg px-3 py-1 inline-block">
-                                                                        <p class="text-sm font-bold text-emerald-700">₱{{ number_format((float)$test->price, 2) }}</p>
-                                                                    </div>
-                                                                @elseif(!is_null($test->price) && $test->price == 0)
-                                                                    <div class="bg-blue-50 rounded-lg px-3 py-1 inline-block">
-                                                                        <p class="text-sm font-bold text-blue-700">Contact for pricing</p>
-                                                                    </div>
-                                                                @endif
+                                                            <div class="ml-3 flex-1 flex flex-col justify-between min-h-0">
+                                                                <div class="flex-1">
+                                                                    <h5 class="text-base font-bold text-gray-900 mb-1">{{ $test->name }}</h5>
+                                                                    @if($test->description)
+                                                                        @php
+                                                                            $isPackageTest = str_contains(strtolower($test->name), 'package');
+                                                                            $description = $test->description;
+                                                                            
+                                                                            // For package tests, show full description and format as list if it contains separators
+                                                                            if ($isPackageTest) {
+                                                                                // Expand hierarchical packages to show complete test lists
+                                                                                $testName = strtolower(trim($test->name));
+                                                                                
+                                                                                // Define the complete test lists for each package
+                                                                                $packageTests = [
+                                                                                    'package a' => [
+                                                                                        'ELECTROCARDIOGRAM',
+                                                                                        'FASTING BLOOD SUGAR', 
+                                                                                        'TOTAL CHOLESTEROL',
+                                                                                        'BLOOD UREA NITROGEN',
+                                                                                        'BLOOD URIC ACID',
+                                                                                        'SGPT',
+                                                                                        'CBC',
+                                                                                        'URINALYSIS',
+                                                                                        'FECALYSIS'
+                                                                                    ],
+                                                                                    'package b' => [
+                                                                                        'ELECTROCARDIOGRAM',
+                                                                                        'FASTING BLOOD SUGAR', 
+                                                                                        'TOTAL CHOLESTEROL',
+                                                                                        'BLOOD UREA NITROGEN',
+                                                                                        'BLOOD URIC ACID',
+                                                                                        'SGPT',
+                                                                                        'CBC',
+                                                                                        'URINALYSIS',
+                                                                                        'FECALYSIS',
+                                                                                        'TRIGLYCERIDE',
+                                                                                        'HDL & LDL (GOOD AND BAD CHOLESTEROL)'
+                                                                                    ],
+                                                                                    'package c' => [
+                                                                                        'ELECTROCARDIOGRAM',
+                                                                                        'FASTING BLOOD SUGAR', 
+                                                                                        'TOTAL CHOLESTEROL',
+                                                                                        'BLOOD UREA NITROGEN',
+                                                                                        'BLOOD URIC ACID',
+                                                                                        'SGPT',
+                                                                                        'CBC',
+                                                                                        'URINALYSIS',
+                                                                                        'FECALYSIS',
+                                                                                        'TRIGLYCERIDE',
+                                                                                        'HDL & LDL (GOOD AND BAD CHOLESTEROL)',
+                                                                                        'CREATININE',
+                                                                                        'BLOOD TYPING'
+                                                                                    ],
+                                                                                    'package d' => [
+                                                                                        'ELECTROCARDIOGRAM',
+                                                                                        'FASTING BLOOD SUGAR', 
+                                                                                        'TOTAL CHOLESTEROL',
+                                                                                        'BLOOD UREA NITROGEN',
+                                                                                        'BLOOD URIC ACID',
+                                                                                        'SGPT',
+                                                                                        'CBC',
+                                                                                        'URINALYSIS',
+                                                                                        'FECALYSIS',
+                                                                                        'TRIGLYCERIDE',
+                                                                                        'HDL & LDL (GOOD AND BAD CHOLESTEROL)',
+                                                                                        'CREATININE',
+                                                                                        'BLOOD TYPING',
+                                                                                        'SODIUM',
+                                                                                        'POTASSIUM',
+                                                                                        'CALCIUM',
+                                                                                        'CHLORIDE'
+                                                                                    ],
+                                                                                    'package e' => [
+                                                                                        'ELECTROCARDIOGRAM',
+                                                                                        'FASTING BLOOD SUGAR', 
+                                                                                        'TOTAL CHOLESTEROL',
+                                                                                        'BLOOD UREA NITROGEN',
+                                                                                        'BLOOD URIC ACID',
+                                                                                        'SGPT',
+                                                                                        'CBC',
+                                                                                        'URINALYSIS',
+                                                                                        'FECALYSIS',
+                                                                                        'TRIGLYCERIDE',
+                                                                                        'HDL & LDL (GOOD AND BAD CHOLESTEROL)',
+                                                                                        'CREATININE',
+                                                                                        'BLOOD TYPING',
+                                                                                        'SODIUM',
+                                                                                        'POTASSIUM',
+                                                                                        'CALCIUM',
+                                                                                        'CHLORIDE',
+                                                                                        'TPAG (LIVER FUNCTION TEST)',
+                                                                                        'SGOT',
+                                                                                        'BILIRUBIN',
+                                                                                        'AMYLASE'
+                                                                                    ]
+                                                                                ];
+                                                                                
+                                                                                // Use expanded list if available, otherwise fall back to original parsing
+                                                                                if (isset($packageTests[$testName])) {
+                                                                                    $hasMultipleItems = true;
+                                                                                    $expandedTests = $packageTests[$testName];
+                                                                                } else {
+                                                                                    // Check for common separators and convert to list
+                                                                                    $separators = [',', ';', '|', ' + ', ' & ', ' and '];
+                                                                                    $hasMultipleItems = false;
+                                                                                    $separator = '';
+                                                                                    
+                                                                                    foreach ($separators as $sep) {
+                                                                                        if (str_contains($description, $sep)) {
+                                                                                            $hasMultipleItems = true;
+                                                                                            $separator = $sep;
+                                                                                            break;
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        @endphp
+                                                                        
+                                                                        @if($isPackageTest && isset($hasMultipleItems) && $hasMultipleItems)
+                                                                            <div class="text-sm text-gray-600 mb-2">
+                                                                                <p class="font-medium mb-1">Package includes:</p>
+                                                                                <ul class="list-disc list-inside space-y-1 ml-2">
+                                                                                    @if(isset($expandedTests))
+                                                                                        @foreach($expandedTests as $item)
+                                                                                            <li class="text-xs">{{ $item }}</li>
+                                                                                        @endforeach
+                                                                                    @else
+                                                                                        @foreach(array_map('trim', explode($separator, $description)) as $item)
+                                                                                            @if(!empty($item))
+                                                                                                <li class="text-xs">{{ $item }}</li>
+                                                                                            @endif
+                                                                                        @endforeach
+                                                                                    @endif
+                                                                                </ul>
+                                                                            </div>
+                                                                        @elseif($isPackageTest)
+                                                                            <p class="text-sm text-gray-600 mb-2">{{ $description }}</p>
+                                                                        @else
+                                                                            <p class="text-sm text-gray-600 mb-2">{{ Str::limit($description, 60) }}</p>
+                                                                        @endif
+                                                                    @endif
+                                                                </div>
+                                                                <div class="mt-auto pt-2">
+                                                                    @if(!is_null($test->price) && $test->price > 0)
+                                                                        <div class="bg-emerald-50 rounded-lg px-3 py-1 inline-block">
+                                                                            <p class="text-sm font-bold text-emerald-700">₱{{ number_format((float)$test->price, 2) }}</p>
+                                                                        </div>
+                                                                    @elseif(!is_null($test->price) && $test->price == 0)
+                                                                        <div class="bg-blue-50 rounded-lg px-3 py-1 inline-block">
+                                                                            <p class="text-sm font-bold text-blue-700">Contact for pricing</p>
+                                                                        </div>
+                                                                    @endif
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -316,7 +470,7 @@
                                 </div>
                                 <div>
                                     <h4 class="text-sm font-semibold text-emerald-800 mb-1">Optional Upload</h4>
-                                    <p class="text-sm text-emerald-700">Upload an Excel file with patient data. Required columns: First Name, Last Name, Age, Sex, Email, Phone.</p>
+                                    <p class="text-sm text-emerald-700">Upload an Excel file with patient data. Required columns: First Name, Last Name, Age, Sex, Email, Phone, Address.</p>
                                 </div>
                             </div>
                         </div>
@@ -335,6 +489,30 @@
                             <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
                         </p>
                         @enderror
+
+                        <!-- File Preview Section -->
+                        <div id="filePreview" class="mt-4 hidden">
+                            <div class="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-file-excel text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-blue-800">File Preview</h4>
+                                        <p id="fileName" class="text-sm text-blue-700"></p>
+                                    </div>
+                                </div>
+                                <div id="previewContent" class="bg-white rounded-lg p-3 border border-blue-200 max-h-64 overflow-y-auto">
+                                    <!-- Preview content will be inserted here -->
+                                </div>
+                                <div class="mt-3 flex items-center justify-between text-sm">
+                                    <span id="recordCount" class="text-blue-700 font-medium"></span>
+                                    <button type="button" onclick="clearFilePreview()" class="text-blue-600 hover:text-blue-800 font-medium">
+                                        <i class="fas fa-times mr-1"></i>Remove File
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -420,6 +598,7 @@
                                     <th class="text-left py-2 px-2 font-semibold text-gray-700">Sex</th>
                                     <th class="text-left py-2 px-2 font-semibold text-gray-700">Email</th>
                                     <th class="text-left py-2 px-2 font-semibold text-gray-700">Phone</th>
+                                    <th class="text-left py-2 px-2 font-semibold text-gray-700">Address</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -430,6 +609,7 @@
                                     <td class="py-2 px-2">Male</td>
                                     <td class="py-2 px-2">john@email.com</td>
                                     <td class="py-2 px-2">123-456-7890</td>
+                                    <td class="py-2 px-2">123 Main St, City</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -627,6 +807,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
+        // Handle package/blood chemistry blocking for both checking and unchecking
+        handlePackageBloodChemistryBlocking(current);
+
         // Update hidden inputs with current selections
         updateHiddenInputs();
         
@@ -638,6 +821,113 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update selected test info in sidebar
         updateSelectedTestsInfo();
+    }
+
+    function handlePackageBloodChemistryBlocking(currentCheckbox) {
+        const currentCategoryId = currentCheckbox.getAttribute('data-category-id');
+        
+        // Get category names by finding the category elements
+        const categories = {};
+        document.querySelectorAll('[id^="category-"]').forEach(categoryDiv => {
+            const categoryId = categoryDiv.id.replace('category-', '');
+            const categoryHeader = categoryDiv.previousElementSibling.querySelector('h4');
+            if (categoryHeader) {
+                const categoryName = categoryHeader.textContent.trim().toLowerCase();
+                categories[categoryId] = categoryName;
+            }
+        });
+
+        const currentCategoryName = categories[currentCategoryId];
+
+        if (currentCheckbox.checked) {
+            if (currentCategoryName === 'package') {
+                // If package is selected, disable and uncheck all blood chemistry tests
+                Object.keys(categories).forEach(catId => {
+                    if (categories[catId] === 'blood chemistry') {
+                        const bloodChemistryCheckboxes = document.querySelectorAll(`input[data-category-id="${catId}"]`);
+                        bloodChemistryCheckboxes.forEach(cb => {
+                            cb.checked = false;
+                            cb.disabled = true;
+                            cb.closest('label').style.opacity = '0.5';
+                            cb.closest('label').style.pointerEvents = 'none';
+                        });
+                        
+                        // Show blocking notice
+                        const blockingNotice = document.getElementById(`blocking-notice-${catId}`);
+                        const blockingText = document.getElementById(`blocking-text-${catId}`);
+                        if (blockingNotice && blockingText) {
+                            blockingText.textContent = 'Blood Chemistry tests are disabled because a Package is selected. Unselect the package to enable these tests.';
+                            blockingNotice.classList.remove('hidden');
+                        }
+                    }
+                });
+            } else if (currentCategoryName === 'blood chemistry') {
+                // If blood chemistry is selected, disable and uncheck all package tests
+                Object.keys(categories).forEach(catId => {
+                    if (categories[catId] === 'package') {
+                        const packageCheckboxes = document.querySelectorAll(`input[data-category-id="${catId}"]`);
+                        packageCheckboxes.forEach(cb => {
+                            cb.checked = false;
+                            cb.disabled = true;
+                            cb.closest('label').style.opacity = '0.5';
+                            cb.closest('label').style.pointerEvents = 'none';
+                        });
+                        
+                        // Show blocking notice
+                        const blockingNotice = document.getElementById(`blocking-notice-${catId}`);
+                        const blockingText = document.getElementById(`blocking-text-${catId}`);
+                        if (blockingNotice && blockingText) {
+                            blockingText.textContent = 'Package tests are disabled because Blood Chemistry is selected. Unselect blood chemistry tests to enable packages.';
+                            blockingNotice.classList.remove('hidden');
+                        }
+                    }
+                });
+            }
+        } else {
+            // If unchecking, check if we need to re-enable the blocked category
+            const stillHasSelection = Array.from(document.querySelectorAll(`input[data-category-id="${currentCategoryId}"]`))
+                .some(cb => cb.checked);
+
+            if (!stillHasSelection) {
+                if (currentCategoryName === 'package') {
+                    // Re-enable blood chemistry tests
+                    Object.keys(categories).forEach(catId => {
+                        if (categories[catId] === 'blood chemistry') {
+                            const bloodChemistryCheckboxes = document.querySelectorAll(`input[data-category-id="${catId}"]`);
+                            bloodChemistryCheckboxes.forEach(cb => {
+                                cb.disabled = false;
+                                cb.closest('label').style.opacity = '1';
+                                cb.closest('label').style.pointerEvents = 'auto';
+                            });
+                            
+                            // Hide blocking notice
+                            const blockingNotice = document.getElementById(`blocking-notice-${catId}`);
+                            if (blockingNotice) {
+                                blockingNotice.classList.add('hidden');
+                            }
+                        }
+                    });
+                } else if (currentCategoryName === 'blood chemistry') {
+                    // Re-enable package tests
+                    Object.keys(categories).forEach(catId => {
+                        if (categories[catId] === 'package') {
+                            const packageCheckboxes = document.querySelectorAll(`input[data-category-id="${catId}"]`);
+                            packageCheckboxes.forEach(cb => {
+                                cb.disabled = false;
+                                cb.closest('label').style.opacity = '1';
+                                cb.closest('label').style.pointerEvents = 'auto';
+                            });
+                            
+                            // Hide blocking notice
+                            const blockingNotice = document.getElementById(`blocking-notice-${catId}`);
+                            if (blockingNotice) {
+                                blockingNotice.classList.add('hidden');
+                            }
+                        }
+                    });
+                }
+            }
+        }
     }
 
     function updateSelectedTestsInfo() {
@@ -693,6 +983,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize on page load
     updateHiddenInputs();
+    
+    // Initialize blocking state on page load (for form validation errors)
+    testCheckboxes.forEach(cb => {
+        if (cb.checked) {
+            handlePackageBloodChemistryBlocking(cb);
+        }
+    });
     
     // Prevent form submission if date is not available
     const form = document.querySelector('form');
@@ -783,7 +1080,96 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // File preview functionality
+    const fileInput = document.getElementById('excel_file');
+    const filePreview = document.getElementById('filePreview');
+    
+    fileInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            const file = e.target.files[0];
+            previewExcelFile(file);
+        } else {
+            clearFilePreview();
+        }
+    });
+
+    function previewExcelFile(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                
+                displayPreview(file.name, jsonData);
+            } catch (error) {
+                console.error('Error reading Excel file:', error);
+                alert('Error reading Excel file. Please make sure it\'s a valid Excel file.');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function displayPreview(fileName, data) {
+        document.getElementById('fileName').textContent = fileName;
+        
+        if (data.length === 0) {
+            document.getElementById('previewContent').innerHTML = '<p class="text-gray-500 text-sm">No data found in the file.</p>';
+            document.getElementById('recordCount').textContent = '0 records';
+            filePreview.classList.remove('hidden');
+            return;
+        }
+
+        // Create preview table
+        let html = '<div class="overflow-x-auto"><table class="w-full text-xs border-collapse">';
+        
+        // Header row
+        if (data[0]) {
+            html += '<thead><tr class="bg-gray-50 border-b">';
+            const expectedHeaders = ['First Name', 'Last Name', 'Age', 'Sex', 'Email', 'Phone', 'Address'];
+            for (let i = 0; i < Math.max(data[0].length, expectedHeaders.length); i++) {
+                const header = data[0][i] || expectedHeaders[i] || `Column ${i + 1}`;
+                html += `<th class="text-left py-2 px-2 font-medium text-gray-700 border-r">${header}</th>`;
+            }
+            html += '</tr></thead>';
+        }
+
+        // Data rows (show first 10 rows)
+        html += '<tbody>';
+        const maxRows = Math.min(data.length, 11); // Show up to 10 data rows (excluding header)
+        for (let i = 1; i < maxRows; i++) {
+            html += '<tr class="border-b hover:bg-gray-50">';
+            const maxCols = Math.max(data[i] ? data[i].length : 0, 7); // Ensure 7 columns for address
+            for (let j = 0; j < maxCols; j++) {
+                const cellValue = data[i] && data[i][j] !== undefined ? data[i][j] : '';
+                html += `<td class="py-2 px-2 border-r text-gray-600">${cellValue}</td>`;
+            }
+            html += '</tr>';
+        }
+        
+        if (data.length > 11) {
+            html += `<tr><td colspan="7" class="py-2 px-2 text-center text-gray-500 italic">... and ${data.length - 11} more rows</td></tr>`;
+        }
+        
+        html += '</tbody></table></div>';
+        
+        document.getElementById('previewContent').innerHTML = html;
+        document.getElementById('recordCount').textContent = `${data.length - 1} records found`;
+        filePreview.classList.remove('hidden');
+    }
+
+    window.clearFilePreview = function() {
+        fileInput.value = '';
+        filePreview.classList.add('hidden');
+        document.getElementById('previewContent').innerHTML = '';
+        document.getElementById('fileName').textContent = '';
+        document.getElementById('recordCount').textContent = '';
+    };
 });
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 @endpush
 @endsection

@@ -1,25 +1,23 @@
-@extends('layouts.radiologist')
+<?php $__env->startSection('title', 'Annual Physical X-Ray'); ?>
+<?php $__env->startSection('page-title', 'Annual Physical Chest X-Ray'); ?>
+<?php $__env->startSection('page-description', 'Review and analyze annual physical X-ray images'); ?>
 
-@section('title', 'Annual Physical X-Ray')
-@section('page-title', 'Annual Physical Chest X-Ray')
-@section('page-description', 'Review and analyze annual physical X-ray images')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="space-y-8">
     <!-- Success Message -->
-    @if(session('success'))
+    <?php if(session('success')): ?>
         <div class="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-6 flex items-center space-x-4 shadow-lg">
             <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
                 <i class="fas fa-check text-emerald-600 text-lg"></i>
             </div>
             <div class="flex-1">
-                <p class="text-emerald-800 font-semibold text-lg">{{ session('success') }}</p>
+                <p class="text-emerald-800 font-semibold text-lg"><?php echo e(session('success')); ?></p>
             </div>
             <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-600 transition-colors p-2">
                 <i class="fas fa-times text-lg"></i>
             </button>
         </div>
-    @endif
+    <?php endif; ?>
 
     <!-- Header Card -->
     <div class="bg-white rounded-xl shadow-lg border-2 border-gray-200 overflow-hidden">
@@ -36,7 +34,7 @@
                 </div>
                 <div class="text-right">
                     <div class="text-white/90 text-sm">Total Records</div>
-                    <div class="text-white font-bold text-3xl">{{ count($patients) }}</div>
+                    <div class="text-white font-bold text-3xl"><?php echo e(count($patients)); ?></div>
                 </div>
             </div>
         </div>
@@ -44,19 +42,19 @@
 
     <!-- X-Ray Status Tabs -->
     <div class="content-card rounded-xl overflow-hidden shadow-lg border border-gray-200">
-        @php
+        <?php
             $currentTab = request('xray_status', 'needs_attention');
-        @endphp
+        ?>
         
         <!-- Tab Navigation -->
         <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <div class="flex space-x-1">
-                    <a href="{{ request()->fullUrlWithQuery(['xray_status' => 'needs_attention']) }}" 
-                       class="px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 {{ $currentTab === 'needs_attention' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50' }}">
+                    <a href="<?php echo e(request()->fullUrlWithQuery(['xray_status' => 'needs_attention'])); ?>" 
+                       class="px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 <?php echo e($currentTab === 'needs_attention' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'); ?>">
                         <i class="fas fa-exclamation-circle mr-2"></i>
                         Needs Review
-                        @php
+                        <?php
                             $needsAttentionCount = \App\Models\Patient::where('status', 'approved')
                                 ->whereHas('medicalChecklists', function($q) {
                                     $q->where('examination_type', 'annual-physical')
@@ -70,17 +68,18 @@
                                       ->where('findings', '!=', '');
                                 })
                                 ->count();
-                        @endphp
-                        <span class="ml-2 px-2 py-1 text-xs rounded-full {{ $currentTab === 'needs_attention' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600' }}">
-                            {{ $needsAttentionCount }}
+                        ?>
+                        <span class="ml-2 px-2 py-1 text-xs rounded-full <?php echo e($currentTab === 'needs_attention' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'); ?>">
+                            <?php echo e($needsAttentionCount); ?>
+
                         </span>
                     </a>
                     
-                    <a href="{{ request()->fullUrlWithQuery(['xray_status' => 'review_completed']) }}" 
-                       class="px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 {{ $currentTab === 'review_completed' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50' }}">
+                    <a href="<?php echo e(request()->fullUrlWithQuery(['xray_status' => 'review_completed'])); ?>" 
+                       class="px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 <?php echo e($currentTab === 'review_completed' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'); ?>">
                         <i class="fas fa-check-circle mr-2"></i>
                         Review Completed
-                        @php
+                        <?php
                             $completedCount = \App\Models\Patient::where('status', 'approved')
                                 ->whereHas('medicalChecklists', function($q) {
                                     $q->where('examination_type', 'annual-physical')
@@ -94,14 +93,15 @@
                                       ->where('findings', '!=', '');
                                 })
                                 ->count();
-                        @endphp
-                        <span class="ml-2 px-2 py-1 text-xs rounded-full {{ $currentTab === 'review_completed' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600' }}">
-                            {{ $completedCount }}
+                        ?>
+                        <span class="ml-2 px-2 py-1 text-xs rounded-full <?php echo e($currentTab === 'review_completed' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'); ?>">
+                            <?php echo e($completedCount); ?>
+
                         </span>
                     </a>
                 </div>
                 
-                <a href="{{ route('radiologist.annual-physical-xray') }}" class="text-sm text-gray-500 hover:text-gray-700 font-medium">
+                <a href="<?php echo e(route('radiologist.annual-physical-xray')); ?>" class="text-sm text-gray-500 hover:text-gray-700 font-medium">
                     <i class="fas fa-times mr-1"></i>Clear All Filters
                 </a>
             </div>
@@ -109,14 +109,14 @@
 
         <!-- Additional Filters -->
         <div class="p-6">
-            <form method="GET" action="{{ route('radiologist.annual-physical-xray') }}" class="space-y-6">
+            <form method="GET" action="<?php echo e(route('radiologist.annual-physical-xray')); ?>" class="space-y-6">
                 <!-- Preserve current tab -->
-                <input type="hidden" name="xray_status" value="{{ $currentTab }}">
+                <input type="hidden" name="xray_status" value="<?php echo e($currentTab); ?>">
                 
                 <!-- Preserve search query -->
-                @if(request('search'))
-                    <input type="hidden" name="search" value="{{ request('search') }}">
-                @endif
+                <?php if(request('search')): ?>
+                    <input type="hidden" name="search" value="<?php echo e(request('search')); ?>">
+                <?php endif; ?>
                 
                 <!-- Filter Row: Gender only -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -125,8 +125,8 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
                         <select name="gender" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm">
                             <option value="">All Genders</option>
-                            <option value="male" {{ request('gender') === 'male' ? 'selected' : '' }}>Male</option>
-                            <option value="female" {{ request('gender') === 'female' ? 'selected' : '' }}>Female</option>
+                            <option value="male" <?php echo e(request('gender') === 'male' ? 'selected' : ''); ?>>Male</option>
+                            <option value="female" <?php echo e(request('gender') === 'female' ? 'selected' : ''); ?>>Female</option>
                         </select>
                     </div>
 
@@ -140,29 +140,30 @@
                         <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200">
                             <i class="fas fa-search mr-2"></i>Apply Filters
                         </button>
-                        <a href="{{ request()->fullUrlWithQuery(['gender' => null, 'search' => null]) }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                        <a href="<?php echo e(request()->fullUrlWithQuery(['gender' => null, 'search' => null])); ?>" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors duration-200">
                             <i class="fas fa-undo mr-2"></i>Reset Filters
                         </a>
                     </div>
                     
                     <!-- Active Filters Display -->
-                    @if(request()->hasAny(['gender', 'search']))
+                    <?php if(request()->hasAny(['gender', 'search'])): ?>
                         <div class="flex items-center space-x-2">
                             <span class="text-sm text-gray-600">Active filters:</span>
-                            @if(request('search'))
+                            <?php if(request('search')): ?>
                                 <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
-                                    Search: "{{ request('search') }}"
-                                    <a href="{{ request()->fullUrlWithQuery(['search' => null]) }}" class="ml-1 text-purple-600 hover:text-purple-800">×</a>
+                                    Search: "<?php echo e(request('search')); ?>"
+                                    <a href="<?php echo e(request()->fullUrlWithQuery(['search' => null])); ?>" class="ml-1 text-purple-600 hover:text-purple-800">×</a>
                                 </span>
-                            @endif
-                            @if(request('gender'))
+                            <?php endif; ?>
+                            <?php if(request('gender')): ?>
                                 <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
-                                    Gender: {{ ucfirst(request('gender')) }}
-                                    <a href="{{ request()->fullUrlWithQuery(['gender' => null]) }}" class="ml-1 text-blue-600 hover:text-blue-800">×</a>
+                                    Gender: <?php echo e(ucfirst(request('gender'))); ?>
+
+                                    <a href="<?php echo e(request()->fullUrlWithQuery(['gender' => null])); ?>" class="ml-1 text-blue-600 hover:text-blue-800">×</a>
                                 </span>
-                            @endif
+                            <?php endif; ?>
                         </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </form>
         </div>
@@ -182,19 +183,20 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
-                    @forelse($patients as $patient)
+                    <?php $__empty_1 = true; $__currentLoopData = $patients; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $patient): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                         <tr class="hover:bg-purple-50 transition-colors duration-150">
                             <!-- Patient -->
                             <td class="px-6 py-4">
                                 <div class="flex items-center space-x-3">
                                     <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
                                         <span class="text-purple-600 font-bold text-sm">
-                                            {{ substr($patient->first_name, 0, 1) }}{{ substr($patient->last_name, 0, 1) }}
+                                            <?php echo e(substr($patient->first_name, 0, 1)); ?><?php echo e(substr($patient->last_name, 0, 1)); ?>
+
                                         </span>
                                     </div>
                                     <div>
-                                        <div class="font-semibold text-gray-900">{{ $patient->first_name }} {{ $patient->last_name }}</div>
-                                        <div class="text-xs text-gray-500">Patient ID: #{{ $patient->id }}</div>
+                                        <div class="font-semibold text-gray-900"><?php echo e($patient->first_name); ?> <?php echo e($patient->last_name); ?></div>
+                                        <div class="text-xs text-gray-500">Patient ID: #<?php echo e($patient->id); ?></div>
                                     </div>
                                 </div>
                             </td>
@@ -202,48 +204,49 @@
                             <!-- Company -->
                             <td class="px-6 py-4">
                                 <div class="text-sm font-medium text-gray-900">
-                                    {{ $patient->company_name ?? ($patient->company ?? 'N/A') }}
+                                    <?php echo e($patient->company_name ?? ($patient->company ?? 'N/A')); ?>
+
                                 </div>
                             </td>
 
                             <!-- Age & Gender -->
                             <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">{{ $patient->age }} years old</div>
-                                <div class="text-xs text-gray-500">{{ ucfirst($patient->sex) }}</div>
+                                <div class="text-sm text-gray-900"><?php echo e($patient->age); ?> years old</div>
+                                <div class="text-xs text-gray-500"><?php echo e(ucfirst($patient->sex)); ?></div>
                             </td>
 
                             <!-- Status -->
                             <td class="px-6 py-4">
-                                @if($patient->medicalChecklist && $patient->medicalChecklist->xray_image_path)
+                                <?php if($patient->medicalChecklist && $patient->medicalChecklist->xray_image_path): ?>
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                         <i class="fas fa-check-circle mr-1"></i>
                                         X-Ray Available
                                     </span>
-                                @else
+                                <?php else: ?>
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                         <i class="fas fa-clock mr-1"></i>
                                         Pending
                                     </span>
-                                @endif
+                                <?php endif; ?>
                             </td>
 
                             <!-- Actions -->
                             <td class="px-6 py-4">
-                                @if($patient->medicalChecklist && $patient->medicalChecklist->xray_image_path)
-                                    <a href="{{ route('radiologist.annual-physical.show', $patient->id) }}" 
+                                <?php if($patient->medicalChecklist && $patient->medicalChecklist->xray_image_path): ?>
+                                    <a href="<?php echo e(route('radiologist.annual-physical.show', $patient->id)); ?>" 
                                        class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
                                         <i class="fas fa-eye mr-2"></i>
                                         View X-Ray
                                     </a>
-                                @else
+                                <?php else: ?>
                                     <span class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-500 text-sm font-medium rounded-lg cursor-not-allowed">
                                         <i class="fas fa-ban mr-2"></i>
                                         No Image
                                     </span>
-                                @endif
+                                <?php endif; ?>
                             </td>
                         </tr>
-                    @empty
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                         <tr>
                             <td colspan="5" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center justify-center space-y-4">
@@ -257,10 +260,12 @@
                                 </div>
                             </td>
                         </tr>
-                    @endforelse
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.radiologist', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\rss_new\resources\views/radiologist/annual-physical-xray.blade.php ENDPATH**/ ?>

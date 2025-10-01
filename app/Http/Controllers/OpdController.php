@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
 use App\Mail\AppointmentConfirmation;
 use App\Models\User;
+use App\Models\Notification;
 use Carbon\Carbon;
 
 class OpdController extends Controller
@@ -211,6 +212,25 @@ class OpdController extends Controller
             'password' => Hash::make($request->password),
             'created_by' => auth()->id(), // Track who created this account
         ]);
+
+        // Create notification for admin when OPD patient registers
+        Notification::createForAdmin(
+            'patient_registered',
+            'New OPD Patient Registered',
+            "New OPD walk-in patient {$user->full_name} has registered for medical examination. Age: {$age}, Company: " . ($request->company ?: 'Individual'),
+            [
+                'patient_id' => $user->id,
+                'patient_name' => $user->full_name,
+                'patient_age' => $age,
+                'patient_company' => $request->company,
+                'registration_type' => 'opd_walkin',
+                'email' => $email,
+                'phone' => $phone
+            ],
+            'medium',
+            null, // System generated
+            $user
+        );
 
         return redirect()->route('opd.dashboard')->with('success', 'OPD account created successfully for ' . $user->full_name . '!');
     }

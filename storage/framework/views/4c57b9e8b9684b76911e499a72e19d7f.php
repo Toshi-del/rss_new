@@ -1,5 +1,6 @@
 <?php $__env->startSection('title', 'Radiologist Dashboard'); ?>
 <?php $__env->startSection('page-title', 'Radiologist Dashboard'); ?>
+<?php $__env->startSection('page-description', 'Radiologic Technologist Portal'); ?>
 
 <?php $__env->startSection('content'); ?>
 <div class="space-y-8">
@@ -77,4 +78,4 @@
 
 
 
-<?php echo $__env->make('layouts.radtech', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\rss_new\resources\views/radiologist/dashboard.blade.php ENDPATH**/ ?>
+<?php echo $__env->make('layouts.radiologist', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\rss_new\resources\views/radiologist/dashboard.blade.php ENDPATH**/ ?>

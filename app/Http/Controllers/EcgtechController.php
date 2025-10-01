@@ -12,6 +12,7 @@ use App\Models\OpdExamination;
 use App\Models\User;
 use App\Models\Message;
 use App\Models\MedicalTest;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -320,6 +321,29 @@ class EcgtechController extends Controller
 
         $medicalChecklist->update($data);
 
+        // Create notification for admin when ECG is completed
+        $ecgtech = Auth::user();
+        $patientName = $medicalChecklist->name;
+        $examinationType = $medicalChecklist->pre_employment_record_id ? 'Pre-Employment' : 
+                          ($medicalChecklist->patient_id ? 'Annual Physical' : 'OPD');
+        
+        Notification::createForAdmin(
+            'ecg_completed',
+            'ECG Examination Completed',
+            "ECG Tech {$ecgtech->name} has completed ECG examination for {$patientName} ({$examinationType}).",
+            [
+                'checklist_id' => $medicalChecklist->id,
+                'patient_name' => $patientName,
+                'ecgtech_name' => $ecgtech->name,
+                'examination_type' => strtolower(str_replace('-', '_', $examinationType)),
+                'ecg_result' => $data['ecg_result'],
+                'has_findings' => !empty($data['ecg_findings'])
+            ],
+            'medium',
+            $ecgtech,
+            $medicalChecklist
+        );
+
         return redirect()->back()->with('success', 'ECG checklist updated successfully.');
     }
 
@@ -609,6 +633,27 @@ class EcgtechController extends Controller
                 'updated_by' => Auth::id(),
                 'updated_at' => now()
             ]);
+
+            // Create notification for admin when ECG examination is completed
+            $ecgtech = Auth::user();
+            $patientName = $preEmploymentRecord->full_name;
+            
+            Notification::createForAdmin(
+                'ecg_completed',
+                'ECG Examination Completed - Pre-Employment',
+                "ECG Tech {$ecgtech->name} has completed ECG examination for {$patientName} (Pre-Employment).",
+                [
+                    'examination_id' => $preEmployment->id,
+                    'patient_name' => $patientName,
+                    'ecgtech_name' => $ecgtech->name,
+                    'examination_type' => 'pre_employment',
+                    'ecg_result' => $request->ecg,
+                    'heart_rate' => $request->heart_rate
+                ],
+                'medium',
+                $ecgtech,
+                $preEmployment
+            );
 
             return redirect()->route('ecgtech.pre-employment')->with('success', 'ECG examination results updated successfully and sent to doctor for review.');
         } catch (\Exception $e) {

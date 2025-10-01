@@ -9,6 +9,7 @@ use App\Models\PreEmploymentRecord;
 use App\Models\User;
 use App\Models\OpdExamination;
 use App\Models\DrugTestResult;
+use App\Models\Notification;
 use App\Services\MedicalWorkflowService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -83,22 +84,83 @@ class NurseController extends Controller
 
 
     /**
-     * Show pre-employment records
+     * Show pre-employment records with enhanced filtering
      */
-    public function preEmployment()
+    public function preEmployment(Request $request)
     {
-        $preEmployments = PreEmploymentRecord::with([
+        $query = PreEmploymentRecord::with([
                 'medicalTestCategory', 
                 'medicalTest',
-                'preEmploymentExamination'
+                'preEmploymentExamination',
+                'medicalChecklist'
             ])
-            ->where('status', 'approved')
-            ->whereDoesntHave('preEmploymentExamination')
-            ->latest()
-            ->paginate(15);
+            ->where('status', 'approved');
+
+        // Apply filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('company_name', 'like', "%{$search}%")
+                  ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"]);
+            });
+        }
+
+        if ($request->filled('company')) {
+            $query->where('company_name', 'like', "%{$request->company}%");
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Gender filtering
+        if ($request->filled('gender')) {
+            $query->where('sex', $request->gender);
+        }
+
+        // Date range filtering
+        if ($request->filled('date_range')) {
+            switch ($request->date_range) {
+                case 'today':
+                    $query->whereDate('created_at', today());
+                    break;
+                case 'week':
+                    $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                    break;
+                case 'month':
+                    $query->whereMonth('created_at', now()->month)
+                          ->whereYear('created_at', now()->year);
+                    break;
+            }
+        }
+
+        // Examination status filtering - simplified to two tabs
+        // Set default exam_status to 'needs_attention' if not specified
+        $examStatus = $request->filled('exam_status') ? $request->exam_status : 'needs_attention';
         
-        return view('nurse.pre-employment', compact('preEmployments'));
+        switch ($examStatus) {
+            case 'needs_attention':
+                // Default: Records that need nurse attention (no examination created yet)
+                $query->whereDoesntHave('preEmploymentExamination');
+                break;
+                
+            case 'exam_completed':
+                // Records that have physical examinations completed
+                $query->whereHas('preEmploymentExamination');
+                break;
+        }
+
+        $preEmployments = $query->latest()->paginate(15);
+        
+        // Get companies for filter dropdown
+        $companies = PreEmploymentRecord::distinct()->pluck('company_name')->filter()->sort()->values();
+        
+        return view('nurse.pre-employment', compact('preEmployments', 'companies'));
     }
+
 
     /**
      * Show annual physical patients
@@ -245,6 +307,29 @@ class NurseController extends Controller
 
         $checklist = \App\Models\MedicalChecklist::create($validated);
 
+        // Create notification for admin when medical checklist is completed
+        if (!empty($validated['physical_exam_done_by'])) {
+            $nurse = Auth::user();
+            $patientName = $validated['name'];
+            $examinationType = ucwords(str_replace('-', ' ', $validated['examination_type']));
+            
+            Notification::createForAdmin(
+                'checklist_completed',
+                'Medical Checklist Completed',
+                "Nurse {$nurse->name} has completed the medical checklist for {$patientName} ({$examinationType}).",
+                [
+                    'checklist_id' => $checklist->id,
+                    'patient_name' => $patientName,
+                    'nurse_name' => $nurse->name,
+                    'examination_type' => $validated['examination_type'],
+                    'completed_by' => $validated['physical_exam_done_by']
+                ],
+                'medium',
+                $nurse,
+                $checklist
+            );
+        }
+
         // Trigger automatic workflow check
         $workflowService = new MedicalWorkflowService();
         $workflowService->onMedicalChecklistUpdated($checklist);
@@ -278,6 +363,29 @@ class NurseController extends Controller
         ]);
 
         $medicalChecklist->update($validated);
+
+        // Create notification for admin when medical checklist is completed/updated
+        if (!empty($validated['physical_exam_done_by'])) {
+            $nurse = Auth::user();
+            $patientName = $medicalChecklist->name;
+            $examinationType = ucwords(str_replace('-', ' ', $medicalChecklist->examination_type));
+            
+            Notification::createForAdmin(
+                'checklist_completed',
+                'Medical Checklist Updated',
+                "Nurse {$nurse->name} has updated the medical checklist for {$patientName} ({$examinationType}).",
+                [
+                    'checklist_id' => $medicalChecklist->id,
+                    'patient_name' => $patientName,
+                    'nurse_name' => $nurse->name,
+                    'examination_type' => $medicalChecklist->examination_type,
+                    'completed_by' => $validated['physical_exam_done_by']
+                ],
+                'medium',
+                $nurse,
+                $medicalChecklist
+            );
+        }
 
         // Trigger automatic workflow check
         $workflowService = new MedicalWorkflowService();
@@ -431,7 +539,7 @@ class NurseController extends Controller
             'skin_marks' => $isAudiometryIshiharaOnly ? 'nullable|string' : 'required|string',
             'visual' => $isAudiometryIshiharaOnly ? 'nullable|string' : 'required|string',
             'ishihara_test' => $showIshiharaTest ? 'required|string' : 'nullable|string',
-            'findings' => 'required|string',
+            'findings' => 'nullable|string',
             'lab_report' => 'nullable|array',
             'physical_findings' => 'nullable|array',
             'lab_findings' => 'nullable|array',
@@ -440,7 +548,6 @@ class NurseController extends Controller
 
         // Dynamic validation messages
         $validationMessages = [
-            'findings.required' => 'Findings are required.',
         ];
 
         // Add validation messages only for fields that are required
@@ -539,7 +646,7 @@ class NurseController extends Controller
             'skin_marks' => 'required|string',
             'visual' => 'required|string',
             'ishihara_test' => $isAnnualMedicalExam ? 'nullable|string' : 'required|string',
-            'findings' => 'required|string',
+            'findings' => 'nullable|string',
             'lab_report' => 'nullable|array',
             'physical_findings' => 'nullable|array',
             'lab_findings' => 'nullable|array',
@@ -555,7 +662,6 @@ class NurseController extends Controller
             'physical_exam.weight.required' => 'Weight is required.',
             'skin_marks.required' => 'Skin identification marks are required.',
             'visual.required' => 'Visual examination is required.',
-            'findings.required' => 'Findings are required.',
         ];
 
         // Add Ishihara test validation message only if it's required
@@ -580,6 +686,24 @@ class NurseController extends Controller
             'appointment_id' => $patient->appointment->id ?? null,
             'patient_name' => $validated['name']
         ]);
+
+        // Create notification for admin
+        $nurse = Auth::user();
+        Notification::createForAdmin(
+            'annual_physical_created',
+            'Annual Physical Examination Created',
+            "Nurse {$nurse->name} has created an annual physical examination for patient {$patient->full_name}.",
+            [
+                'examination_id' => $examination->id,
+                'patient_id' => $patient->id,
+                'patient_name' => $patient->full_name,
+                'nurse_name' => $nurse->name,
+                'examination_date' => $examination->date
+            ],
+            'medium',
+            $nurse,
+            $examination
+        );
 
         // Trigger automatic workflow check
         $workflowService = new MedicalWorkflowService();
@@ -633,7 +757,7 @@ class NurseController extends Controller
             'skin_marks' => 'required|string',
             'visual' => 'required|string',
             'ishihara_test' => 'required|string',
-            'findings' => 'required|string',
+            'findings' => 'nullable|string',
             'lab_report' => 'nullable|array',
             'physical_findings' => 'nullable|array',
             'lab_findings' => 'nullable|array',
@@ -647,7 +771,6 @@ class NurseController extends Controller
             'skin_marks.required' => 'Skin marks/tattoos are required.',
             'visual.required' => 'Visual acuity is required.',
             'ishihara_test.required' => 'Ishihara test is required.',
-            'findings.required' => 'Findings are required.',
         ]);
 
         // Auto-populate linkage fields from the OPD patient

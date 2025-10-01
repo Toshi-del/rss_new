@@ -17,7 +17,9 @@ class Patient extends Model
         'sex',
         'email',
         'phone',
+        'address',
         'appointment_id',
+        'company_name',
     ];
 
     public function appointment(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -47,6 +49,14 @@ class Patient extends Model
     public function medicalChecklist(): HasOne
     {
         return $this->hasOne(MedicalChecklist::class, 'patient_id');
+    }
+
+    /**
+     * Get all medical checklists for this patient (for filtering)
+     */
+    public function medicalChecklists(): HasMany
+    {
+        return $this->hasMany(MedicalChecklist::class, 'patient_id');
     }
 
 }

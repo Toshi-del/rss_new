@@ -7,6 +7,7 @@ use App\Models\Message;
 use App\Models\Patient;
 use App\Models\PreEmploymentRecord;
 use App\Models\User;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\PreEmploymentExamination;
@@ -249,6 +250,28 @@ class DoctorController extends Controller
             'ecg' => 'nullable|string',
         ]);
         $preEmployment->update($data);
+        
+        // Create notification for admin when doctor completes examination
+        $doctor = Auth::user();
+        $patientName = $preEmployment->name ?? 'Unknown Patient';
+        
+        Notification::createForAdmin(
+            'examination_updated',
+            'Medical Examination Updated by Doctor - Pre-Employment',
+            "Doctor {$doctor->name} has updated medical examination for {$patientName} (Pre-Employment).",
+            [
+                'examination_id' => $preEmployment->id,
+                'patient_name' => $patientName,
+                'doctor_name' => $doctor->name,
+                'examination_type' => 'pre_employment',
+                'has_findings' => !empty($data['findings']),
+                'has_lab_report' => !empty($data['lab_report'])
+            ],
+            'medium',
+            $doctor,
+            $preEmployment
+        );
+        
         return redirect()->route('doctor.pre-employment.edit', $preEmployment->id)->with('success', 'Pre-Employment Examination updated successfully.');
     }
 

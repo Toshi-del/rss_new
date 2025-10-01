@@ -37,22 +37,192 @@
 
     <!-- Header Section -->
     <div class="content-card rounded-xl overflow-hidden shadow-lg border border-gray-200">
-        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
+        <div class="bg-gradient-to-r from-emerald-600 to-emerald-700 px-8 py-6">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                    <div class="w-16 h-16 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20">
-                        <i class="fas fa-user-md text-white text-2xl"></i>
+                    <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20">
+                        <i class="fas fa-user-md text-white text-xl"></i>
                     </div>
                     <div>
-                        <h2 class="text-2xl font-bold text-white">Pre-Employment Medical Examinations</h2>
-                        <p class="text-blue-100 text-sm">Employment health assessments and medical clearances</p>
+                        <h3 class="text-xl font-bold text-white">Pre-Employment Medical Management</h3>
+                        <p class="text-emerald-100 text-sm">Employment health assessments and medical clearances</p>
                     </div>
                 </div>
-                <div class="text-right">
-                    <div class="text-white/90 text-sm">Total Records</div>
-                    <div class="text-white font-bold text-2xl">{{ $preEmployments->count() }}</div>
+                <div class="flex items-center space-x-4">
+                    <!-- Search Form -->
+                    <form method="GET" action="{{ route('nurse.pre-employment') }}" class="flex items-center space-x-3">
+                        <!-- Preserve current filter -->
+                        @if(request('exam_status'))
+                            <input type="hidden" name="exam_status" value="{{ request('exam_status') }}">
+                        @endif
+                        @if(request('company'))
+                            <input type="hidden" name="company" value="{{ request('company') }}">
+                        @endif
+                        @if(request('gender'))
+                            <input type="hidden" name="gender" value="{{ request('gender') }}">
+                        @endif
+                        @if(request('date_range'))
+                            <input type="hidden" name="date_range" value="{{ request('date_range') }}">
+                        @endif
+                        
+                        <!-- Search Bar -->
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-white/60 text-sm"></i>
+                            </div>
+                            <input type="text" 
+                                   name="search"
+                                   value="{{ request('search') }}"
+                                   class="glass-morphism pl-12 pr-4 py-2 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all duration-200 w-72 text-sm border border-white/20" 
+                                   placeholder="Search by name, email, company...">
+                        </div>
+                        
+                        <!-- Search Button -->
+                        <button type="submit" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 border border-white/20 backdrop-blur-sm">
+                            <i class="fas fa-search text-sm"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Exam Status Tabs -->
+    <div class="content-card rounded-xl overflow-hidden shadow-lg border border-gray-200">
+        @php
+            $currentTab = request('exam_status', 'needs_attention');
+        @endphp
+        
+        <!-- Tab Navigation -->
+        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex space-x-1">
+                    <a href="{{ request()->fullUrlWithQuery(['exam_status' => 'needs_attention']) }}" 
+                       class="px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 {{ $currentTab === 'needs_attention' ? 'bg-emerald-600 text-white' : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50' }}">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        Needs Attention
+                        @php
+                            $needsAttentionCount = \App\Models\PreEmploymentRecord::where('status', 'approved')
+                                ->whereDoesntHave('preEmploymentExamination')
+                                ->count();
+                        @endphp
+                        <span class="ml-2 px-2 py-1 text-xs rounded-full {{ $currentTab === 'needs_attention' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600' }}">
+                            {{ $needsAttentionCount }}
+                        </span>
+                    </a>
+                    
+                    <a href="{{ request()->fullUrlWithQuery(['exam_status' => 'exam_completed']) }}" 
+                       class="px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 {{ $currentTab === 'exam_completed' ? 'bg-emerald-600 text-white' : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50' }}">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        Completed
+                        @php
+                            $completedCount = \App\Models\PreEmploymentRecord::where('status', 'approved')
+                                ->whereHas('preEmploymentExamination')
+                                ->count();
+                        @endphp
+                        <span class="ml-2 px-2 py-1 text-xs rounded-full {{ $currentTab === 'exam_completed' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600' }}">
+                            {{ $completedCount }}
+                        </span>
+                    </a>
+                </div>
+                
+                <a href="{{ route('nurse.pre-employment') }}" class="text-sm text-gray-500 hover:text-gray-700 font-medium">
+                    <i class="fas fa-times mr-1"></i>Clear All Filters
+                </a>
+            </div>
+        </div>
+
+        <!-- Additional Filters -->
+        <div class="p-6">
+            <form method="GET" action="{{ route('nurse.pre-employment') }}" class="space-y-6">
+                <!-- Preserve current tab -->
+                <input type="hidden" name="exam_status" value="{{ $currentTab }}">
+                
+                <!-- Preserve search query -->
+                @if(request('search'))
+                    <input type="hidden" name="search" value="{{ request('search') }}">
+                @endif
+                
+                <!-- Filter Row: Company, Gender, Date Range -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Company Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Company</label>
+                        <select name="company" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm">
+                            <option value="">All Companies</option>
+                            @foreach($companies as $company)
+                                <option value="{{ $company }}" {{ request('company') === $company ? 'selected' : '' }}>
+                                    {{ $company }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Gender Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                        <select name="gender" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm">
+                            <option value="">All Genders</option>
+                            <option value="male" {{ request('gender') === 'male' ? 'selected' : '' }}>Male</option>
+                            <option value="female" {{ request('gender') === 'female' ? 'selected' : '' }}>Female</option>
+                        </select>
+                    </div>
+
+                    <!-- Date Range Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                        <select name="date_range" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm">
+                            <option value="">All Dates</option>
+                            <option value="today" {{ request('date_range') === 'today' ? 'selected' : '' }}>Today</option>
+                            <option value="week" {{ request('date_range') === 'week' ? 'selected' : '' }}>This Week</option>
+                            <option value="month" {{ request('date_range') === 'month' ? 'selected' : '' }}>This Month</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Filter Actions -->
+                <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                    <div class="flex items-center space-x-4">
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                            <i class="fas fa-search mr-2"></i>Apply Filters
+                        </button>
+                        <a href="{{ request()->fullUrlWithQuery(['company' => null, 'gender' => null, 'date_range' => null, 'search' => null]) }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                            <i class="fas fa-undo mr-2"></i>Reset Filters
+                        </a>
+                    </div>
+                    
+                    <!-- Active Filters Display -->
+                    @if(request()->hasAny(['company', 'gender', 'date_range', 'search']))
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-gray-600">Active filters:</span>
+                            @if(request('search'))
+                                <span class="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs">
+                                    Search: "{{ request('search') }}"
+                                    <a href="{{ request()->fullUrlWithQuery(['search' => null]) }}" class="ml-1 text-emerald-600 hover:text-emerald-800">×</a>
+                                </span>
+                            @endif
+                            @if(request('company'))
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                                    Company: {{ request('company') }}
+                                    <a href="{{ request()->fullUrlWithQuery(['company' => null]) }}" class="ml-1 text-blue-600 hover:text-blue-800">×</a>
+                                </span>
+                            @endif
+                            @if(request('gender'))
+                                <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
+                                    Gender: {{ ucfirst(request('gender')) }}
+                                    <a href="{{ request()->fullUrlWithQuery(['gender' => null]) }}" class="ml-1 text-purple-600 hover:text-purple-800">×</a>
+                                </span>
+                            @endif
+                            @if(request('date_range'))
+                                <span class="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs">
+                                    Date: {{ ucfirst(request('date_range')) }}
+                                    <a href="{{ request()->fullUrlWithQuery(['date_range' => null]) }}" class="ml-1 text-indigo-600 hover:text-indigo-800">×</a>
+                                </span>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            </form>
         </div>
     </div>
 
@@ -120,7 +290,7 @@
 
     <!-- Pre-Employment Records Table -->
     <div class="content-card rounded-xl shadow-lg border border-gray-200">
-        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 rounded-t-xl">
+        <div class="bg-gradient-to-r from-emerald-600 to-emerald-700 px-8 py-6 rounded-t-xl">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center backdrop-blur-sm border border-white/20">
@@ -128,16 +298,8 @@
                     </div>
                     <div>
                         <h3 class="text-xl font-bold text-white">Pre-Employment Records</h3>
-                        <p class="text-blue-100 text-sm">Medical examination records and status tracking</p>
+                        <p class="text-emerald-100 text-sm">Medical examination records and status tracking</p>
                     </div>
-                </div>
-                <div class="flex items-center space-x-3">
-                    <button class="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 font-medium">
-                        <i class="fas fa-filter mr-2"></i>Filter
-                    </button>
-                    <button class="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 font-medium">
-                        <i class="fas fa-download mr-2"></i>Export
-                    </button>
                 </div>
             </div>
         </div>
@@ -266,10 +428,6 @@
                                                 <i class="fas fa-clipboard-list"></i>
                                             </a>
 
-                                            <!-- View Details -->
-                                            <button class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors" title="View Details">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -291,13 +449,63 @@
                 </div>
             @endif
         </div>
+        
+        <!-- Pagination -->
+        @if($preEmployments->hasPages())
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-gray-700">
+                        Showing {{ $preEmployments->firstItem() }} to {{ $preEmployments->lastItem() }} of {{ $preEmployments->total() }} results
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        {{-- Previous Page Link --}}
+                        @if ($preEmployments->onFirstPage())
+                            <span class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg cursor-not-allowed">
+                                <i class="fas fa-chevron-left mr-1"></i>Previous
+                            </span>
+                        @else
+                            <a href="{{ $preEmployments->appends(request()->query())->previousPageUrl() }}" 
+                               class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-chevron-left mr-1"></i>Previous
+                            </a>
+                        @endif
+
+                        {{-- Pagination Elements --}}
+                        @foreach ($preEmployments->appends(request()->query())->getUrlRange(1, $preEmployments->lastPage()) as $page => $url)
+                            @if ($page == $preEmployments->currentPage())
+                                <span class="px-3 py-2 text-sm font-medium text-white bg-emerald-600 border border-emerald-600 rounded-lg">
+                                    {{ $page }}
+                                </span>
+                            @else
+                                <a href="{{ $url }}" 
+                                   class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                    {{ $page }}
+                                </a>
+                            @endif
+                        @endforeach
+
+                        {{-- Next Page Link --}}
+                        @if ($preEmployments->hasMorePages())
+                            <a href="{{ $preEmployments->appends(request()->query())->nextPageUrl() }}" 
+                               class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                Next<i class="fas fa-chevron-right ml-1"></i>
+                            </a>
+                        @else
+                            <span class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg cursor-not-allowed">
+                                Next<i class="fas fa-chevron-right ml-1"></i>
+                            </span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 </div>
 
 @push('scripts')
 <script>
-    // Add smooth animations to content cards
     document.addEventListener('DOMContentLoaded', function() {
+        // Add smooth animations to content cards
         const contentCards = document.querySelectorAll('.content-card');
         contentCards.forEach((card, index) => {
             card.style.animationDelay = `${index * 0.1}s`;
@@ -312,6 +520,32 @@
                 alert.style.opacity = '0';
                 setTimeout(() => alert.remove(), 500);
             }, 5000);
+        });
+
+        // Enhanced hover effects for table rows
+        const tableRows = document.querySelectorAll('tbody tr');
+        tableRows.forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(2px)';
+                this.style.transition = 'transform 0.2s ease-out';
+            });
+            
+            row.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateX(0)';
+            });
+        });
+
+        // Enhanced button hover effects
+        const actionButtons = document.querySelectorAll('a[class*="p-2"]');
+        actionButtons.forEach(button => {
+            button.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.1)';
+                this.style.transition = 'transform 0.2s ease-out';
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
         });
     });
 </script>
@@ -330,6 +564,22 @@
     
     .animate-fade-in-up {
         animation: fade-in-up 0.6s ease-out forwards;
+    }
+
+    /* Enhanced table styling */
+    tbody tr {
+        transition: all 0.2s ease-out;
+    }
+    
+    tbody tr:hover {
+        background-color: rgba(16, 185, 129, 0.02);
+        border-left: 3px solid #10b981;
+    }
+
+    /* Filter form enhancements */
+    .content-card form select:focus,
+    .content-card form input:focus {
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
     }
 </style>
 @endpush

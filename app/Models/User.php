@@ -114,6 +114,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all medical checklists for this user (for filtering)
+     */
+    public function medicalChecklists(): HasMany
+    {
+        return $this->hasMany(MedicalChecklist::class, 'user_id');
+    }
+
+    /**
      * Check if user is nurse
      */
     public function isNurse()
