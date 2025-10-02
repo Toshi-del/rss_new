@@ -57,9 +57,9 @@
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Appointment Date</th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Time Slot</th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Examination Type</th>
-                        <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Total Price</th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Company Email</th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Status</th>
+                        <th class="text-right py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Total Price</th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
@@ -93,14 +93,43 @@
                                 <div class="bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
                                     <div class="text-sm font-medium text-amber-800">
                                         @if($appointment->medicalTestCategory)
-                                            {{ $appointment->medicalTestCategory->name }}
+                                            <div class="flex items-center space-x-2">
+                                                <i class="fas fa-clipboard-list text-amber-600 text-xs"></i>
+                                                <span>{{ $appointment->medicalTestCategory->name }}</span>
+                                            </div>
                                             @if($appointment->medicalTest)
-                                                <div class="text-xs text-amber-600 mt-1">
+                                                <div class="text-xs text-amber-600 mt-1 ml-4">
+                                                    <i class="fas fa-stethoscope mr-1"></i>
                                                     {{ $appointment->medicalTest->name }}
                                                 </div>
                                             @endif
+                                        @elseif($appointment->selected_categories->count() > 0)
+                                            <div class="space-y-1">
+                                                @foreach($appointment->selected_categories as $category)
+                                                    <div class="flex items-center space-x-2">
+                                                        <i class="fas fa-clipboard-list text-amber-600 text-xs"></i>
+                                                        <span>{{ $category->name }}</span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                            @if($appointment->selected_tests->count() > 0)
+                                                <div class="mt-2 space-y-1">
+                                                    @foreach($appointment->selected_tests as $test)
+                                                        <div class="text-xs text-amber-600 ml-4">
+                                                            <i class="fas fa-stethoscope mr-1"></i>
+                                                            {{ $test->name }}
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
                                         @else
-                                            {{ $appointment->appointment_type ?? 'General Checkup' }}
+                                            <div class="flex items-center space-x-2 text-gray-500">
+                                                <i class="fas fa-exclamation-triangle text-xs"></i>
+                                                <span>{{ $appointment->appointment_type ?? 'General Checkup' }}</span>
+                                            </div>
+                                            <div class="text-xs text-gray-400 mt-1">
+                                                No specific medical test selected
+                                            </div>
                                         @endif
                                     </div>
                                     @if($appointment->status === 'approved' && $appointment->hasTestAssignments())
@@ -117,30 +146,6 @@
                                         </div>
                                     @endif
                                 </div>
-                            </td>
-                            <td class="py-5 px-6 border-r border-gray-100">
-                                @if($appointment->medicalTest && $appointment->patient_count > 0)
-                                    <div class="bg-green-50 px-3 py-2 rounded-lg border border-green-200">
-                                        <div class="text-sm font-bold text-green-800">
-                                            {{ $appointment->formatted_total_price }}
-                                        </div>
-                                        <div class="text-xs text-green-600 mt-1">
-                                            ₱{{ number_format($appointment->medicalTest->price, 2) }} × {{ $appointment->patient_count }} patients
-                                        </div>
-                                    </div>
-                                @else
-                                    <div class="bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
-                                        <div class="text-sm text-gray-500">
-                                            @if(!$appointment->medicalTest)
-                                                No test selected
-                                            @elseif($appointment->patient_count == 0)
-                                                No patients
-                                            @else
-                                                ₱0.00
-                                            @endif
-                                        </div>
-                                    </div>
-                                @endif
                             </td>
                             <td class="py-5 px-6 border-r border-gray-100">
                                 <div class="flex items-center space-x-2">
@@ -164,6 +169,21 @@
                                         <i class="fas fa-clock mr-1.5 text-xs"></i>
                                         Pending
                                     </span>
+                                @endif
+                            </td>
+                            <td class="py-5 px-6 text-right border-r border-gray-100">
+                                @if($appointment->total_price && $appointment->total_price > 0)
+                                    <div class="bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-200">
+                                        <div class="text-sm font-bold text-emerald-800">
+                                            ₱{{ number_format($appointment->total_price, 2) }}
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 text-center">
+                                        <div class="text-sm text-gray-500">
+                                            ₱0.00
+                                        </div>
+                                    </div>
                                 @endif
                             </td>
                             <td class="py-5 px-6">

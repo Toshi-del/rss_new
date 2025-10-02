@@ -246,7 +246,12 @@ class AdminController extends Controller
      */
     public function appointments()
     {
-        $appointments = Appointment::with('patients')->paginate(15);
+        $appointments = Appointment::with([
+            'patients', 
+            'medicalTestCategory', 
+            'medicalTest', 
+            'creator'
+        ])->paginate(15);
         return view('admin.appointments', compact('appointments'));
     }
     

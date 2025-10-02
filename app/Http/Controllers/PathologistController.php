@@ -158,6 +158,7 @@ class PathologistController extends Controller
                 $q->where('first_name', 'like', "%{$search}%")
                   ->orWhere('last_name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('company_name', 'like', "%{$search}%")
                   ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"]);
             });
         }
@@ -166,25 +167,8 @@ class PathologistController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Gender filtering
-        if ($request->filled('gender')) {
-            $query->where('sex', $request->gender);
-        }
-
-        // Date range filtering
-        if ($request->filled('date_range')) {
-            switch ($request->date_range) {
-                case 'today':
-                    $query->whereDate('created_at', today());
-                    break;
-                case 'week':
-                    $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
-                    break;
-                case 'month':
-                    $query->whereMonth('created_at', now()->month)
-                          ->whereYear('created_at', now()->year);
-                    break;
-            }
+        if ($request->filled('company')) {
+            $query->where('company_name', 'like', "%{$request->company}%");
         }
 
         // Lab status filtering - match the view tab parameters
@@ -192,13 +176,18 @@ class PathologistController extends Controller
         
         switch ($labStatus) {
             case 'needs_attention':
-                // Patients that need pathologist attention (no meaningful lab results yet)
-                $query->whereHas('medicalChecklists', function($q) {
-                    $q->where('examination_type', 'annual-physical')
-                      ->whereNotNull('stool_exam_done_by')
-                      ->where('stool_exam_done_by', '!=', '')
-                      ->whereNotNull('urinalysis_done_by')
-                      ->where('urinalysis_done_by', '!=', '');
+                // Default: Records that need pathologist attention (no meaningful lab results yet)
+                $query->where(function($mainQuery) {
+                    // Option 1: Traditional workflow (specimen collection completed)
+                    $mainQuery->whereHas('medicalChecklists', function($q) {
+                        $q->where('examination_type', 'annual-physical')
+                          ->whereNotNull('stool_exam_done_by')
+                          ->whereNotNull('urinalysis_done_by');
+                    })
+                    // Option 2: OR patients with annual physical examinations created
+                    ->orWhereHas('annualPhysicalExamination', function($q) {
+                        $q->whereIn('status', ['completed', 'sent_to_admin']);
+                    });
                 })
                 ->whereDoesntHave('annualPhysicalExamination', function($q) {
                     $q->whereNotNull('lab_report')
@@ -219,12 +208,17 @@ class PathologistController extends Controller
                 
             case 'lab_completed':
                 // Patients with actual meaningful lab results completed
-                $query->whereHas('medicalChecklists', function($q) {
-                    $q->where('examination_type', 'annual-physical')
-                      ->whereNotNull('stool_exam_done_by')
-                      ->where('stool_exam_done_by', '!=', '')
-                      ->whereNotNull('urinalysis_done_by')
-                      ->where('urinalysis_done_by', '!=', '');
+                $query->where(function($mainQuery) {
+                    // Option 1: Traditional workflow (specimen collection completed)
+                    $mainQuery->whereHas('medicalChecklists', function($q) {
+                        $q->where('examination_type', 'annual-physical')
+                          ->whereNotNull('stool_exam_done_by')
+                          ->whereNotNull('urinalysis_done_by');
+                    })
+                    // Option 2: OR patients with annual physical examinations created
+                    ->orWhereHas('annualPhysicalExamination', function($q) {
+                        $q->whereIn('status', ['completed', 'sent_to_admin']);
+                    });
                 })
                 ->whereHas('annualPhysicalExamination', function($q) {
                     $q->whereNotNull('lab_report')
@@ -247,7 +241,7 @@ class PathologistController extends Controller
         // Filter patients that don't have completed examinations (unless specifically filtering for completed lab status)
         if ($labStatus !== 'lab_completed') {
             $query->whereDoesntHave('annualPhysicalExamination', function ($q) {
-                $q->whereIn('status', ['completed', 'sent_to_company']);
+                $q->whereIn('status', ['sent_to_company']);
             });
         }
 
@@ -736,7 +730,7 @@ class PathologistController extends Controller
         return [
             'pending_annual_physical' => Patient::where('status', 'approved')
                 ->whereDoesntHave('annualPhysicalExamination', function ($q) {
-                    $q->whereIn('status', ['completed', 'sent_to_company']);
+                    $q->whereIn('status', ['sent_to_company']);
                 })->count(),
             'pending_pre_employment' => PreEmploymentRecord::where('status', 'approved')
                 ->whereDoesntHave('preEmploymentExamination', function ($q) {
@@ -794,7 +788,7 @@ class PathologistController extends Controller
         ->where('blood_extraction_done_by', '!=', '')
         ->where(function($query) {
             $query->whereDoesntHave('annualPhysicalExamination', function($subQuery) {
-                $subQuery->whereIn('status', ['completed', 'sent_to_company']);
+                $subQuery->whereIn('status', ['sent_to_company']);
             })
             ->orWhereDoesntHave('preEmploymentRecord', function($subQuery) {
                 $subQuery->whereHas('preEmploymentExamination', function($examQuery) {
@@ -823,7 +817,7 @@ class PathologistController extends Controller
         ->where(function($query) {
             $query->whereDoesntHave('annualPhysicalExamination')
                   ->orWhereHas('annualPhysicalExamination', function($subQuery) {
-                      $subQuery->whereNotIn('status', ['completed', 'sent_to_company']);
+                      $subQuery->whereNotIn('status', ['sent_to_company']);
                   });
         })
         ->where(function($query) {

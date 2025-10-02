@@ -55,9 +55,9 @@
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Appointment Date</th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Time Slot</th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Examination Type</th>
-                        <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Total Price</th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Company Email</th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Status</th>
+                        <th class="text-right py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider border-r border-gray-200">Total Price</th>
                         <th class="text-left py-5 px-6 text-sm font-bold text-gray-700 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
@@ -94,17 +94,45 @@
                                 <div class="bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
                                     <div class="text-sm font-medium text-amber-800">
                                         <?php if($appointment->medicalTestCategory): ?>
-                                            <?php echo e($appointment->medicalTestCategory->name); ?>
-
+                                            <div class="flex items-center space-x-2">
+                                                <i class="fas fa-clipboard-list text-amber-600 text-xs"></i>
+                                                <span><?php echo e($appointment->medicalTestCategory->name); ?></span>
+                                            </div>
                                             <?php if($appointment->medicalTest): ?>
-                                                <div class="text-xs text-amber-600 mt-1">
+                                                <div class="text-xs text-amber-600 mt-1 ml-4">
+                                                    <i class="fas fa-stethoscope mr-1"></i>
                                                     <?php echo e($appointment->medicalTest->name); ?>
 
                                                 </div>
                                             <?php endif; ?>
-                                        <?php else: ?>
-                                            <?php echo e($appointment->appointment_type ?? 'General Checkup'); ?>
+                                        <?php elseif($appointment->selected_categories->count() > 0): ?>
+                                            <div class="space-y-1">
+                                                <?php $__currentLoopData = $appointment->selected_categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                    <div class="flex items-center space-x-2">
+                                                        <i class="fas fa-clipboard-list text-amber-600 text-xs"></i>
+                                                        <span><?php echo e($category->name); ?></span>
+                                                    </div>
+                                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                            </div>
+                                            <?php if($appointment->selected_tests->count() > 0): ?>
+                                                <div class="mt-2 space-y-1">
+                                                    <?php $__currentLoopData = $appointment->selected_tests; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $test): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                        <div class="text-xs text-amber-600 ml-4">
+                                                            <i class="fas fa-stethoscope mr-1"></i>
+                                                            <?php echo e($test->name); ?>
 
+                                                        </div>
+                                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <div class="flex items-center space-x-2 text-gray-500">
+                                                <i class="fas fa-exclamation-triangle text-xs"></i>
+                                                <span><?php echo e($appointment->appointment_type ?? 'General Checkup'); ?></span>
+                                            </div>
+                                            <div class="text-xs text-gray-400 mt-1">
+                                                No specific medical test selected
+                                            </div>
                                         <?php endif; ?>
                                     </div>
                                     <?php if($appointment->status === 'approved' && $appointment->hasTestAssignments()): ?>
@@ -121,31 +149,6 @@
                                         </div>
                                     <?php endif; ?>
                                 </div>
-                            </td>
-                            <td class="py-5 px-6 border-r border-gray-100">
-                                <?php if($appointment->medicalTest && $appointment->patient_count > 0): ?>
-                                    <div class="bg-green-50 px-3 py-2 rounded-lg border border-green-200">
-                                        <div class="text-sm font-bold text-green-800">
-                                            <?php echo e($appointment->formatted_total_price); ?>
-
-                                        </div>
-                                        <div class="text-xs text-green-600 mt-1">
-                                            ₱<?php echo e(number_format($appointment->medicalTest->price, 2)); ?> × <?php echo e($appointment->patient_count); ?> patients
-                                        </div>
-                                    </div>
-                                <?php else: ?>
-                                    <div class="bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
-                                        <div class="text-sm text-gray-500">
-                                            <?php if(!$appointment->medicalTest): ?>
-                                                No test selected
-                                            <?php elseif($appointment->patient_count == 0): ?>
-                                                No patients
-                                            <?php else: ?>
-                                                ₱0.00
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                <?php endif; ?>
                             </td>
                             <td class="py-5 px-6 border-r border-gray-100">
                                 <div class="flex items-center space-x-2">
@@ -169,6 +172,22 @@
                                         <i class="fas fa-clock mr-1.5 text-xs"></i>
                                         Pending
                                     </span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="py-5 px-6 text-right border-r border-gray-100">
+                                <?php if($appointment->total_price && $appointment->total_price > 0): ?>
+                                    <div class="bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-200">
+                                        <div class="text-sm font-bold text-emerald-800">
+                                            ₱<?php echo e(number_format($appointment->total_price, 2)); ?>
+
+                                        </div>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 text-center">
+                                        <div class="text-sm text-gray-500">
+                                            ₱0.00
+                                        </div>
+                                    </div>
                                 <?php endif; ?>
                             </td>
                             <td class="py-5 px-6">

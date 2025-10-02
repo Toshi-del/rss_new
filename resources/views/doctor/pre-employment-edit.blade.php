@@ -286,6 +286,117 @@
                     </div>
                     </div>
                 </div>
+
+                 <!-- Laboratory Examination Report Section -->
+                 <div class="bg-teal-50 rounded-xl p-6 border-l-4 border-teal-600">
+                    <div class="flex items-center mb-6">
+                        <i class="fas fa-flask text-teal-600 text-xl mr-3"></i>
+                        <h3 class="text-lg font-bold text-teal-900" style="font-family: 'Poppins', sans-serif;">Laboratory Examination Report</h3>
+                    </div>
+                    
+                    @php
+                        $lab = $preEmployment->lab_report ?? [];
+                        
+                        // Get pathologist tests that were actually requested for this patient
+                        $pathologistTests = $preEmployment->preEmploymentRecord->pathologist_tests ?? collect();
+                        
+                        // Build dynamic lab fields based on requested tests
+                        $labFields = [];
+                        $additionalTests = [];
+                        
+                        foreach($pathologistTests as $test) {
+                            $testName = $test['test_name'];
+                            $standardFieldName = '';
+                            $config = ['icon' => 'fas fa-flask', 'color' => 'teal'];
+                            
+                            // Standardize field names and set appropriate icons/colors
+                            if (stripos($testName, 'complete blood count') !== false || stripos($testName, 'cbc') !== false) {
+                                $standardFieldName = 'cbc';
+                                $config = ['icon' => 'fas fa-tint', 'color' => 'red'];
+                            } elseif (stripos($testName, 'urinalysis') !== false) {
+                                $standardFieldName = 'urinalysis';
+                                $config = ['icon' => 'fas fa-vial', 'color' => 'yellow'];
+                            } elseif (stripos($testName, 'stool') !== false || stripos($testName, 'fecalysis') !== false) {
+                                $standardFieldName = 'fecalysis';
+                                $config = ['icon' => 'fas fa-microscope', 'color' => 'brown'];
+                            } elseif (stripos($testName, 'blood chemistry') !== false) {
+                                $standardFieldName = 'blood_chemistry';
+                                $config = ['icon' => 'fas fa-heartbeat', 'color' => 'pink'];
+                            } elseif (stripos($testName, 'sodium') !== false) {
+                                $standardFieldName = 'sodium';
+                                $config = ['icon' => 'fas fa-atom', 'color' => 'blue'];
+                            } elseif (stripos($testName, 'potassium') !== false) {
+                                $standardFieldName = 'potassium';
+                                $config = ['icon' => 'fas fa-atom', 'color' => 'green'];
+                            } elseif (stripos($testName, 'calcium') !== false) {
+                                $standardFieldName = 'ionized_calcium';
+                                $config = ['icon' => 'fas fa-atom', 'color' => 'purple'];
+                            } elseif (stripos($testName, 'hbsag') !== false || stripos($testName, 'hepatitis b') !== false) {
+                                $standardFieldName = 'hbsag_screening';
+                                $config = ['icon' => 'fas fa-shield-virus', 'color' => 'orange'];
+                                $additionalTests[$standardFieldName] = ['name' => $testName, 'config' => $config];
+                                continue;
+                            } elseif (stripos($testName, 'hepa a') !== false || stripos($testName, 'hepatitis a') !== false) {
+                                $standardFieldName = 'hepa_a_igg_igm';
+                                $config = ['icon' => 'fas fa-virus', 'color' => 'purple'];
+                                $additionalTests[$standardFieldName] = ['name' => $testName, 'config' => $config];
+                                continue;
+                            } else {
+                                $standardFieldName = strtolower(str_replace([' ', '-', '&', '(', ')'], '_', $testName));
+                                $config = ['icon' => 'fas fa-flask', 'color' => 'indigo'];
+                            }
+                            
+                            if ($standardFieldName) {
+                                $labFields[$standardFieldName] = $config;
+                                $labFields[$standardFieldName]['display_name'] = $testName;
+                            }
+                        }
+                        
+                        // If no specific tests found, show basic tests
+                        if (empty($labFields)) {
+                            $labFields = [
+                                'cbc' => ['icon' => 'fas fa-tint', 'color' => 'red', 'display_name' => 'Complete Blood Count (CBC)'],
+                                'urinalysis' => ['icon' => 'fas fa-vial', 'color' => 'yellow', 'display_name' => 'Urinalysis'],
+                                'fecalysis' => ['icon' => 'fas fa-microscope', 'color' => 'brown', 'display_name' => 'Stool Examination']
+                            ];
+                        }
+                    @endphp
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                        @foreach($labFields as $field => $config)
+                            <div class="bg-white rounded-lg p-4 border-l-4 border-{{ $config['color'] }}-500">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="{{ $config['icon'] }} text-{{ $config['color'] }}-600 mr-2"></i>{{ $config['display_name'] ?? str_replace('_', ' ', ucwords($field)) }}
+                                </label>
+                                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
+                                    {{ data_get($lab, $field, 'Not available') }}
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    
+                    <!-- Additional Laboratory Tests (Only show if requested) -->
+                    @if(!empty($additionalTests))
+                    <div class="bg-white rounded-lg p-4">
+                        <h4 class="text-md font-semibold text-gray-700 mb-4">
+                            <i class="fas fa-plus-square text-teal-600 mr-2"></i>Additional Laboratory Tests
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            @foreach($additionalTests as $field => $testInfo)
+                                <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-{{ $testInfo['config']['color'] }}-500">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <i class="{{ $testInfo['config']['icon'] }} text-{{ $testInfo['config']['color'] }}-600 mr-2"></i>{{ $testInfo['name'] }}
+                                    </label>
+                                    <div class="bg-white p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
+                                        {{ data_get($lab, $field, 'Not available') }}
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+                </div>
+
                
 
                 <!-- Physical Findings Section -->
@@ -330,149 +441,7 @@
                         @endforeach
                     </div>
                 </div>
-                <!-- Pathologist Examination Report Section (Read-only) -->
-                @php
-                    $pathologistTests = $preEmployment->preEmploymentRecord->pathologist_tests ?? collect();
-                    $groupedTests = $pathologistTests->groupBy('category_name');
-                @endphp
-                
-                @if($pathologistTests->isNotEmpty())
-                <div class="bg-teal-50 rounded-xl p-6 border-l-4 border-teal-500 mb-8">
-                    <div class="flex items-center justify-between mb-6">
-                        <div class="flex items-center">
-                            <i class="fas fa-flask text-teal-600 text-xl mr-3"></i>
-                            <h3 class="text-lg font-bold text-teal-800">Pathologist Examination Report</h3>
-                        </div>
-                        <span class="px-3 py-1 text-xs font-semibold bg-teal-100 text-teal-800 rounded-full">
-                            <i class="fas fa-user-md mr-1"></i> Pathologist Entry
-                        </span>
-                    </div>
-                    
-                    @foreach($groupedTests as $categoryName => $tests)
-                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-4">
-                            <h4 class="text-md font-bold text-gray-800 mb-4">
-                                <i class="fas fa-vial mr-2 text-teal-600"></i>{{ $categoryName }}
-                            </h4>
-                            
-                            <div class="space-y-3">
-                                @foreach($tests as $test)
-                                    @php
-                                        $testSlug = strtolower(str_replace([' ', '-', '&'], '_', $test['test_name']));
-                                        $result = $preEmployment->lab_report[$testSlug . '_result'] ?? $preEmployment->lab_report[$testSlug] ?? 'Not available';
-                                        $findings = $preEmployment->lab_report[$testSlug . '_findings'] ?? '';
-                                    @endphp
-                                    
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                        <div class="flex items-center">
-                                            <i class="fas fa-flask text-teal-500 mr-2"></i>
-                                            <div>
-                                                <span class="font-semibold text-gray-700">{{ $test['test_name'] }}</span>
-                                                @if($test['is_package_component'] ?? false)
-                                                    <div class="text-xs text-blue-600 mt-1">
-                                                        <i class="fas fa-box mr-1"></i>From: {{ $test['package_name'] }}
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-500 mb-1">Result</label>
-                                            <div class="p-2 bg-white rounded border border-gray-200 text-sm {{ $result === 'Normal' ? 'text-green-700 font-semibold' : ($result === 'Not normal' ? 'text-red-700 font-semibold' : 'text-gray-700') }}">
-                                                {{ $result }}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-500 mb-1">Findings</label>
-                                            <div class="p-2 bg-white rounded border border-gray-200 text-sm text-gray-700 min-h-[2.5rem]">
-                                                {{ $findings ?: 'No findings' }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-                @endif
-                
-                <!-- X-Ray Image Section -->
-                <div class="bg-gray-50 rounded-xl p-6 border-l-4 border-gray-500 mb-8">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-x-ray text-gray-600 text-xl mr-3"></i>
-                        <h3 class="text-lg font-bold text-gray-800">X-RAY IMAGE</h3>
-                    </div>
-                    
-                    <div class="bg-white rounded-lg border border-gray-300 p-6">
-                        <!-- X-Ray Image Display -->
-                        <div class="mb-4">
-                            <div class="border-2 border-gray-300 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center" style="min-height: 200px;">
-                                @if(!empty($preEmployment->xray_image))
-                                    <img src="{{ asset('storage/' . $preEmployment->xray_image) }}" 
-                                         alt="X-Ray Image" 
-                                         class="max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
-                                         onclick="openFullscreen(this)">
-                                @else
-                                    <div class="text-center py-12">
-                                        <i class="fas fa-image text-gray-300 text-6xl mb-3"></i>
-                                        <p class="text-gray-400 text-sm">No X-Ray image uploaded</p>
-                                    </div>
-                                @endif
-                            </div>
-                            <p class="text-xs text-gray-500 mt-2 italic">Click image to open fullscreen and zoom</p>
-                        </div>
-                        
-                        <!-- Patient Information -->
-                        <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">FULL NAME</label>
-                                <p class="font-semibold text-gray-900">{{ $preEmployment->preEmploymentRecord->full_name ?? 'N/A' }}</p>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">SEX</label>
-                                <p class="font-semibold text-gray-900">{{ $preEmployment->preEmploymentRecord->sex ?? 'N/A' }}</p>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">AGE</label>
-                                <p class="font-semibold text-gray-900">{{ $preEmployment->preEmploymentRecord->age ?? 'N/A' }}</p>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">COMPANY</label>
-                                <p class="font-semibold text-gray-900">{{ $preEmployment->preEmploymentRecord->company_name ?? 'N/A' }}</p>
-                            </div>
-                        </div>
-                        
-                        <!-- X-Ray Results Table -->
-                        <div class="overflow-x-auto">
-                            <table class="w-full border-collapse border border-gray-300">
-                                <thead>
-                                    <tr class="bg-gray-100">
-                                        <th class="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Test</th>
-                                        <th class="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Result</th>
-                                        <th class="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">Findings</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700">Chest X-Ray</td>
-                                        <td class="border border-gray-300 px-4 py-3">
-                                            <select name="xray_result" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                                                <option value="">--</option>
-                                                <option value="Normal" {{ old('xray_result', $preEmployment->xray_result ?? '') == 'Normal' ? 'selected' : '' }}>Normal</option>
-                                                <option value="Abnormal" {{ old('xray_result', $preEmployment->xray_result ?? '') == 'Abnormal' ? 'selected' : '' }}>Abnormal</option>
-                                            </select>
-                                        </td>
-                                        <td class="border border-gray-300 px-4 py-3">
-                                            <input type="text" 
-                                                   name="xray_findings" 
-                                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" 
-                                                   value="{{ old('xray_findings', $preEmployment->xray_findings ?? '') }}"
-                                                   placeholder="Enter findings">
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+
                 
                 <!-- ECG Section -->
                 <div class="bg-red-50 rounded-xl p-6 border-l-4 border-red-500">

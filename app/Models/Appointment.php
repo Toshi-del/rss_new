@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+
 class Appointment extends Model
 {
     protected $fillable = [
@@ -26,32 +27,42 @@ class Appointment extends Model
     protected $casts = [
         'appointment_date' => 'date',
         'patients_data' => 'array',
-        'medical_test_categories_id' => 'array',
-        'medical_test_id' => 'array',
         'total_price' => 'decimal:2',
         'cancelled_at' => 'datetime',
     ];
 
-    // Note: These relationships are disabled because medical_test_categories_id and medical_test_id are now JSON arrays
-    // public function medicalTestCategory(): BelongsTo
-    // {
-    //     return $this->belongsTo(MedicalTestCategory::class, 'medical_test_categories_id');
-    // }
+    public function medicalTestCategory(): BelongsTo
+    {
+        return $this->belongsTo(MedicalTestCategory::class, 'medical_test_categories_id');
+    }
 
-    // public function medicalTest(): BelongsTo
-    // {
-    //     return $this->belongsTo(MedicalTest::class, 'medical_test_id');
-    // }
+    public function medicalTest(): BelongsTo
+    {
+        return $this->belongsTo(MedicalTest::class, 'medical_test_id');
+    }
 
     /**
      * Get all selected medical test categories
      */
     public function getSelectedCategoriesAttribute()
     {
-        $categoryIds = $this->medical_test_categories_id ?: [];
+        $categoryIds = $this->medical_test_categories_id;
+        
         if (empty($categoryIds)) {
             return collect([]);
         }
+        
+        // Handle case where it's a JSON string
+        if (is_string($categoryIds)) {
+            $decoded = json_decode($categoryIds, true);
+            $categoryIds = $decoded !== null ? $decoded : [];
+        }
+        
+        // If it's a single ID, convert to array
+        if (!is_array($categoryIds)) {
+            $categoryIds = [$categoryIds];
+        }
+        
         return MedicalTestCategory::whereIn('id', $categoryIds)->get();
     }
 
@@ -60,10 +71,23 @@ class Appointment extends Model
      */
     public function getSelectedTestsAttribute()
     {
-        $testIds = $this->medical_test_id ?: [];
+        $testIds = $this->medical_test_id;
+        
         if (empty($testIds)) {
             return collect([]);
         }
+        
+        // Handle case where it's a JSON string
+        if (is_string($testIds)) {
+            $decoded = json_decode($testIds, true);
+            $testIds = $decoded !== null ? $decoded : [];
+        }
+        
+        // If it's a single ID, convert to array
+        if (!is_array($testIds)) {
+            $testIds = [$testIds];
+        }
+        
         return MedicalTest::whereIn('id', $testIds)->get();
     }
 
