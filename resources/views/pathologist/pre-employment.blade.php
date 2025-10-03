@@ -284,6 +284,7 @@
                                     
                                     $hasSubmittedData = false;
                                     $latestExamination = null;
+                                    $anyExamination = $examinations->first(); // Get any examination for edit link
                                     
                                     foreach($examinations as $exam) {
                                         $labData = $exam->lab_report;
@@ -408,7 +409,11 @@
                                                     <i class="fas fa-lock"></i>
                                                 </button>
                                             @else
-                                                <a href="{{ route('pathologist.pre-employment.edit', $preEmployment->id) }}" 
+                                                @php
+                                                    // Use examination ID if available, otherwise use pre-employment record ID
+                                                    $editId = $anyExamination ? $anyExamination->id : $preEmployment->id;
+                                                @endphp
+                                                <a href="{{ route('pathologist.pre-employment.edit', $editId) }}" 
                                                    class="p-2 text-purple-600 hover:text-purple-900 hover:bg-purple-50 rounded-lg transition-colors" 
                                                    title="Lab Results">
                                                     <i class="fas fa-flask"></i>

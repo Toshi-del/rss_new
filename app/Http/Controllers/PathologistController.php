@@ -1017,12 +1017,28 @@ class PathologistController extends Controller
      */
     public function editPreEmployment($id)
     {
-        // First try to find existing examination
+        // First try to find existing examination by ID
         $examination = PreEmploymentExamination::with('preEmploymentRecord')->find($id);
         
-        // If no examination exists, create one for the pre-employment record
+        // If no examination exists, try to find it by pre_employment_record_id
+        if (!$examination) {
+            $examination = PreEmploymentExamination::with('preEmploymentRecord')
+                ->where('pre_employment_record_id', $id)
+                ->first();
+        }
+        
+        // If still no examination exists, create one for the pre-employment record
         if (!$examination) {
             $record = PreEmploymentRecord::findOrFail($id);
+            
+            // Double-check that no examination exists for this record to prevent duplicates
+            $existingExamination = PreEmploymentExamination::where('pre_employment_record_id', $record->id)->first();
+            
+            if ($existingExamination) {
+                // If examination exists, redirect to it
+                return redirect()->route('pathologist.pre-employment.edit', $existingExamination->id);
+            }
+            
             $examination = PreEmploymentExamination::create([
                 'pre_employment_record_id' => $record->id,
                 'user_id' => Auth::id(),
