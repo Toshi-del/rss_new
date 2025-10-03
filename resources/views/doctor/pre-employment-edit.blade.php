@@ -253,12 +253,12 @@
                     <div class="px-6 py-4 bg-gradient-to-r from-indigo-500 to-indigo-600">
                         <div class="flex items-center">
                             <i class="fas fa-eye text-white text-xl mr-3"></i>
-                            <h3 class="text-lg font-bold text-white">Visual Assessment & General Findings</h3>
+                            <h3 class="text-lg font-bold text-white">Visual Assessment & Findings</h3>
                         </div>
                     </div>
                     <div class="p-6 bg-indigo-50">
                     
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div class="bg-white rounded-lg p-4 border-l-4 border-blue-500">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-glasses mr-2 text-blue-600"></i>Visual Acuity
@@ -273,14 +273,6 @@
                             </label>
                             <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
                                 {{ $preEmployment->ishihara_test ?: 'Color vision test not performed' }}
-                            </div>
-                        </div>
-                        <div class="bg-white rounded-lg p-4 border-l-4 border-purple-500">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-clipboard-check mr-2 text-purple-600"></i>General Findings
-                            </label>
-                            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
-                                {{ $preEmployment->findings ?: 'No significant findings recorded' }}
                             </div>
                         </div>
                     </div>
@@ -300,64 +292,59 @@
                         // Get pathologist tests that were actually requested for this patient
                         $pathologistTests = $preEmployment->preEmploymentRecord->pathologist_tests ?? collect();
                         
-                        // Build dynamic lab fields based on requested tests
+                        // Build dynamic lab fields based on requested tests - using same field names as pathologist
                         $labFields = [];
                         $additionalTests = [];
                         
                         foreach($pathologistTests as $test) {
                             $testName = $test['test_name'];
-                            $standardFieldName = '';
+                            
+                            // Skip Blood Chemistry Panel - we don't want to show this in the card view
+                            if (stripos($testName, 'blood chemistry panel') !== false) {
+                                continue;
+                            }
+                            
+                            $testSlug = strtolower(str_replace([' ', '-', '&'], '_', $testName)); // Same as pathologist
                             $config = ['icon' => 'fas fa-flask', 'color' => 'teal'];
                             
-                            // Standardize field names and set appropriate icons/colors
+                            // Set appropriate icons/colors based on test type
                             if (stripos($testName, 'complete blood count') !== false || stripos($testName, 'cbc') !== false) {
-                                $standardFieldName = 'cbc';
                                 $config = ['icon' => 'fas fa-tint', 'color' => 'red'];
                             } elseif (stripos($testName, 'urinalysis') !== false) {
-                                $standardFieldName = 'urinalysis';
                                 $config = ['icon' => 'fas fa-vial', 'color' => 'yellow'];
                             } elseif (stripos($testName, 'stool') !== false || stripos($testName, 'fecalysis') !== false) {
-                                $standardFieldName = 'fecalysis';
                                 $config = ['icon' => 'fas fa-microscope', 'color' => 'brown'];
                             } elseif (stripos($testName, 'blood chemistry') !== false) {
-                                $standardFieldName = 'blood_chemistry';
                                 $config = ['icon' => 'fas fa-heartbeat', 'color' => 'pink'];
                             } elseif (stripos($testName, 'sodium') !== false) {
-                                $standardFieldName = 'sodium';
                                 $config = ['icon' => 'fas fa-atom', 'color' => 'blue'];
                             } elseif (stripos($testName, 'potassium') !== false) {
-                                $standardFieldName = 'potassium';
                                 $config = ['icon' => 'fas fa-atom', 'color' => 'green'];
                             } elseif (stripos($testName, 'calcium') !== false) {
-                                $standardFieldName = 'ionized_calcium';
                                 $config = ['icon' => 'fas fa-atom', 'color' => 'purple'];
                             } elseif (stripos($testName, 'hbsag') !== false || stripos($testName, 'hepatitis b') !== false) {
-                                $standardFieldName = 'hbsag_screening';
                                 $config = ['icon' => 'fas fa-shield-virus', 'color' => 'orange'];
-                                $additionalTests[$standardFieldName] = ['name' => $testName, 'config' => $config];
+                                $additionalTests[$testSlug] = ['name' => $testName, 'config' => $config, 'slug' => $testSlug];
                                 continue;
                             } elseif (stripos($testName, 'hepa a') !== false || stripos($testName, 'hepatitis a') !== false) {
-                                $standardFieldName = 'hepa_a_igg_igm';
                                 $config = ['icon' => 'fas fa-virus', 'color' => 'purple'];
-                                $additionalTests[$standardFieldName] = ['name' => $testName, 'config' => $config];
+                                $additionalTests[$testSlug] = ['name' => $testName, 'config' => $config, 'slug' => $testSlug];
                                 continue;
                             } else {
-                                $standardFieldName = strtolower(str_replace([' ', '-', '&', '(', ')'], '_', $testName));
                                 $config = ['icon' => 'fas fa-flask', 'color' => 'indigo'];
                             }
                             
-                            if ($standardFieldName) {
-                                $labFields[$standardFieldName] = $config;
-                                $labFields[$standardFieldName]['display_name'] = $testName;
-                            }
+                            $labFields[$testSlug] = $config;
+                            $labFields[$testSlug]['display_name'] = $testName;
+                            $labFields[$testSlug]['slug'] = $testSlug;
                         }
                         
                         // If no specific tests found, show basic tests
                         if (empty($labFields)) {
                             $labFields = [
-                                'cbc' => ['icon' => 'fas fa-tint', 'color' => 'red', 'display_name' => 'Complete Blood Count (CBC)'],
-                                'urinalysis' => ['icon' => 'fas fa-vial', 'color' => 'yellow', 'display_name' => 'Urinalysis'],
-                                'fecalysis' => ['icon' => 'fas fa-microscope', 'color' => 'brown', 'display_name' => 'Stool Examination']
+                                'complete_blood_count__cbc_' => ['icon' => 'fas fa-tint', 'color' => 'red', 'display_name' => 'Complete Blood Count (CBC)', 'slug' => 'complete_blood_count__cbc_'],
+                                'urinalysis' => ['icon' => 'fas fa-vial', 'color' => 'yellow', 'display_name' => 'Urinalysis', 'slug' => 'urinalysis'],
+                                'fecalysis' => ['icon' => 'fas fa-microscope', 'color' => 'brown', 'display_name' => 'Stool Examination', 'slug' => 'fecalysis']
                             ];
                         }
                     @endphp
@@ -369,7 +356,12 @@
                                     <i class="{{ $config['icon'] }} text-{{ $config['color'] }}-600 mr-2"></i>{{ $config['display_name'] ?? str_replace('_', ' ', ucwords($field)) }}
                                 </label>
                                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
-                                    {{ data_get($lab, $field, 'Not available') }}
+                                    @php
+                                        $testSlug = $config['slug'];
+                                        // Check both {test} and {test}_result for backward compatibility - same as pathologist
+                                        $resultValue = data_get($lab, $testSlug . '_result', data_get($lab, $testSlug, ''));
+                                    @endphp
+                                    {{ $resultValue ?: 'Not available' }}
                                 </div>
                             </div>
                         @endforeach
@@ -388,7 +380,12 @@
                                         <i class="{{ $testInfo['config']['icon'] }} text-{{ $testInfo['config']['color'] }}-600 mr-2"></i>{{ $testInfo['name'] }}
                                     </label>
                                     <div class="bg-white p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
-                                        {{ data_get($lab, $field, 'Not available') }}
+                                        @php
+                                            $testSlug = $testInfo['slug'];
+                                            // Check both {test} and {test}_result for backward compatibility - same as pathologist
+                                            $resultValue = data_get($lab, $testSlug . '_result', data_get($lab, $testSlug, ''));
+                                        @endphp
+                                        {{ $resultValue ?: 'Not available' }}
                                     </div>
                                 </div>
                             @endforeach
@@ -442,7 +439,108 @@
                     </div>
                 </div>
 
+                <!-- Laboratory Test Results Section -->
+                <div class="bg-lime-50 rounded-xl p-6 border-l-4 border-lime-600">
+                    <div class="flex items-center mb-6">
+                        <i class="fas fa-microscope text-lime-600 text-xl mr-3"></i>
+                        <h3 class="text-lg font-bold text-lime-900" style="font-family: 'Poppins', sans-serif;">Laboratory Test Results</h3>
+                    </div>
+                    
+                    @php
+                        // Standard laboratory tests for pre-employment (always show these)
+                        $labFields = [
+                            ['name' => 'Chest X-Ray', 'slug' => 'chest_x_ray', 'config' => ['icon' => 'fas fa-x-ray', 'color' => 'gray']],
+                            ['name' => 'Urinalysis', 'slug' => 'urinalysis', 'config' => ['icon' => 'fas fa-vial', 'color' => 'yellow']],
+                            ['name' => 'Fecalysis', 'slug' => 'fecalysis', 'config' => ['icon' => 'fas fa-microscope', 'color' => 'brown']],
+                            ['name' => 'CBC', 'slug' => 'cbc', 'config' => ['icon' => 'fas fa-tint', 'color' => 'red']],
+                            ['name' => 'HBsAg Screening', 'slug' => 'hbsag_screening', 'config' => ['icon' => 'fas fa-shield-virus', 'color' => 'purple']],
+                            ['name' => 'HEPA A IGG & IGM', 'slug' => 'hepa_a_igg_igm', 'config' => ['icon' => 'fas fa-virus', 'color' => 'pink']],
+                            ['name' => 'Others', 'slug' => 'others', 'config' => ['icon' => 'fas fa-plus-circle', 'color' => 'indigo']]
+                        ];
+                    @endphp
+                    
+                    <div class="space-y-4">
+                        @foreach($labFields as $labField)
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                                <div class="flex items-center">
+                                    <i class="{{ $labField['config']['icon'] }} text-{{ $labField['config']['color'] }}-600 mr-3"></i>
+                                    <span class="font-semibold text-gray-700">{{ $labField['name'] }}</span>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1">Result</label>
+                                    @php
+                                        $testSlug = $labField['slug'];
+                                        // Check both {test} and {test}_result for backward compatibility - same as pathologist
+                                        $resultValue = data_get($preEmployment->lab_report, $testSlug . '_result', data_get($preEmployment->lab_report, $testSlug, ''));
+                                    @endphp
+                                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
+                                        {{ $resultValue ?: 'Not available' }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1">Findings</label>
+                                    @php
+                                        $findingsValue = data_get($preEmployment->lab_report, $testSlug . '_findings', '');
+                                    @endphp
+                                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm text-gray-700 min-h-[2.5rem]">
+                                        {{ $findingsValue ?: 'No findings' }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <!-- Drug Test Form (DT Form 2) -->
+                @php
+                    $medicalTestName = $preEmployment->preEmploymentRecord->medicalTest->name ?? '';
+                    $lowerTestName = strtolower($medicalTestName);
+                    
+                    // Check for drug test in medical test name
+                    $requiresDrugTest = in_array($lowerTestName, [
+                        'pre-employment with drug test',
+                        'pre-employment with ecg and drug test',
+                        'pre-employment with drug test and audio and ishihara',
+                        'drug test only (bring valid i.d)'
+                    ]) || str_contains($lowerTestName, 'drug test');
+                @endphp
                 
+                @if($requiresDrugTest)
+                @php
+                    $drugTest = $preEmployment->drug_test ?? [];
+                    $drugTestResults = $preEmployment->drugTestResults()->latest()->first();
+                @endphp
+                
+                <x-drug-test-form 
+                    exam-type="pre-employment"
+                    :patient-data="[
+                        'name' => $preEmployment->preEmploymentRecord->full_name ?? ($preEmployment->preEmploymentRecord->first_name . ' ' . $preEmployment->preEmploymentRecord->last_name),
+                        'address' => $preEmployment->preEmploymentRecord->address ?? '',
+                        'age' => $preEmployment->preEmploymentRecord->age ?? '',
+                        'gender' => ucfirst($preEmployment->preEmploymentRecord->sex ?? '')
+                    ]"
+                    :existing-data="$drugTest"
+                    :connected-result="$drugTestResults"
+                    :is-edit="false" />
+                @endif
+                
+                <!-- ECG Section (Only show if medical test includes ECG) -->
+                @php
+                    $hasEcgTest = false;
+                    if ($preEmployment->preEmploymentRecord && $preEmployment->preEmploymentRecord->medicalTest) {
+                        $medicalTestName = $preEmployment->preEmploymentRecord->medicalTest->name ?? '';
+                        if (stripos($medicalTestName, 'ecg') !== false || 
+                            stripos($medicalTestName, 'electrocardiogram') !== false ||
+                            stripos($medicalTestName, 'Pre-Employment with ECG and Drug test') !== false ||
+                            stripos($medicalTestName, 'Pre-Employment with Drug test and ECG') !== false) {
+                            $hasEcgTest = true;
+                        }
+                    }
+                @endphp
+                
+                @if($hasEcgTest)
                 <!-- ECG Section -->
                 <div class="bg-red-50 rounded-xl p-6 border-l-4 border-red-500">
                     <div class="flex items-center mb-4">
@@ -455,6 +553,65 @@
                             <i class="fas fa-chart-line text-red-600 mr-2"></i>ECG Results
                         </label>
                         <input type="text" name="ecg" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm" value="{{ old('ecg', $preEmployment->ecg ?? '') }}" placeholder="Enter ECG findings and interpretation">
+                    </div>
+                </div>
+                @endif
+                
+                <!-- General Findings & Assessment Section -->
+                <div class="bg-purple-50 rounded-xl p-6 border-l-4 border-purple-600">
+                    <div class="flex items-center mb-6">
+                        <i class="fas fa-clipboard-check text-purple-600 text-xl mr-3"></i>
+                        <h3 class="text-lg font-bold text-purple-900" style="font-family: 'Poppins', sans-serif;">General Findings & Medical Assessment</h3>
+                    </div>
+                    
+                    @php
+                        $lab = $preEmployment->lab_report ?? [];
+                        
+                        // Count "Not normal" results from lab tests
+                        $notNormalCount = 0;
+                        $labTests = ['chest_x_ray', 'urinalysis', 'fecalysis', 'cbc', 'drug_test', 'hbsag_screening', 'hepa_a_igg_igm', 'others'];
+                        
+                        foreach($labTests as $test) {
+                            $result = data_get($lab, $test, '');
+                            if (strtolower($result) === 'not normal' || strtolower($result) === 'abnormal' || strtolower($result) === 'positive') {
+                                $notNormalCount++;
+                            }
+                        }
+                        
+                        // Determine assessment based on lab results
+                        if ($notNormalCount >= 2) {
+                            $assessment = 'Not fit for work';
+                            $assessmentColor = 'red';
+                            $assessmentIcon = 'fas fa-times-circle';
+                        } elseif ($notNormalCount === 1) {
+                            $assessment = 'For evaluation';
+                            $assessmentColor = 'yellow';
+                            $assessmentIcon = 'fas fa-exclamation-triangle';
+                        } else {
+                            $assessment = 'Fit to work';
+                            $assessmentColor = 'green';
+                            $assessmentIcon = 'fas fa-check-circle';
+                        }
+                    @endphp
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      
+                        
+                        <!-- Automatic Medical Assessment -->
+                        <div class="bg-white rounded-lg p-4 border-l-4 border-{{ $assessmentColor }}-500">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-stethoscope text-{{ $assessmentColor }}-600 mr-2"></i>Medical Assessment
+                            </label>
+                            <div class="bg-{{ $assessmentColor }}-50 p-3 rounded-lg border border-{{ $assessmentColor }}-200">
+                                <div class="flex items-center">
+                                    <i class="{{ $assessmentIcon }} text-{{ $assessmentColor }}-600 mr-2"></i>
+                                    <span class="font-semibold text-{{ $assessmentColor }}-800">{{ $assessment }}</span>
+                                </div>
+                                <div class="text-xs text-{{ $assessmentColor }}-600 mt-1">
+                                    Based on {{ $notNormalCount }} abnormal lab result(s)
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 

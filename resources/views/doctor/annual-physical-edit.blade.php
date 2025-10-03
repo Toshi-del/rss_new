@@ -191,13 +191,15 @@
                                 ];
                             @endphp
                             @foreach($vitals as $key => $vital)
-                                <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-{{ $vital['color'] }}-500">
+                                <div class="bg-white rounded-lg p-4 border-l-4 border-{{ $vital['color'] }}-500">
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">
                                         <i class="{{ $vital['icon'] }} text-{{ $vital['color'] }}-600 mr-2"></i>{{ $vital['label'] }}
                                     </label>
-                                    <div class="relative">
-                                        <input type="text" name="physical_exam[{{ $key }}]" class="w-full px-3 py-2 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm" value="{{ old('physical_exam.'.$key, data_get($phys, $key, '')) }}" placeholder="Enter {{ strtolower($vital['label']) }}">
-                                        <span class="absolute right-3 top-2 text-xs text-gray-500 font-medium">{{ $vital['unit'] }}</span>
+                                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
+                                        {{ data_get($phys, $key, 'Not recorded') }}
+                                        @if(data_get($phys, $key))
+                                            <span class="text-xs text-gray-500 ml-1">{{ $vital['unit'] }}</span>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
@@ -212,34 +214,34 @@
                     </div>
                     
                     <div class="bg-white rounded-lg p-4">
-                        <textarea name="skin_marks" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm" placeholder="Describe any visible scars, birthmarks, tattoos, or other identifying marks...">{{ old('skin_marks', $annualPhysical->skin_marks) }}</textarea>
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 text-sm text-gray-700 min-h-[4rem]">
+                            {{ $annualPhysical->skin_marks ?: 'No identifying marks, scars, or tattoos recorded' }}
+                        </div>
                     </div>
                 </div>
                 <!-- Visual & Findings Section -->
                 <div class="bg-indigo-50 rounded-xl p-6 border-l-4 border-indigo-600">
                     <div class="flex items-center mb-6">
                         <i class="fas fa-eye text-indigo-600 text-xl mr-3"></i>
-                        <h3 class="text-lg font-bold text-indigo-900" style="font-family: 'Poppins', sans-serif;">Visual Assessment & Findings</h3>
+                        <h3 class="text-lg font-bold text-indigo-900" style="font-family: 'Poppins', sans-serif;">Visual Assessment</h3>
                     </div>
                     
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div class="bg-white rounded-lg p-4 border-l-4 border-blue-500">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-glasses mr-2 text-blue-600"></i>Visual Acuity
                             </label>
-                            <input type="text" name="visual" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm" value="{{ old('visual', $annualPhysical->visual ?? '') }}" placeholder="e.g., 20/20, 20/40">
+                            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
+                                {{ $annualPhysical->visual ?: 'Visual acuity not tested' }}
+                            </div>
                         </div>
                         <div class="bg-white rounded-lg p-4 border-l-4 border-green-500">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-palette mr-2 text-green-600"></i>Ishihara Test
                             </label>
-                            <input type="text" name="ishihara_test" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm" value="{{ old('ishihara_test', $annualPhysical->ishihara_test ?? '') }}" placeholder="Color vision test results">
-                        </div>
-                        <div class="bg-white rounded-lg p-4 border-l-4 border-purple-500">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-clipboard-check mr-2 text-purple-600"></i>General Findings
-                            </label>
-                            <input type="text" name="findings" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm" value="{{ old('findings', $annualPhysical->findings ?? '') }}" placeholder="Overall examination findings">
+                            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
+                                {{ $annualPhysical->ishihara_test ?: 'Color vision test not performed' }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -409,7 +411,6 @@
                             'Urinalysis' => ['icon' => 'fas fa-vial', 'color' => 'yellow'],
                             'Fecalysis' => ['icon' => 'fas fa-microscope', 'color' => 'brown'],
                             'CBC' => ['icon' => 'fas fa-tint', 'color' => 'red'],
-                            'Drug Test' => ['icon' => 'fas fa-pills', 'color' => 'orange'],
                             'HBsAg Screening' => ['icon' => 'fas fa-shield-virus', 'color' => 'purple'],
                             'HEPA A IGG & IGM' => ['icon' => 'fas fa-virus', 'color' => 'pink'],
                             'Others' => ['icon' => 'fas fa-plus-circle', 'color' => 'indigo']
@@ -430,15 +431,62 @@
                                         $testKey = strtolower(str_replace([' ', '-', '&'], ['_', '_', '_'], $row));
                                         $testKey = str_replace('chest_x_ray', 'xray', $testKey);
                                         $testKey = str_replace('hepa_a_igg___igm', 'hepa_a_igg_igm', $testKey);
+                                        
+                                        // Special handling for drug test - use actual drug test data
+                                        if ($testKey === 'drug_test') {
+                                            $drugTestData = $annualPhysical->drug_test ?? [];
+                                            $methResult = $drugTestData['methamphetamine'] ?? '';
+                                            $marijuanaResult = $drugTestData['marijuana'] ?? '';
+                                            
+                                            // Count positive results
+                                            $positiveCount = 0;
+                                            if (strtolower($methResult) === 'positive') $positiveCount++;
+                                            if (strtolower($marijuanaResult) === 'positive') $positiveCount++;
+                                            
+                                            // Determine overall result
+                                            if ($positiveCount >= 2) {
+                                                $resultValue = 'Both Positive';
+                                            } elseif ($positiveCount === 1) {
+                                                $resultValue = '1 Positive';
+                                            } elseif ($methResult && $marijuanaResult) {
+                                                $resultValue = 'Both Negative';
+                                            } else {
+                                                $resultValue = 'Not available';
+                                            }
+                                        } else {
+                                            $resultValue = data_get($annualPhysical->lab_report, $testKey, '');
+                                        }
                                     @endphp
-                                    <input type="text" name="lab_report[{{ $testKey }}]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-sm" value="{{ old('lab_report.'.$testKey, data_get($annualPhysical->lab_report, $testKey, '')) }}" placeholder="Enter test result">
+                                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm text-gray-700">
+                                        {{ $resultValue ?: 'Not available' }}
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Findings</label>
                                     @php
-                                        $findingsKey = $testKey . '_findings';
+                                        // Special handling for drug test findings
+                                        if ($testKey === 'drug_test') {
+                                            $drugTestData = $annualPhysical->drug_test ?? [];
+                                            $methResult = $drugTestData['methamphetamine'] ?? '';
+                                            $marijuanaResult = $drugTestData['marijuana'] ?? '';
+                                            
+                                            $findings = [];
+                                            if ($methResult) {
+                                                $findings[] = "Methamphetamine: " . ucfirst($methResult);
+                                            }
+                                            if ($marijuanaResult) {
+                                                $findings[] = "Marijuana: " . ucfirst($marijuanaResult);
+                                            }
+                                            
+                                            $findingsValue = !empty($findings) ? implode(', ', $findings) : 'No findings';
+                                        } else {
+                                            $findingsKey = $testKey . '_findings';
+                                            $findingsValue = data_get($annualPhysical->lab_report, $findingsKey, '');
+                                        }
                                     @endphp
-                                    <input type="text" name="lab_report[{{ $findingsKey }}]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lime-500 focus:border-lime-500 text-sm" value="{{ old('lab_report.'.$findingsKey, data_get($annualPhysical->lab_report, $findingsKey, '')) }}" placeholder="Enter findings">
+                                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm text-gray-700 min-h-[2.5rem]">
+                                        {{ $findingsValue ?: 'No findings' }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -478,6 +526,99 @@
                     </div>
                 </div>
                 @endif
+                
+                <!-- Drug Test Form (DT Form 2) -->
+                @php
+                    $medicalTestName = '';
+                    if ($annualPhysical->patient && $annualPhysical->patient->appointment && $annualPhysical->patient->appointment->medicalTest) {
+                        $medicalTestName = strtolower($annualPhysical->patient->appointment->medicalTest->name);
+                    }
+                    
+                    // Check if this examination requires a drug test
+                    $requiresDrugTest = in_array($medicalTestName, [
+                        'annual medical with drug test',
+                        'annual medical with drug test and ecg',
+                        'annual medical examination with drug test',
+                        'annual medical examination with drug test and ecg'
+                    ]) || str_contains($medicalTestName, 'drug test');
+                @endphp
+                
+                @if($requiresDrugTest)
+                @php
+                    $drugTest = $annualPhysical->drug_test ?? [];
+                    $drugTestResults = $annualPhysical->drugTestResults()->latest()->first();
+                @endphp
+                
+                <x-drug-test-form 
+                    exam-type="annual-physical"
+                    :patient-data="[
+                        'name' => $annualPhysical->patient->first_name . ' ' . $annualPhysical->patient->last_name,
+                        'address' => $annualPhysical->patient->address ?? '',
+                        'age' => $annualPhysical->patient->age ?? '',
+                        'gender' => ucfirst($annualPhysical->patient->sex ?? '')
+                    ]"
+                    :existing-data="$drugTest"
+                    :connected-result="$drugTestResults"
+                    :is-edit="false" />
+                @endif
+                
+                <!-- General Findings & Assessment Section -->
+                <div class="bg-purple-50 rounded-xl p-6 border-l-4 border-purple-600">
+                    <div class="flex items-center mb-6">
+                        <i class="fas fa-clipboard-check text-purple-600 text-xl mr-3"></i>
+                        <h3 class="text-lg font-bold text-purple-900" style="font-family: 'Poppins', sans-serif;">General Findings & Medical Assessment</h3>
+                    </div>
+                    
+                    @php
+                        $lab = $annualPhysical->lab_report ?? [];
+                        
+                        // Count "Not normal" results from lab tests
+                        $notNormalCount = 0;
+                        $labTests = ['xray', 'urinalysis', 'fecalysis', 'cbc', 'hbsag_screening', 'hepa_a_igg_igm', 'others'];
+                        
+                        foreach($labTests as $test) {
+                            $result = data_get($lab, $test, '');
+                            if (strtolower($result) === 'not normal' || strtolower($result) === 'abnormal' || strtolower($result) === 'positive') {
+                                $notNormalCount++;
+                            }
+                        }
+                        
+                        // Determine assessment based on lab results
+                        if ($notNormalCount >= 2) {
+                            $assessment = 'Not fit for work';
+                            $assessmentColor = 'red';
+                            $assessmentIcon = 'fas fa-times-circle';
+                        } elseif ($notNormalCount === 1) {
+                            $assessment = 'For evaluation';
+                            $assessmentColor = 'yellow';
+                            $assessmentIcon = 'fas fa-exclamation-triangle';
+                        } else {
+                            $assessment = 'Fit to work';
+                            $assessmentColor = 'green';
+                            $assessmentIcon = 'fas fa-check-circle';
+                        }
+                    @endphp
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        
+                        
+                        <!-- Automatic Medical Assessment -->
+                        <div class="bg-white rounded-lg p-4 border-l-4 border-{{ $assessmentColor }}-500">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-stethoscope text-{{ $assessmentColor }}-600 mr-2"></i>Medical Assessment
+                            </label>
+                            <div class="bg-{{ $assessmentColor }}-50 p-3 rounded-lg border border-{{ $assessmentColor }}-200">
+                                <div class="flex items-center">
+                                    <i class="{{ $assessmentIcon }} text-{{ $assessmentColor }}-600 mr-2"></i>
+                                    <span class="font-semibold text-{{ $assessmentColor }}-800">{{ $assessment }}</span>
+                                </div>
+                                <div class="text-xs text-{{ $assessmentColor }}-600 mt-1">
+                                    Based on {{ $notNormalCount }} abnormal lab result(s)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- Physician Signature & Submit Section -->
                 <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">

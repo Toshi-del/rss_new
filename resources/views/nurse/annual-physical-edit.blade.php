@@ -223,19 +223,151 @@
                     </div>
                 </div>
 
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700">Medical Findings</label>
-                    <div class="relative">
-                        <input type="text" name="findings" value="{{ old('findings', $annualPhysical->findings) }}" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" 
-                               placeholder="e.g., Normal findings" />
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <i class="fas fa-clipboard-check text-gray-400"></i>
+               
+            </div>
+        </div>
+
+        @php
+            // Check if this annual physical examination requires drug test
+            $medicalTestName = $annualPhysical->patient->appointment->medicalTest->name ?? '';
+            $hasDrugTest = in_array(strtolower($medicalTestName), [
+                'annual medical with drug test',
+                'annual medical with drug test and ecg',
+                'annual medical examination with drug test',
+                'annual medical examination with drug test and ecg'
+            ]);
+            
+            // Get existing drug test data and connected drug test results
+            $drugTest = $annualPhysical->drug_test ?? [];
+            $drugTestResults = $annualPhysical->drugTestResults()->latest()->first();
+        @endphp
+
+        @if($hasDrugTest)
+        <!-- Drug Test Form Card -->
+        <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-pills text-red-600"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Drug Test Result (DT Form 2)</h3>
+                    <p class="text-gray-600 text-sm">Urine drug screening examination form</p>
+                </div>
+            </div>
+
+            @if($drugTestResults)
+            <!-- Connected Drug Test Information -->
+            <div class="bg-purple-50 rounded-xl p-6 border border-purple-200 mb-6">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-link text-purple-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-purple-900">Connected Drug Test Record</h4>
+                        <p class="text-purple-700 text-sm">This examination has a linked drug test result (ID: {{ $drugTestResults->id }})</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                        <span class="font-medium text-purple-800">Test Date:</span>
+                        <span class="text-purple-700">{{ $drugTestResults->examination_datetime ? $drugTestResults->examination_datetime->format('M d, Y H:i') : 'N/A' }}</span>
+                    </div>
+                    <div>
+                        <span class="font-medium text-purple-800">Conducted By:</span>
+                        <span class="text-purple-700">{{ $drugTestResults->test_conducted_by ?? 'N/A' }}</span>
+                    </div>
+                    <div>
+                        <span class="font-medium text-purple-800">Status:</span>
+                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">{{ ucfirst($drugTestResults->status) }}</span>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            <!-- Drug Test Results Section -->
+            <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                <h4 class="text-lg font-semibold text-gray-900 mb-4">Drug Test Results</h4>
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse border border-gray-300">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900">Drug/Metabolites</th>
+                                <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900">Result</th>
+                                <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900">Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="border border-gray-300 px-4 py-3 font-medium">METHAMPHETAMINE (Meth)</td>
+                                <td class="border border-gray-300 px-4 py-3">
+                                    <select name="drug_test[methamphetamine_result]" 
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 @error('drug_test.methamphetamine_result') border-red-500 ring-2 ring-red-200 @enderror">
+                                        <option value="">Select Result</option>
+                                        <option value="Negative" {{ old('drug_test.methamphetamine_result', $drugTestResults->methamphetamine_result ?? $drugTest['methamphetamine'] ?? '') == 'Negative' ? 'selected' : '' }}>Negative</option>
+                                        <option value="Positive" {{ old('drug_test.methamphetamine_result', $drugTestResults->methamphetamine_result ?? $drugTest['methamphetamine'] ?? '') == 'Positive' ? 'selected' : '' }}>Positive</option>
+                                    </select>
+                                    @error('drug_test.methamphetamine_result')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </td>
+                                <td class="border border-gray-300 px-4 py-3">
+                                    <input type="text" name="drug_test[methamphetamine_remarks]" 
+                                           value="{{ old('drug_test.methamphetamine_remarks', $drugTestResults->methamphetamine_remarks ?? $drugTest['methamphetamine_remarks'] ?? '') }}" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500" 
+                                           placeholder="Optional remarks" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="border border-gray-300 px-4 py-3 font-medium">TETRAHYDROCANNABINOL (Marijuana)</td>
+                                <td class="border border-gray-300 px-4 py-3">
+                                    <select name="drug_test[marijuana_result]" 
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 @error('drug_test.marijuana_result') border-red-500 ring-2 ring-red-200 @enderror">
+                                        <option value="">Select Result</option>
+                                        <option value="Negative" {{ old('drug_test.marijuana_result', $drugTestResults->marijuana_result ?? $drugTest['marijuana'] ?? '') == 'Negative' ? 'selected' : '' }}>Negative</option>
+                                        <option value="Positive" {{ old('drug_test.marijuana_result', $drugTestResults->marijuana_result ?? $drugTest['marijuana'] ?? '') == 'Positive' ? 'selected' : '' }}>Positive</option>
+                                    </select>
+                                    @error('drug_test.marijuana_result')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </td>
+                                <td class="border border-gray-300 px-4 py-3">
+                                    <input type="text" name="drug_test[marijuana_remarks]" 
+                                           value="{{ old('drug_test.marijuana_remarks', $drugTestResults->marijuana_remarks ?? $drugTest['marijuana_remarks'] ?? '') }}" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500" 
+                                           placeholder="Optional remarks" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Signatures Section -->
+            <div class="bg-gray-50 rounded-xl p-6 border border-gray-200 mt-6">
+                <h4 class="text-lg font-semibold text-gray-900 mb-4">Signatures</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Test Conducted by:
+                        </label>
+                        <div class="border-b-2 border-gray-400 pb-2 mb-2">
+                            <p class="text-center font-medium">{{ Auth::user()->fname }} {{ Auth::user()->lname }}</p>
                         </div>
+                        <p class="text-xs text-gray-500 text-center">Signature over Printed Name of Staff</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Conforme:
+                        </label>
+                        <div class="border-b-2 border-gray-400 pb-2 mb-2 h-8">
+                            <!-- Empty space for patient signature -->
+                        </div>
+                        <p class="text-xs text-gray-500 text-center">Signature over Printed Name of Client</p>
                     </div>
                 </div>
             </div>
         </div>
+        @endif
 
         <!-- Signature Section -->
         <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">

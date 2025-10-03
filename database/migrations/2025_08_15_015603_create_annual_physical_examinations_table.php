@@ -30,6 +30,7 @@ return new class extends Migration
             $table->string('ishihara_test')->nullable();
             $table->string('findings')->nullable();
             $table->text('lab_report')->nullable(); // JSON or text
+            $table->text('drug_test')->nullable(); // JSON for drug test results
             $table->text('physical_findings')->nullable();
             $table->text('lab_findings')->nullable();
             $table->string('ecg')->nullable();

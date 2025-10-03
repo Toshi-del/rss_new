@@ -178,7 +178,10 @@ class NurseController extends Controller
      */
     public function editPreEmployment($id)
     {
-        $preEmployment = \App\Models\PreEmploymentExamination::with('preEmploymentRecord')->findOrFail($id);
+        $preEmployment = \App\Models\PreEmploymentExamination::with([
+            'preEmploymentRecord.medicalTest',
+            'drugTestResults'
+        ])->findOrFail($id);
         
         return view('nurse.pre-employment-edit', compact('preEmployment'));
     }
@@ -205,11 +208,15 @@ class NurseController extends Controller
             'physical_findings' => 'nullable|array',
             'lab_findings' => 'nullable|array',
             'ecg' => 'nullable|string',
+            'drug_test' => 'nullable|array',
         ]);
 
+        // Set status to 'Approved' to make it immediately visible to doctor
+        $validated['status'] = 'Approved';
+        
         $preEmployment->update($validated);
 
-        return redirect()->route('nurse.pre-employment')->with('success', 'Pre-employment examination saved. Not yet sent to doctor.');
+        return redirect()->route('nurse.pre-employment')->with('success', 'Pre-employment examination updated and sent to doctor for review.');
     }
 
     /**
@@ -241,6 +248,7 @@ class NurseController extends Controller
             'ishihara_test' => 'nullable|string',
             'findings' => 'nullable|string',
             'lab_report' => 'nullable|array',
+            'drug_test' => 'nullable|array',
             'physical_findings' => 'nullable|array',
             'lab_findings' => 'nullable|array',
             'ecg' => 'nullable|string',
@@ -586,17 +594,12 @@ class NurseController extends Controller
         
         $examination = \App\Models\PreEmploymentExamination::create($validated);
         
-        // Log created examination data
-        \Log::info('Pre-Employment Examination created:', [
-            'id' => $examination->id,
-            'visual' => $examination->visual,
-            'visual_from_db' => $examination->fresh()->visual
-        ]);
 
         // Handle drug test form if present
         $this->handleDrugTestForm($request, [
             'user_id' => $validated['user_id'],
             'pre_employment_record_id' => $validated['pre_employment_record_id'],
+            'pre_employment_examination_id' => $examination->id,
             'patient_name' => $validated['name']
         ]);
 
@@ -604,7 +607,7 @@ class NurseController extends Controller
         $workflowService = new MedicalWorkflowService();
         $workflowService->onExaminationUpdated($examination, 'pre_employment');
 
-        return redirect()->route('nurse.pre-employment')->with('success', 'Pre-employment examination saved successfully.');
+        return redirect()->route('nurse.pre-employment')->with('success', 'Pre-employment examination created and sent to doctor for review.');
     }
 
     /**
@@ -712,6 +715,7 @@ class NurseController extends Controller
         $this->handleDrugTestForm($request, [
             'user_id' => $patient->user_id ?? Auth::id(),
             'appointment_id' => $patient->appointment->id ?? null,
+            'annual_physical_examination_id' => $examination->id,
             'patient_name' => $validated['name']
         ]);
 
@@ -948,6 +952,8 @@ class NurseController extends Controller
             'user_id' => $context['user_id'],
             'nurse_id' => Auth::id(),
             'pre_employment_record_id' => $context['pre_employment_record_id'] ?? null,
+            'pre_employment_examination_id' => $context['pre_employment_examination_id'] ?? null,
+            'annual_physical_examination_id' => $context['annual_physical_examination_id'] ?? null,
             'appointment_id' => $context['appointment_id'] ?? null,
             'opd_examination_id' => $context['opd_examination_id'] ?? null,
             'test_conducted_by' => Auth::user()->full_name,

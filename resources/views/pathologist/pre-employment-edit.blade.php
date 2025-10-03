@@ -64,6 +64,10 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         @foreach($tests as $test)
                             @php
+                                // Skip Blood Chemistry Panel - individual tests are shown separately
+                                if (stripos($test['test_name'], 'blood chemistry panel') !== false) {
+                                    continue;
+                                }
                                 $fieldName = 'lab_report[' . strtolower(str_replace([' ', '-', '&'], '_', $test['test_name'])) . ']';
                             @endphp
                             <div class="space-y-2">
@@ -200,6 +204,10 @@
                         @if($pathologistTests->isNotEmpty())
                             @foreach($pathologistTests as $test)
                                 @php
+                                    // Skip Blood Chemistry Panel - individual tests are shown separately
+                                    if (stripos($test['test_name'], 'blood chemistry panel') !== false) {
+                                        continue;
+                                    }
                                     $testNameSlug = strtolower(str_replace([' ', '-', '&'], '_', $test['test_name']));
                                     $resultFieldName = 'lab_report[' . $testNameSlug . '_result]';
                                     $findingsFieldName = 'lab_report[' . $testNameSlug . '_findings]';

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class AnnualPhysicalExamination extends Model
@@ -25,6 +26,7 @@ class AnnualPhysicalExamination extends Model
         'ishihara_test',
         'findings',
         'lab_report',
+        'drug_test',
         'physical_findings',
         'lab_findings',
         'ecg',
@@ -39,6 +41,7 @@ class AnnualPhysicalExamination extends Model
         'personal_habits' => 'array',
         'physical_exam' => 'array',
         'lab_report' => 'array',
+        'drug_test' => 'array',
         'physical_findings' => 'array',
         'lab_findings' => 'array',
     ];
@@ -51,6 +54,11 @@ class AnnualPhysicalExamination extends Model
     public function patient(): BelongsTo
     {
         return $this->belongsTo(Patient::class);
+    }
+
+    public function drugTestResults(): HasMany
+    {
+        return $this->hasMany(DrugTestResult::class);
     }
 
     protected function name(): Attribute

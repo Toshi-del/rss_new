@@ -215,25 +215,41 @@
             </div>
         </div>
         
-        <!-- Medical Findings Card -->
-        <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">
-            <div class="flex items-center space-x-3 mb-6">
-                <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-clipboard-check text-indigo-600"></i>
-                </div>
-                <div>
-                    <h3 class="text-xl font-bold text-gray-900">Medical Findings</h3>
-                    <p class="text-gray-600 text-sm">Update overall examination findings and recommendations</p>
-                </div>
-            </div>
-
-            <div class="space-y-2">
-                <label class="block text-sm font-semibold text-gray-700">Examination Findings</label>
-                <textarea name="findings" rows="5" 
-                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
-                          placeholder="Record overall medical findings, any abnormalities, recommendations, or fitness for employment assessment...">{{ old('findings', $preEmployment->findings) }}</textarea>
-            </div>
-        </div>
+       
+        @php
+            $medicalTestName = $preEmployment->preEmploymentRecord->medicalTest->name ?? '';
+            $lowerTestName = strtolower($medicalTestName);
+            
+            // Check for drug test in medical test name
+            $hasDrugTest = in_array($lowerTestName, [
+                'pre-employment with drug test',
+                'pre-employment with ecg and drug test',
+                'pre-employment with drug test and audio and ishihara',
+                'drug test only (bring valid i.d)'
+            ]) || str_contains($lowerTestName, 'drug test');
+        @endphp
+        
+        
+        
+        @if($hasDrugTest)
+        @php
+            $drugTest = $preEmployment->drug_test ?? [];
+            $drugTestResults = $preEmployment->drugTestResults()->latest()->first();
+        @endphp
+        
+        <!-- Drug Test Form Component -->
+        <x-drug-test-form 
+            exam-type="pre-employment"
+            :patient-data="[
+                'name' => $preEmployment->preEmploymentRecord->full_name ?? ($preEmployment->preEmploymentRecord->first_name . ' ' . $preEmployment->preEmploymentRecord->last_name),
+                'address' => $preEmployment->preEmploymentRecord->address ?? '',
+                'age' => $preEmployment->preEmploymentRecord->age ?? '',
+                'gender' => ucfirst($preEmployment->preEmploymentRecord->sex ?? '')
+            ]"
+            :existing-data="$drugTest"
+            :connected-result="$drugTestResults"
+            :is-edit="true" />
+        @endif
 
         <!-- Signature Section -->
         <div class="content-card rounded-xl p-8 shadow-lg border border-gray-200">

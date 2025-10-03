@@ -222,7 +222,10 @@ class DoctorController extends Controller
      */
     public function editPreEmployment($id)
     {
-        $preEmployment = PreEmploymentExamination::findOrFail($id);
+        $preEmployment = PreEmploymentExamination::with([
+            'preEmploymentRecord.medicalTest',
+            'drugTestResults'
+        ])->findOrFail($id);
         return view('doctor.pre-employment-edit', compact('preEmployment'));
     }
 
@@ -281,15 +284,24 @@ class DoctorController extends Controller
     public function showExamination($id)
     {
         $examination = PreEmploymentExamination::with([
-            'preEmploymentRecord.preEmploymentMedicalTests.medicalTest.referenceRanges',
+            'preEmploymentRecord.medicalTest',
+            'preEmploymentRecord.preEmploymentMedicalTests.medicalTest',
             'preEmploymentRecord.preEmploymentMedicalTests.medicalTestCategory',
-            'preEmploymentRecord.drugTest'
+            'preEmploymentRecord.drugTest',
+            'drugTestResults'
         ])->findOrFail($id);
         
         // Check if this examination requires a drug test
-        $requiresDrugTest = $examination->preEmploymentRecord && 
-                           $examination->preEmploymentRecord->medicalTest && 
-                           stripos($examination->preEmploymentRecord->medicalTest->name, 'drug test') !== false;
+        $requiresDrugTest = false;
+        if ($examination->preEmploymentRecord && $examination->preEmploymentRecord->medicalTest) {
+            $medicalTestName = strtolower($examination->preEmploymentRecord->medicalTest->name);
+            $requiresDrugTest = in_array($medicalTestName, [
+                'pre-employment with drug test',
+                'pre-employment with ecg and drug test',
+                'pre-employment with drug test and audio and ishihara',
+                'drug test only (bring valid i.d)'
+            ]) || str_contains($medicalTestName, 'drug test');
+        }
         
         return view('doctor.pre-employment-examination', compact('examination', 'requiresDrugTest'));
     }
@@ -321,7 +333,10 @@ class DoctorController extends Controller
      */
     public function editAnnualPhysical($id)
     {
-        $annualPhysical = \App\Models\AnnualPhysicalExamination::findOrFail($id);
+        $annualPhysical = \App\Models\AnnualPhysicalExamination::with([
+            'patient.appointment.medicalTest',
+            'drugTestResults'
+        ])->findOrFail($id);
         return view('doctor.annual-physical-edit', compact('annualPhysical'));
     }
 

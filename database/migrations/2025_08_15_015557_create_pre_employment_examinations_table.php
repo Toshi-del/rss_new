@@ -32,6 +32,7 @@ return new class extends Migration
             $table->string('ishihara_test')->nullable();
             $table->string('findings')->nullable();
             $table->text('lab_report')->nullable(); // JSON or text
+            $table->text('drug_test')->nullable(); // JSON for drug test results
             $table->unsignedBigInteger('pre_employment_record_id')->nullable();
             $table->foreign('pre_employment_record_id')->references('id')->on('pre_employment_records')->onDelete('cascade');
             $table->timestamps();

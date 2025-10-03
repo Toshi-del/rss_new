@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class PreEmploymentExamination extends Model
@@ -32,6 +33,7 @@ class PreEmploymentExamination extends Model
         'ecg_date',
         'ecg_technician',
         'created_by',
+        'drug_test',
     ];
 
     protected $casts = [
@@ -42,6 +44,7 @@ class PreEmploymentExamination extends Model
         'lab_report' => 'array',
         'physical_findings' => 'array',
         'lab_findings' => 'array',
+        'drug_test' => 'array',
     ];
 
     public function user(): BelongsTo
@@ -52,6 +55,11 @@ class PreEmploymentExamination extends Model
     public function preEmploymentRecord(): BelongsTo
     {
         return $this->belongsTo(PreEmploymentRecord::class);
+    }
+
+    public function drugTestResults(): HasMany
+    {
+        return $this->hasMany(DrugTestResult::class);
     }
 
     protected function name(): Attribute

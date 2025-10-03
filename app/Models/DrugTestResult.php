@@ -11,6 +11,8 @@ class DrugTestResult extends Model
         'user_id',
         'nurse_id',
         'pre_employment_record_id',
+        'pre_employment_examination_id',
+        'annual_physical_examination_id',
         'appointment_id',
         'opd_examination_id',
         'patient_name',
@@ -50,6 +52,16 @@ class DrugTestResult extends Model
     public function preEmploymentRecord(): BelongsTo
     {
         return $this->belongsTo(PreEmploymentRecord::class);
+    }
+
+    public function preEmploymentExamination(): BelongsTo
+    {
+        return $this->belongsTo(PreEmploymentExamination::class);
+    }
+
+    public function annualPhysicalExamination(): BelongsTo
+    {
+        return $this->belongsTo(AnnualPhysicalExamination::class);
     }
 
     public function appointment(): BelongsTo
